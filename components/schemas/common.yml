@@ -1,0 +1,242 @@
+components:
+  schemas:
+    ErrorCode:
+      type: string
+      description: |
+        서비스 공통 에러 코드.
+        (HTTP 상태코드와 1:1 매핑이 아니라 "원인" 기준으로 분류)
+      enum:
+        # 400
+        - BAD_REQUEST
+        - INVALID_ARGUMENT
+        - VALIDATION_FAILED
+        - MISSING_PARAMETER
+        - MALFORMED_JSON
+        - TYPE_MISMATCH
+        - INVALID_CURSOR
+        - INVALID_PAGE
+        - INVALID_SORT
+        - UNSUPPORTED_CONDITION
+
+        # 401
+        - UNAUTHORIZED
+        - INVALID_TOKEN
+        - EXPIRED_TOKEN
+        - TOKEN_REVOKED
+        - INVALID_CREDENTIALS
+        - OAUTH_PROVIDER_ERROR
+
+        # 403
+        - FORBIDDEN
+        - INSUFFICIENT_ROLE
+        - ACCESS_DENIED
+        - RESOURCE_OWNER_MISMATCH
+
+        # 404
+        - NOT_FOUND
+        - ENDPOINT_NOT_FOUND
+
+        # 405/406/415
+        - METHOD_NOT_ALLOWED
+        - NOT_ACCEPTABLE
+        - UNSUPPORTED_MEDIA_TYPE
+
+        # 409
+        - CONFLICT
+        - DUPLICATE_RESOURCE
+        - ALREADY_EXISTS
+        - ALREADY_DELETED
+        - ALREADY_PROCESSED
+        - OPTIMISTIC_LOCK_FAILED
+        - VERSION_CONFLICT
+
+        # 412/422
+        - PRECONDITION_FAILED
+        - BUSINESS_RULE_VIOLATION
+        - STATE_TRANSITION_NOT_ALLOWED
+
+        # 413/429
+        - PAYLOAD_TOO_LARGE
+        - TOO_MANY_REQUESTS
+        - RATE_LIMITED
+
+        # 5xx
+        - INTERNAL_ERROR
+        - UNHANDLED_EXCEPTION
+        - DATABASE_ERROR
+        - CACHE_ERROR
+        - FILE_STORAGE_ERROR
+        - EXTERNAL_API_ERROR
+        - SERVICE_UNAVAILABLE
+        - BAD_GATEWAY
+        - GATEWAY_TIMEOUT
+        - TIMEOUT
+      example: NOT_FOUND
+
+    ErrorResponse:
+      type: object
+      required: [code, message]
+      properties:
+        code:
+          $ref: "#/components/schemas/ErrorCode"
+        message:
+          type: string
+          example: "리소스를 찾을 수 없습니다."
+        timestamp:
+          type: string
+          format: date-time
+          example: "2025-12-26T17:12:34+09:00"
+        path:
+          type: string
+          example: "/api/announcements/123/comments"
+        method:
+          type: string
+          example: "GET"
+        traceId:
+          type: string
+          description: "로그 추적용 ID (예: MDC traceId / requestId)"
+          example: "c6f2c9d5b2a44c6e9a71d2d5fbc2b7d3"
+        details:
+          type: object
+          description: "추가 정보(선택). 키/값 자유 확장."
+          additionalProperties: true
+
+    FieldError:
+      type: object
+      required: [field, reason]
+      properties:
+        field:
+          type: string
+          example: "title"
+        rejectedValue:
+          nullable: true
+          description: "거절된 값(선택). 표현이 애매하면 문자열로 내려도 됨."
+          oneOf:
+            - type: string
+            - type: number
+            - type: integer
+            - type: boolean
+            - type: object
+            - type: array
+          example: ""
+        reason:
+          type: string
+          example: "must not be blank"
+
+    ValidationErrorResponse:
+      allOf:
+        - $ref: "#/components/schemas/ErrorResponse"
+        - type: object
+          required: [errors]
+          properties:
+            errors:
+              type: array
+              items:
+                $ref: "#/components/schemas/FieldError"
+
+    ConstraintViolation:
+      type: object
+      required: [name, reason]
+      properties:
+        name:
+          type: string
+          description: "파라미터/변수 이름(예: page, announcementId)"
+          example: "page"
+        rejectedValue:
+          type: string
+          nullable: true
+          example: "-1"
+        reason:
+          type: string
+          example: "must be greater than or equal to 0"
+
+    ConstraintViolationErrorResponse:
+      allOf:
+        - $ref: "#/components/schemas/ErrorResponse"
+        - type: object
+          required: [violations]
+          properties:
+            violations:
+              type: array
+              items:
+                $ref: "#/components/schemas/ConstraintViolation"
+
+    AuthErrorResponse:
+      allOf:
+        - $ref: "#/components/schemas/ErrorResponse"
+        - type: object
+          properties:
+            details:
+              type: object
+              additionalProperties: true
+              properties:
+                authType:
+                  type: string
+                  description: "인증 타입(예: BEARER, OAUTH2)"
+                  example: "BEARER"
+                reason:
+                  type: string
+                  description: "인증 실패 사유(예: INVALID_TOKEN, EXPIRED_TOKEN 등)"
+                  example: "EXPIRED_TOKEN"
+                expiredAt:
+                  type: string
+                  format: date-time
+                  nullable: true
+                  example: "2025-12-26T16:00:00+09:00"
+
+    ConflictErrorResponse:
+      allOf:
+        - $ref: "#/components/schemas/ErrorResponse"
+        - type: object
+          properties:
+            details:
+              type: object
+              additionalProperties: true
+              properties:
+                resource:
+                  type: string
+                  description: "충돌한 리소스 타입(선택)"
+                  example: "Announcement"
+                key:
+                  type: string
+                  description: "충돌 키(선택)"
+                  example: "announcementId"
+                value:
+                  type: string
+                  description: "충돌 값(선택)"
+                  example: "123"
+                reason:
+                  type: string
+                  description: "충돌 사유(선택)"
+                  example: "ALREADY_EXISTS"
+
+    ExternalApiErrorResponse:
+      allOf:
+        - $ref: "#/components/schemas/ErrorResponse"
+        - type: object
+          properties:
+            details:
+              type: object
+              additionalProperties: true
+              required: [provider]
+              properties:
+                provider:
+                  type: string
+                  description: "외부 시스템 식별자"
+                  example: "LH_API"
+                status:
+                  type: integer
+                  description: "외부 시스템의 HTTP 상태코드(알 수 없으면 생략)"
+                  example: 502
+                errorCode:
+                  type: string
+                  description: "외부 시스템 에러 코드(있으면)"
+                  example: "E1234"
+                rawMessage:
+                  type: string
+                  description: "외부 원문 메시지(있으면)"
+                  example: "Upstream timeout"
+                correlationId:
+                  type: string
+                  description: "외부 요청 추적 ID(있으면)"
+                  example: "up-req-7f2d1a"
