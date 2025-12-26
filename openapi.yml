@@ -533,4 +533,4 @@ paths:
         - in: path
           name: newsletterId
           required: true
-         schema: { type: string }
+          schema: { type: string }
