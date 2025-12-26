@@ -1,536 +1,2153 @@
 openapi: 3.0.3
 info:
-  title: Project API
+  title: Housing Policy Curation API
   version: 0.1.0
+  description: >
+    주거/지원 정책 공고 큐레이션, 온보딩 기반 맞춤 추천, 공고 상세/댓글, 체크리스트,
+    게이미피케이션, 카카오 알림톡, 뉴스레터 기능 API 초안.
 
 servers:
   - url: https://api.example.com
 
 tags:
-  - name: "0.1.1 데이터 동기화"
-  - name: "1.1.1 소셜 로그인"
-  - name: "1.2.1 맞춤 프로필 설정"
-  - name: "2.1.1 맞춤 공고 확인하기"
-  - name: "2.1.2 맞춤 추천 배너"
-  - name: "2.2.1 공고 상세 페이지"
-  - name: "2.2.2 문서 뷰어"
-  - name: "2.2.3 자격 자가 진단"
-  - name: "3.1.1 개별 Todo 생성"
-  - name: "3.1.2 체크리스트 관리"
-  - name: "3.2.1 캘린더"
-  - name: "4.1.1 공고별 댓글"
-  - name: "5.1.1 자발 미션"
-  - name: "5.2.1 배지 시스템"
-  - name: "6.1.1 알림 리마인더"
-  - name: "6.2.1 뉴스레터"
+  - name: "공통/데이터/동기화"
+    description: "공고/정책 데이터 수집 및 동기화(내부/어드민)"
+  - name: "계정/인증/소셜로그인"
+  - name: "계정/온보딩/맞춤프로필"
+  - name: "큐레이션/홈/맞춤공고"
+  - name: "큐레이션/홈/추천배너"
+  - name: "큐레이션/상세/공고상세"
+  - name: "큐레이션/상세/원문뷰어"
+  - name: "큐레이션/상세/자격자가진단"
+  - name: "마이페이지/체크리스트/투두생성"
+  - name: "마이페이지/체크리스트/체크리스트관리"
+  - name: "마이페이지/캘린더"
+  - name: "커뮤니티/공고댓글"
+  - name: "게이미피케이션/미션"
+  - name: "게이미피케이션/보상"
+  - name: "알림/카카오알림톡"
+  - name: "뉴스레터"
+  - name: "어드민"
+
+x-tagGroups:
+  - name: "공통"
+    tags: ["공통/데이터/동기화"]
+  - name: "계정"
+    tags: ["계정/인증/소셜로그인", "계정/온보딩/맞춤프로필"]
+  - name: "큐레이션"
+    tags: ["큐레이션/홈/맞춤공고", "큐레이션/홈/추천배너", "큐레이션/상세/공고상세", "큐레이션/상세/원문뷰어", "큐레이션/상세/자격자가진단"]
+  - name: "마이페이지"
+    tags: ["마이페이지/체크리스트/투두생성", "마이페이지/체크리스트/체크리스트관리", "마이페이지/캘린더"]
+  - name: "커뮤니티"
+    tags: ["커뮤니티/공고댓글"]
+  - name: "게이미피케이션"
+    tags: ["게이미피케이션/미션", "게이미피케이션/보상"]
+  - name: "알림"
+    tags: ["알림/카카오알림톡"]
+  - name: "뉴스레터"
+    tags: ["뉴스레터"]
+  - name: "어드민"
+    tags: ["어드민"]
+
+security:
+  - bearerAuth: []
 
 paths:
-  # 0.1.1 데이터 동기화 (내부/운영용: 공개 API랑 분리 권장)
-  /internal/sync/jobs:
+  # =========================
+  # F-001 공통: 데이터 동기화 (어드민)
+  # =========================
+  /api/admin/sync/policies:
     post:
-      tags: ["0.1.1 데이터 동기화"]
-      summary: "데이터 동기화 작업(Job) 생성"
-      operationId: createSyncJob
-    get:
-      tags: ["0.1.1 데이터 동기화"]
-      summary: "동기화 작업 목록 조회"
-      operationId: listSyncJobs
-      parameters:
-        - in: query
-          name: status
-          schema: { type: string }
-        - in: query
-          name: source
-          schema: { type: string }
+      tags: ["공통/데이터/동기화", "어드민"]
+      summary: "정책/공고 데이터 동기화 트리거(수동)"
+      description: "수집 대상: LH/SH 청약센터, 마이홈, 지자체 포털, 복지로 API"
+      security:
+        - bearerAuth: []
+      requestBody:
+        required: false
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/SyncTriggerRequest"
+      responses:
+        "202":
+          description: "동기화 작업 시작"
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/SyncJob"
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+        "403":
+          $ref: "#/components/responses/Forbidden"
 
-  /internal/sync/jobs/{jobId}:
+  /api/admin/sync/jobs/{jobId}:
     get:
-      tags: ["0.1.1 데이터 동기화"]
-      summary: "동기화 작업 단건 조회"
-      operationId: getSyncJob
+      tags: ["공통/데이터/동기화", "어드민"]
+      summary: "동기화 작업 상태 조회"
       parameters:
-        - in: path
-          name: jobId
+        - $ref: "#/components/parameters/jobId"
+      responses:
+        "200":
+          description: "상태"
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/SyncJob"
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+        "403":
+          $ref: "#/components/responses/Forbidden"
+        "404":
+          $ref: "#/components/responses/NotFound"
+
+  # =========================
+  # (보강) F-001 유저 새로고침 기반 실시간 갱신 트리거
+  # =========================
+  /api/sync/refresh:
+    post:
+      tags: ["공통/데이터/동기화"]
+      summary: "유저 새로고침 기반 데이터 갱신 트리거"
+      description: >
+        유저가 '새로고침' 액션을 했을 때 서버가 외부 소스로 실시간 호출을 병행하기 위한 트리거.
+        남용 방지를 위해 레이트리밋(429) 권장.
+      requestBody:
+        required: false
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/UserRefreshSyncRequest"
+      responses:
+        "202":
+          description: "갱신 작업 시작"
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/SyncJob"
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+        "429":
+          $ref: "#/components/responses/TooManyRequests"
+
+  # =========================
+  # F-002 계정: 카카오 소셜 로그인
+  # =========================
+  /api/auth/oauth2/kakao/authorize-url:
+    get:
+      tags: ["계정/인증/소셜로그인"]
+      summary: "카카오 OAuth2 인가 URL 발급"
+      security: []
+      parameters:
+        - name: redirectUri
+          in: query
           required: true
-          schema: { type: string }
+          schema: { type: string, format: uri }
+      responses:
+        "200":
+          description: "인가 URL"
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  authorizeUrl:
+                    type: string
+                    format: uri
+                required: [authorizeUrl]
 
-  # 1.1.1 소셜 로그인
-  /api/auth/kakao/login:
+  /api/auth/oauth2/kakao/token:
     post:
-      tags: ["1.1.1 소셜 로그인"]
-      summary: "카카오 로그인(Authorization Code 교환)"
-      operationId: kakaoLogin
+      tags: ["계정/인증/소셜로그인"]
+      summary: "카카오 인가코드로 우리 서비스 토큰 발급"
+      security: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/KakaoTokenExchangeRequest"
+      responses:
+        "200":
+          description: "JWT 발급"
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/AuthTokenResponse"
+        "400":
+          $ref: "#/components/responses/BadRequest"
 
-  /api/auth/refresh:
-    post:
-      tags: ["1.1.1 소셜 로그인"]
-      summary: "액세스 토큰 재발급"
-      operationId: refreshToken
+  /api/auth/me:
+    get:
+      tags: ["계정/인증/소셜로그인"]
+      summary: "내 계정 조회"
+      responses:
+        "200":
+          description: "내 정보"
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/UserMe"
+        "401":
+          $ref: "#/components/responses/Unauthorized"
 
   /api/auth/logout:
     post:
-      tags: ["1.1.1 소셜 로그인"]
-      summary: "로그아웃"
-      operationId: logout
+      tags: ["계정/인증/소셜로그인"]
+      summary: "로그아웃(클라이언트 토큰 폐기)"
+      responses:
+        "204":
+          description: "성공"
+        "401":
+          $ref: "#/components/responses/Unauthorized"
 
-  # 1.2.1 맞춤 프로필 설정 (프론트 편의: me 사용)
-  /api/me/profile:
+  # =========================
+  # F-003 온보딩: 맞춤 프로필
+  # =========================
+  /api/users/me/profile:
     get:
-      tags: ["1.2.1 맞춤 프로필 설정"]
-      summary: "내 프로필 조회"
-      operationId: getMyProfile
+      tags: ["계정/온보딩/맞춤프로필"]
+      summary: "내 맞춤 프로필 조회"
+      responses:
+        "200":
+          description: "프로필"
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/UserProfile"
+        "401":
+          $ref: "#/components/responses/Unauthorized"
     put:
-      tags: ["1.2.1 맞춤 프로필 설정"]
-      summary: "내 프로필 저장(전체)"
-      operationId: putMyProfile
-    patch:
-      tags: ["1.2.1 맞춤 프로필 설정"]
-      summary: "내 프로필 수정(부분)"
-      operationId: patchMyProfile
+      tags: ["계정/온보딩/맞춤프로필"]
+      summary: "내 맞춤 프로필 저장/수정"
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/UserProfileUpsertRequest"
+      responses:
+        "200":
+          description: "업데이트된 프로필"
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/UserProfile"
+        "400":
+          $ref: "#/components/responses/BadRequest"
+        "401":
+          $ref: "#/components/responses/Unauthorized"
 
-  # 2.1.1 맞춤 공고 확인하기
+  /api/users/me/consents:
+    patch:
+      tags: ["계정/온보딩/맞춤프로필"]
+      summary: "수신 동의 설정(알림톡/이메일 등)"
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/ConsentUpdateRequest"
+      responses:
+        "200":
+          description: "동의 상태"
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Consent"
+        "400":
+          $ref: "#/components/responses/BadRequest"
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+
+  # (보강) 온보딩 상태
+  /api/users/me/onboarding:
+    get:
+      tags: ["계정/온보딩/맞춤프로필"]
+      summary: "온보딩 상태 조회"
+      responses:
+        "200":
+          description: "온보딩 상태"
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/OnboardingStatus"
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+
+  # (보강) 온보딩 메타
+  /api/meta/regions:
+    get:
+      tags: ["계정/온보딩/맞춤프로필"]
+      summary: "지역 메타 조회(시도/시군구)"
+      responses:
+        "200":
+          description: "지역 목록"
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/RegionMetaResponse"
+
+  /api/meta/situation-tags:
+    get:
+      tags: ["계정/온보딩/맞춤프로필"]
+      summary: "상황 태그 메타 조회"
+      responses:
+        "200":
+          description: "상황 태그 목록"
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/SituationTagMetaResponse"
+
+  /api/meta/income-guide:
+    get:
+      tags: ["계정/온보딩/맞춤프로필"]
+      summary: "소득분위(건보료) 가이드 조회"
+      responses:
+        "200":
+          description: "가이드"
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/IncomeGuideResponse"
+
+  # =========================
+  # F-004 홈: 맞춤 공고 확인하기
+  # =========================
   /api/announcements/recommended:
     get:
-      tags: ["2.1.1 맞춤 공고 확인하기"]
-      summary: "맞춤 공고 목록 조회"
-      operationId: listRecommendedAnnouncements
+      tags: ["큐레이션/홈/맞춤공고"]
+      summary: "맞춤 공고 리스트"
+      description: "정렬: 마감임박순 > 적합도순 > 최신순"
       parameters:
-        - in: query
-          name: cursor
-          schema: { type: string }
-        - in: query
-          name: size
-          schema: { type: integer, default: 20 }
+        - name: sort
+          in: query
+          required: false
+          schema:
+            type: string
+            enum: [deadline, fitScore, latest]
+            default: deadline
+        - $ref: "#/components/parameters/page"
+        - $ref: "#/components/parameters/size"
+      responses:
+        "200":
+          description: "맞춤 공고 카드 리스트"
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/PagedAnnouncementCard"
+        "401":
+          $ref: "#/components/responses/Unauthorized"
 
+  # (보강) 공고 탐색 리스트
   /api/announcements:
     get:
-      tags: ["2.1.1 맞춤 공고 확인하기"]
-      summary: "공고 검색/필터 목록 조회"
-      operationId: searchAnnouncements
+      tags: ["큐레이션/홈/맞춤공고"]
+      summary: "공고 탐색(검색/필터/정렬)"
       parameters:
-        - in: query
-          name: q
+        - name: q
+          in: query
+          required: false
           schema: { type: string }
-        - in: query
-          name: region
-          schema: { type: string }
-        - in: query
-          name: type
-          schema: { type: string }
-        - in: query
-          name: cursor
-          schema: { type: string }
-        - in: query
-          name: size
-          schema: { type: integer, default: 20 }
+          description: "공고명/키워드 검색"
+        - name: publisher
+          in: query
+          required: false
+          schema: { type: string, example: "LH" }
+        - name: status
+          in: query
+          required: false
+          schema:
+            type: array
+            items:
+              type: string
+              enum: [UPCOMING, OPEN, CLOSING_SOON, CLOSED]
+          style: form
+          explode: true
+        - name: sido
+          in: query
+          required: false
+          schema: { type: string, example: "서울특별시" }
+        - name: sigungu
+          in: query
+          required: false
+          schema: { type: string, example: "관악구" }
+        - name: sort
+          in: query
+          required: false
+          schema:
+            type: string
+            enum: [deadline, latest]
+            default: deadline
+        - $ref: "#/components/parameters/page"
+        - $ref: "#/components/parameters/size"
+      responses:
+        "200":
+          description: "공고 카드 리스트"
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/PagedAnnouncementCard"
 
-  # 2.1.2 맞춤 추천 배너
-  /api/banners:
+  # =========================
+  # F-005 홈: 맞춤 추천 배너
+  # =========================
+  /api/banners/recommended:
     get:
-      tags: ["2.1.2 맞춤 추천 배너"]
-      summary: "배너 목록 조회(위치/슬롯별)"
-      operationId: listBanners
-      parameters:
-        - in: query
-          name: placement
-          schema: { type: string, example: home }
+      tags: ["큐레이션/홈/추천배너"]
+      summary: "맞춤 추천 배너 1개 조회"
+      responses:
+        "200":
+          description: "배너"
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/RecommendedBanner"
+        "204":
+          description: "추천 배너 없음"
+        "401":
+          $ref: "#/components/responses/Unauthorized"
 
-  /api/banners/{bannerId}:
-    get:
-      tags: ["2.1.2 맞춤 추천 배너"]
-      summary: "배너 단건 조회"
-      operationId: getBanner
-      parameters:
-        - in: path
-          name: bannerId
-          required: true
-          schema: { type: string }
-
-  # 2.2.1 공고 상세 페이지
+  # =========================
+  # F-006 공고 상세 페이지
+  # =========================
   /api/announcements/{announcementId}:
     get:
-      tags: ["2.2.1 공고 상세 페이지"]
+      tags: ["큐레이션/상세/공고상세"]
       summary: "공고 상세 조회"
-      operationId: getAnnouncement
       parameters:
-        - in: path
-          name: announcementId
-          required: true
-          schema: { type: string }
+        - $ref: "#/components/parameters/announcementId"
+      responses:
+        "200":
+          description: "공고 상세"
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/AnnouncementDetail"
+        "404":
+          $ref: "#/components/responses/NotFound"
 
-  # 2.2.2 문서 뷰어
+  /api/announcements/{announcementId}/summary:
+    get:
+      tags: ["큐레이션/상세/공고상세"]
+      summary: "공고 상세 내용 요약 조회"
+      description: "요약 생성 방식(AI/룰베이스/수동)은 정책에 따라 다를 수 있음."
+      parameters:
+        - $ref: "#/components/parameters/announcementId"
+      responses:
+        "200":
+          description: "요약"
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/AnnouncementSummary"
+        "404":
+          $ref: "#/components/responses/NotFound"
+
+  /api/announcements/{announcementId}/outbound:
+    post:
+      tags: ["큐레이션/상세/공고상세"]
+      summary: "신청하러 가기(외부 링크 발급 + 아웃트래킹)"
+      description: "버튼 클릭 이벤트 기록 후 외부 상세 공고 URL 반환"
+      parameters:
+        - $ref: "#/components/parameters/announcementId"
+      requestBody:
+        required: false
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/OutboundClickRequest"
+      responses:
+        "200":
+          description: "외부 URL"
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  url: { type: string, format: uri }
+                required: [url]
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+        "404":
+          $ref: "#/components/responses/NotFound"
+
+  /api/announcements/{announcementId}/applications:
+    post:
+      tags: ["큐레이션/상세/공고상세", "마이페이지/체크리스트/투두생성"]
+      summary: "유저가 '실제 신청 여부' 등록"
+      parameters:
+        - $ref: "#/components/parameters/announcementId"
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/ApplicationCreateRequest"
+      responses:
+        "201":
+          description: "등록됨"
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/UserApplication"
+        "400":
+          $ref: "#/components/responses/BadRequest"
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+        "409":
+          $ref: "#/components/responses/Conflict"
+
+  /api/users/me/applications:
+    get:
+      tags: ["마이페이지/체크리스트/체크리스트관리"]
+      summary: "내가 신청/이동한 공고 리스트"
+      parameters:
+        - $ref: "#/components/parameters/page"
+        - $ref: "#/components/parameters/size"
+      responses:
+        "200":
+          description: "리스트"
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/PagedUserApplication"
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+
+  /api/announcements/{announcementId}/scrap:
+    post:
+      tags: ["큐레이션/상세/공고상세"]
+      summary: "찜하기(스크랩) 추가"
+      parameters:
+        - $ref: "#/components/parameters/announcementId"
+      responses:
+        "201":
+          description: "스크랩됨"
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+        "404":
+          $ref: "#/components/responses/NotFound"
+        "409":
+          $ref: "#/components/responses/Conflict"
+    delete:
+      tags: ["큐레이션/상세/공고상세"]
+      summary: "찜하기(스크랩) 해제"
+      parameters:
+        - $ref: "#/components/parameters/announcementId"
+      responses:
+        "204":
+          description: "해제됨"
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+        "404":
+          $ref: "#/components/responses/NotFound"
+
+  /api/users/me/scraps:
+    get:
+      tags: ["마이페이지/체크리스트/체크리스트관리"]
+      summary: "내 찜한 공고 리스트"
+      parameters:
+        - $ref: "#/components/parameters/page"
+        - $ref: "#/components/parameters/size"
+      responses:
+        "200":
+          description: "리스트"
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/PagedAnnouncementCard"
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+
+  /api/announcements/{announcementId}/share-events:
+    post:
+      tags: ["큐레이션/상세/공고상세"]
+      summary: "공유 이벤트 기록(SNS/링크복사)"
+      parameters:
+        - $ref: "#/components/parameters/announcementId"
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/ShareEventCreateRequest"
+      responses:
+        "204":
+          description: "기록됨"
+        "400":
+          $ref: "#/components/responses/BadRequest"
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+
+  # =========================
+  # F-007 원문 뷰어
+  # =========================
   /api/announcements/{announcementId}/documents:
     get:
-      tags: ["2.2.2 문서 뷰어"]
-      summary: "공고 첨부 문서 목록 조회"
-      operationId: listAnnouncementDocuments
+      tags: ["큐레이션/상세/원문뷰어"]
+      summary: "공고 원문(PDF/HWP) 메타 + 원문 URL"
       parameters:
-        - in: path
-          name: announcementId
-          required: true
-          schema: { type: string }
+        - $ref: "#/components/parameters/announcementId"
+      responses:
+        "200":
+          description: "문서 목록"
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  items:
+                    type: array
+                    items: { $ref: "#/components/schemas/AnnouncementDocument" }
+                required: [items]
+        "404":
+          $ref: "#/components/responses/NotFound"
 
-  /api/documents/{documentId}:
-    get:
-      tags: ["2.2.2 문서 뷰어"]
-      summary: "문서 메타데이터 조회"
-      operationId: getDocument
-      parameters:
-        - in: path
-          name: documentId
-          required: true
-          schema: { type: string }
-
-  /api/documents/{documentId}/download:
-    get:
-      tags: ["2.2.2 문서 뷰어"]
-      summary: "문서 다운로드(또는 redirect)"
-      operationId: downloadDocument
-      parameters:
-        - in: path
-          name: documentId
-          required: true
-          schema: { type: string }
-
-  # 2.2.3 자격 자가 진단
-  /api/announcements/{announcementId}/eligibility-checks:
+  # =========================
+  # F-008 자격 자가 진단
+  # =========================
+  /api/announcements/{announcementId}/eligibility-check:
     post:
-      tags: ["2.2.3 자격 자가 진단"]
-      summary: "자가진단 실행(응답 제출 → 결과 생성)"
-      operationId: createEligibilityCheck
+      tags: ["큐레이션/상세/자격자가진단"]
+      summary: "자격 자가 진단 실행"
+      description: "유저 프로필 + 공고 기준 데이터로 자격 여부/순위/가산점 정보 계산"
       parameters:
-        - in: path
-          name: announcementId
-          required: true
-          schema: { type: string }
+        - $ref: "#/components/parameters/announcementId"
+      requestBody:
+        required: false
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/EligibilityCheckRequest"
+      responses:
+        "200":
+          description: "진단 결과"
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/EligibilityCheckResult"
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+        "404":
+          $ref: "#/components/responses/NotFound"
 
-  /api/eligibility-checks/{checkId}:
+  # (보강) 자격 기준 데이터 관리(어드민)
+  /api/admin/announcements/{announcementId}/eligibility-rules:
     get:
-      tags: ["2.2.3 자격 자가 진단"]
-      summary: "자가진단 결과 조회"
-      operationId: getEligibilityCheck
+      tags: ["큐레이션/상세/자격자가진단", "어드민"]
+      summary: "공고 자격 기준 조회(어드민)"
       parameters:
-        - in: path
-          name: checkId
-          required: true
-          schema: { type: string }
-
-  # 3.1.1 개별 Todo 생성
-  /api/me/todos:
-    post:
-      tags: ["3.1.1 개별 Todo 생성"]
-      summary: "내 Todo 생성(수동)"
-      operationId: createMyTodo
-    get:
-      tags: ["3.1.2 체크리스트 관리"]
-      summary: "내 Todo 목록 조회"
-      operationId: listMyTodos
+        - $ref: "#/components/parameters/announcementId"
+      responses:
+        "200":
+          description: "기준"
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/EligibilityRuleSet"
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+        "403":
+          $ref: "#/components/responses/Forbidden"
+        "404":
+          $ref: "#/components/responses/NotFound"
+    put:
+      tags: ["큐레이션/상세/자격자가진단", "어드민"]
+      summary: "공고 자격 기준 저장/수정(어드민)"
       parameters:
-        - in: query
-          name: status
-          schema: { type: string }
-        - in: query
-          name: from
-          schema: { type: string, format: date }
-        - in: query
-          name: to
-          schema: { type: string, format: date }
+        - $ref: "#/components/parameters/announcementId"
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/EligibilityRuleSetUpsertRequest"
+      responses:
+        "200":
+          description: "저장됨"
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/EligibilityRuleSet"
+        "400":
+          $ref: "#/components/responses/BadRequest"
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+        "403":
+          $ref: "#/components/responses/Forbidden"
 
+  # =========================
+  # F-009/010 체크리스트(투두)
+  # =========================
   /api/announcements/{announcementId}/todos:
     post:
-      tags: ["3.1.1 개별 Todo 생성"]
-      summary: "공고 기반 Todo 생성"
-      operationId: createTodoFromAnnouncement
+      tags: ["마이페이지/체크리스트/투두생성"]
+      summary: "공고 프로세스로 투두 생성(템플릿 기반)"
       parameters:
-        - in: path
-          name: announcementId
-          required: true
-          schema: { type: string }
+        - $ref: "#/components/parameters/announcementId"
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/TodoGenerateRequest"
+      responses:
+        "201":
+          description: "생성됨"
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  checklistId: { type: string }
+                  todos:
+                    type: array
+                    items: { $ref: "#/components/schemas/TodoItem" }
+                required: [checklistId, todos]
+        "400":
+          $ref: "#/components/responses/BadRequest"
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+        "404":
+          $ref: "#/components/responses/NotFound"
 
-  # 3.1.2 체크리스트 관리 (체크리스트 = Todo 묶음)
-  /api/me/checklists:
-    post:
-      tags: ["3.1.2 체크리스트 관리"]
-      summary: "체크리스트 생성"
-      operationId: createChecklist
+  /api/checklists:
     get:
-      tags: ["3.1.2 체크리스트 관리"]
-      summary: "체크리스트 목록 조회"
-      operationId: listChecklists
+      tags: ["마이페이지/체크리스트/체크리스트관리"]
+      summary: "내 체크리스트 목록"
+      parameters:
+        - $ref: "#/components/parameters/page"
+        - $ref: "#/components/parameters/size"
+      responses:
+        "200":
+          description: "목록"
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/PagedChecklist"
+        "401":
+          $ref: "#/components/responses/Unauthorized"
 
-  /api/me/checklists/{checklistId}:
+  /api/checklists/{checklistId}:
     get:
-      tags: ["3.1.2 체크리스트 관리"]
-      summary: "체크리스트 단건 조회"
-      operationId: getChecklist
+      tags: ["마이페이지/체크리스트/체크리스트관리"]
+      summary: "체크리스트 상세(진행률 포함)"
       parameters:
-        - in: path
-          name: checklistId
-          required: true
-          schema: { type: string }
-    patch:
-      tags: ["3.1.2 체크리스트 관리"]
-      summary: "체크리스트 수정"
-      operationId: patchChecklist
-      parameters:
-        - in: path
-          name: checklistId
-          required: true
-          schema: { type: string }
+        - $ref: "#/components/parameters/checklistId"
+      responses:
+        "200":
+          description: "상세"
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ChecklistDetail"
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+        "404":
+          $ref: "#/components/responses/NotFound"
     delete:
-      tags: ["3.1.2 체크리스트 관리"]
+      tags: ["마이페이지/체크리스트/체크리스트관리"]
       summary: "체크리스트 삭제"
-      operationId: deleteChecklist
       parameters:
-        - in: path
-          name: checklistId
-          required: true
-          schema: { type: string }
+        - $ref: "#/components/parameters/checklistId"
+      responses:
+        "204":
+          description: "삭제됨"
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+        "404":
+          $ref: "#/components/responses/NotFound"
 
-  /api/me/checklists/{checklistId}/items:
-    post:
-      tags: ["3.1.2 체크리스트 관리"]
-      summary: "체크리스트 아이템(Todo) 추가"
-      operationId: addChecklistItem
-      parameters:
-        - in: path
-          name: checklistId
-          required: true
-          schema: { type: string }
-
-  /api/me/checklists/{checklistId}/items/{itemId}:
+  /api/todos/{todoId}:
     patch:
-      tags: ["3.1.2 체크리스트 관리"]
-      summary: "체크리스트 아이템 수정(완료/제목/기한 등)"
-      operationId: patchChecklistItem
+      tags: ["마이페이지/체크리스트/체크리스트관리"]
+      summary: "투두 상태 변경(유저 직접 완료 체크)"
       parameters:
-        - in: path
-          name: checklistId
-          required: true
-          schema: { type: string }
-        - in: path
-          name: itemId
-          required: true
-          schema: { type: string }
-    delete:
-      tags: ["3.1.2 체크리스트 관리"]
-      summary: "체크리스트 아이템 삭제"
-      operationId: deleteChecklistItem
-      parameters:
-        - in: path
-          name: checklistId
-          required: true
-          schema: { type: string }
-        - in: path
-          name: itemId
-          required: true
-          schema: { type: string }
+        - $ref: "#/components/parameters/todoId"
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/TodoUpdateRequest"
+      responses:
+        "200":
+          description: "업데이트된 투두"
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/TodoItem"
+        "400":
+          $ref: "#/components/responses/BadRequest"
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+        "404":
+          $ref: "#/components/responses/NotFound"
 
-  # 3.2.1 캘린더
-  /api/me/calendar/events:
+  # =========================
+  # F-011 캘린더
+  # =========================
+  /api/calendar/events:
     get:
-      tags: ["3.2.1 캘린더"]
-      summary: "캘린더 이벤트 조회(기간)"
-      operationId: listCalendarEvents
+      tags: ["마이페이지/캘린더"]
+      summary: "캘린더 이벤트 조회(공고/투두 기반)"
       parameters:
-        - in: query
-          name: from
+        - name: from
+          in: query
           required: true
           schema: { type: string, format: date }
-        - in: query
-          name: to
+        - name: to
+          in: query
           required: true
           schema: { type: string, format: date }
-    post:
-      tags: ["3.2.1 캘린더"]
-      summary: "캘린더 이벤트 생성"
-      operationId: createCalendarEvent
+      responses:
+        "200":
+          description: "이벤트"
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  items:
+                    type: array
+                    items: { $ref: "#/components/schemas/CalendarEvent" }
+                required: [items]
+        "401":
+          $ref: "#/components/responses/Unauthorized"
 
-  /api/me/calendar/events/{eventId}:
-    patch:
-      tags: ["3.2.1 캘린더"]
-      summary: "캘린더 이벤트 수정"
-      operationId: patchCalendarEvent
-      parameters:
-        - in: path
-          name: eventId
-          required: true
-          schema: { type: string }
-    delete:
-      tags: ["3.2.1 캘린더"]
-      summary: "캘린더 이벤트 삭제"
-      operationId: deleteCalendarEvent
-      parameters:
-        - in: path
-          name: eventId
-          required: true
-          schema: { type: string }
-
-  # 4.1.1 공고별 댓글
+  # =========================
+  # F-012 커뮤니티: 공고별 댓글
+  # =========================
   /api/announcements/{announcementId}/comments:
     get:
-      tags: ["4.1.1 공고별 댓글"]
-      summary: "댓글 목록 조회"
-      operationId: listAnnouncementComments
+      tags: ["커뮤니티/공고댓글"]
+      summary: "공고 댓글 목록"
       parameters:
-        - in: path
-          name: announcementId
-          required: true
-          schema: { type: string }
-        - in: query
-          name: cursor
-          schema: { type: string }
-        - in: query
-          name: size
-          schema: { type: integer, default: 20 }
+        - $ref: "#/components/parameters/announcementId"
+        - $ref: "#/components/parameters/page"
+        - $ref: "#/components/parameters/size"
+      responses:
+        "200":
+          description: "댓글"
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/PagedComment"
+        "404":
+          $ref: "#/components/responses/NotFound"
     post:
-      tags: ["4.1.1 공고별 댓글"]
-      summary: "댓글 작성"
-      operationId: createAnnouncementComment
+      tags: ["커뮤니티/공고댓글"]
+      summary: "댓글 작성(질문/답변: parentId로 구분)"
       parameters:
-        - in: path
-          name: announcementId
-          required: true
-          schema: { type: string }
+        - $ref: "#/components/parameters/announcementId"
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/CommentCreateRequest"
+      responses:
+        "201":
+          description: "작성됨"
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Comment"
+        "400":
+          $ref: "#/components/responses/BadRequest"
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+        "404":
+          $ref: "#/components/responses/NotFound"
 
   /api/comments/{commentId}:
     patch:
-      tags: ["4.1.1 공고별 댓글"]
+      tags: ["커뮤니티/공고댓글"]
       summary: "댓글 수정"
-      operationId: patchComment
       parameters:
-        - in: path
-          name: commentId
-          required: true
-          schema: { type: string }
+        - $ref: "#/components/parameters/commentId"
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/CommentUpdateRequest"
+      responses:
+        "200":
+          description: "수정됨"
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Comment"
+        "400":
+          $ref: "#/components/responses/BadRequest"
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+        "403":
+          $ref: "#/components/responses/Forbidden"
+        "404":
+          $ref: "#/components/responses/NotFound"
     delete:
-      tags: ["4.1.1 공고별 댓글"]
-      summary: "댓글 삭제"
-      operationId: deleteComment
+      tags: ["커뮤니티/공고댓글"]
+      summary: "댓글 삭제(soft delete 권장)"
       parameters:
-        - in: path
-          name: commentId
-          required: true
-          schema: { type: string }
+        - $ref: "#/components/parameters/commentId"
+      responses:
+        "204":
+          description: "삭제됨"
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+        "403":
+          $ref: "#/components/responses/Forbidden"
+        "404":
+          $ref: "#/components/responses/NotFound"
+
+  /api/comments/{commentId}/likes:
+    post:
+      tags: ["커뮤니티/공고댓글"]
+      summary: "댓글 좋아요"
+      parameters:
+        - $ref: "#/components/parameters/commentId"
+      responses:
+        "204":
+          description: "처리됨"
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+        "404":
+          $ref: "#/components/responses/NotFound"
+    delete:
+      tags: ["커뮤니티/공고댓글"]
+      summary: "댓글 좋아요 취소"
+      parameters:
+        - $ref: "#/components/parameters/commentId"
+      responses:
+        "204":
+          description: "처리됨"
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+        "404":
+          $ref: "#/components/responses/NotFound"
 
   /api/comments/{commentId}/reports:
     post:
-      tags: ["4.1.1 공고별 댓글"]
+      tags: ["커뮤니티/공고댓글"]
       summary: "댓글 신고"
-      operationId: reportComment
       parameters:
-        - in: path
-          name: commentId
-          required: true
-          schema: { type: string }
+        - $ref: "#/components/parameters/commentId"
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/ReportCreateRequest"
+      responses:
+        "201":
+          description: "신고됨"
+        "400":
+          $ref: "#/components/responses/BadRequest"
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+        "404":
+          $ref: "#/components/responses/NotFound"
 
-  # 5.1.1 자발 미션
+  # (보강) 댓글 신고/모더레이션 어드민
+  /api/admin/comments/reports:
+    get:
+      tags: ["커뮤니티/공고댓글", "어드민"]
+      summary: "댓글 신고 목록(어드민)"
+      parameters:
+        - name: status
+          in: query
+          required: false
+          schema:
+            type: string
+            enum: [OPEN, RESOLVED]
+            default: OPEN
+        - $ref: "#/components/parameters/page"
+        - $ref: "#/components/parameters/size"
+      responses:
+        "200":
+          description: "신고 목록"
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/PagedCommentReport"
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+        "403":
+          $ref: "#/components/responses/Forbidden"
+
+  /api/admin/comments/{commentId}/moderation:
+    patch:
+      tags: ["커뮤니티/공고댓글", "어드민"]
+      summary: "댓글 숨김/해제/처리(어드민)"
+      parameters:
+        - $ref: "#/components/parameters/commentId"
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/CommentModerationRequest"
+      responses:
+        "204":
+          description: "처리됨"
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+        "403":
+          $ref: "#/components/responses/Forbidden"
+        "404":
+          $ref: "#/components/responses/NotFound"
+
+  # =========================
+  # F-013/014 게이미피케이션
+  # =========================
+  /api/users/me/gamification:
+    get:
+      tags: ["게이미피케이션/미션"]
+      summary: "내 경험치/레벨/칭호 요약"
+      responses:
+        "200":
+          description: "요약"
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/GamificationSummary"
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+
   /api/missions:
     get:
-      tags: ["5.1.1 자발 미션"]
-      summary: "미션 목록(정의) 조회"
-      operationId: listMissions
+      tags: ["게이미피케이션/미션"]
+      summary: "미션 목록"
+      responses:
+        "200":
+          description: "미션"
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  items:
+                    type: array
+                    items: { $ref: "#/components/schemas/Mission" }
+                required: [items]
 
-  /api/me/missions:
-    get:
-      tags: ["5.1.1 자발 미션"]
-      summary: "내 미션 진행 상태 목록 조회"
-      operationId: listMyMissions
-
-  /api/me/missions/{missionId}/start:
-    post:
-      tags: ["5.1.1 자발 미션"]
-      summary: "미션 시작"
-      operationId: startMission
-      parameters:
-        - in: path
-          name: missionId
-          required: true
-          schema: { type: string }
-
-  /api/me/missions/{missionId}/complete:
-    post:
-      tags: ["5.1.1 자발 미션"]
-      summary: "미션 완료 처리"
-      operationId: completeMission
-      parameters:
-        - in: path
-          name: missionId
-          required: true
-          schema: { type: string }
-
-  # 5.2.1 배지 시스템
   /api/badges:
     get:
-      tags: ["5.2.1 배지 시스템"]
-      summary: "배지 목록(정의) 조회"
-      operationId: listBadges
+      tags: ["게이미피케이션/보상"]
+      summary: "배지 목록/보유 상태"
+      responses:
+        "200":
+          description: "배지"
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  items:
+                    type: array
+                    items: { $ref: "#/components/schemas/Badge" }
+                required: [items]
 
-  /api/me/badges:
+  /api/users/me/badges/{badgeId}/equip:
+    put:
+      tags: ["게이미피케이션/보상"]
+      summary: "배지 장착"
+      parameters:
+        - $ref: "#/components/parameters/badgeId"
+      responses:
+        "204":
+          description: "장착됨"
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+        "404":
+          $ref: "#/components/responses/NotFound"
+
+  # =========================
+  # F-015 알림톡
+  # =========================
+  /api/notifications/settings:
     get:
-      tags: ["5.2.1 배지 시스템"]
-      summary: "내 배지 목록 조회"
-      operationId: listMyBadges
-
-  # 6.1.1 알림 리마인더
-  /api/me/reminders:
-    get:
-      tags: ["6.1.1 알림 리마인더"]
-      summary: "내 리마인더 목록 조회"
-      operationId: listMyReminders
-    post:
-      tags: ["6.1.1 알림 리마인더"]
-      summary: "리마인더 생성"
-      operationId: createReminder
-
-  /api/me/reminders/{reminderId}:
+      tags: ["알림/카카오알림톡"]
+      summary: "내 알림 설정 조회"
+      responses:
+        "200":
+          description: "설정"
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/NotificationSettings"
+        "401":
+          $ref: "#/components/responses/Unauthorized"
     patch:
-      tags: ["6.1.1 알림 리마인더"]
-      summary: "리마인더 수정"
-      operationId: patchReminder
-      parameters:
-        - in: path
-          name: reminderId
-          required: true
-          schema: { type: string }
-    delete:
-      tags: ["6.1.1 알림 리마인더"]
-      summary: "리마인더 삭제"
-      operationId: deleteReminder
-      parameters:
-        - in: path
-          name: reminderId
-          required: true
-          schema: { type: string }
+      tags: ["알림/카카오알림톡"]
+      summary: "내 알림 설정 변경"
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/NotificationSettingsUpdateRequest"
+      responses:
+        "200":
+          description: "설정"
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/NotificationSettings"
+        "400":
+          $ref: "#/components/responses/BadRequest"
+        "401":
+          $ref: "#/components/responses/Unauthorized"
 
-  # 6.2.1 뉴스레터
-  /api/newsletter/subscriptions/me:
+  /api/notifications/history:
     get:
-      tags: ["6.2.1 뉴스레터"]
-      summary: "내 뉴스레터 구독 상태 조회"
-      operationId: getMyNewsletterSubscription
-    post:
-      tags: ["6.2.1 뉴스레터"]
-      summary: "뉴스레터 구독"
-      operationId: subscribeNewsletter
-    delete:
-      tags: ["6.2.1 뉴스레터"]
-      summary: "뉴스레터 구독 해지"
-      operationId: unsubscribeNewsletter
+      tags: ["알림/카카오알림톡"]
+      summary: "내 알림 발송 이력"
+      parameters:
+        - $ref: "#/components/parameters/page"
+        - $ref: "#/components/parameters/size"
+      responses:
+        "200":
+          description: "이력"
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/PagedNotificationHistory"
+        "401":
+          $ref: "#/components/responses/Unauthorized"
 
+  /api/admin/notifications/kakao/test-send:
+    post:
+      tags: ["알림/카카오알림톡", "어드민"]
+      summary: "알림톡 테스트 발송(어드민)"
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/KakaoTestSendRequest"
+      responses:
+        "202":
+          description: "발송 요청"
+        "400":
+          $ref: "#/components/responses/BadRequest"
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+        "403":
+          $ref: "#/components/responses/Forbidden"
+
+  /api/admin/notifications/jobs/reminders:
+    post:
+      tags: ["알림/카카오알림톡", "어드민"]
+      summary: "리마인더 발송 잡 수동 실행(어드민)"
+      description: "D-1 / D-Day 09:00 발송 로직을 수동으로 돌려보는 용도"
+      responses:
+        "202":
+          description: "실행 요청"
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/NotificationJob"
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+        "403":
+          $ref: "#/components/responses/Forbidden"
+
+  # =========================
+  # F-016 뉴스레터
+  # =========================
   /api/newsletters:
     get:
-      tags: ["6.2.1 뉴스레터"]
-      summary: "뉴스레터 아카이브 목록 조회"
-      operationId: listNewsletters
+      tags: ["뉴스레터"]
+      summary: "뉴스레터 목록"
+      parameters:
+        - $ref: "#/components/parameters/page"
+        - $ref: "#/components/parameters/size"
+      responses:
+        "200":
+          description: "목록"
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/PagedNewsletter"
+    post:
+      tags: ["뉴스레터", "어드민"]
+      summary: "뉴스레터 생성(어드민)"
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/NewsletterCreateRequest"
+      responses:
+        "201":
+          description: "생성됨"
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Newsletter"
 
   /api/newsletters/{newsletterId}:
     get:
-      tags: ["6.2.1 뉴스레터"]
-      summary: "뉴스레터 단건 조회"
-      operationId: getNewsletter
+      tags: ["뉴스레터"]
+      summary: "뉴스레터 상세"
       parameters:
-        - in: path
-          name: newsletterId
-          required: true
-          schema: { type: string }
+        - $ref: "#/components/parameters/newsletterId"
+      responses:
+        "200":
+          description: "상세"
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Newsletter"
+        "404":
+          $ref: "#/components/responses/NotFound"
+    patch:
+      tags: ["뉴스레터", "어드민"]
+      summary: "뉴스레터 수정(어드민)"
+      parameters:
+        - $ref: "#/components/parameters/newsletterId"
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/NewsletterUpdateRequest"
+      responses:
+        "200":
+          description: "수정됨"
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Newsletter"
+        "400":
+          $ref: "#/components/responses/BadRequest"
+        "404":
+          $ref: "#/components/responses/NotFound"
+    delete:
+      tags: ["뉴스레터", "어드민"]
+      summary: "뉴스레터 삭제(어드민)"
+      parameters:
+        - $ref: "#/components/parameters/newsletterId"
+      responses:
+        "204":
+          description: "삭제됨"
+        "404":
+          $ref: "#/components/responses/NotFound"
+
+  /api/newsletters/{newsletterId}/send:
+    post:
+      tags: ["뉴스레터", "어드민"]
+      summary: "뉴스레터 발송(어드민)"
+      parameters:
+        - $ref: "#/components/parameters/newsletterId"
+      responses:
+        "202":
+          description: "발송 요청"
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+        "403":
+          $ref: "#/components/responses/Forbidden"
+        "404":
+          $ref: "#/components/responses/NotFound"
+
+  /api/newsletters/banner:
+    get:
+      tags: ["뉴스레터"]
+      summary: "뉴스레터 배너(최신/특집) 조회"
+      responses:
+        "200":
+          description: "배너"
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/NewsletterBanner"
+        "204":
+          description: "배너 없음"
+
+  /api/users/me/newsletter-subscription:
+    get:
+      tags: ["뉴스레터"]
+      summary: "뉴스레터 구독 상태 조회"
+      responses:
+        "200":
+          description: "구독 상태"
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/NewsletterSubscription"
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+    put:
+      tags: ["뉴스레터"]
+      summary: "뉴스레터 구독/해지"
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/NewsletterSubscriptionUpdateRequest"
+      responses:
+        "200":
+          description: "변경됨"
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/NewsletterSubscription"
+        "400":
+          $ref: "#/components/responses/BadRequest"
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+
+components:
+  securitySchemes:
+    bearerAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT
+
+  parameters:
+    page:
+      name: page
+      in: query
+      required: false
+      schema: { type: integer, minimum: 0, default: 0 }
+    size:
+      name: size
+      in: query
+      required: false
+      schema: { type: integer, minimum: 1, maximum: 100, default: 20 }
+
+    announcementId:
+      name: announcementId
+      in: path
+      required: true
+      schema: { type: string }
+    checklistId:
+      name: checklistId
+      in: path
+      required: true
+      schema: { type: string }
+    todoId:
+      name: todoId
+      in: path
+      required: true
+      schema: { type: string }
+    commentId:
+      name: commentId
+      in: path
+      required: true
+      schema: { type: string }
+    badgeId:
+      name: badgeId
+      in: path
+      required: true
+      schema: { type: string }
+    newsletterId:
+      name: newsletterId
+      in: path
+      required: true
+      schema: { type: string }
+    jobId:
+      name: jobId
+      in: path
+      required: true
+      schema: { type: string }
+
+  responses:
+    BadRequest:
+      description: "잘못된 요청"
+      content:
+        application/json:
+          schema: { $ref: "#/components/schemas/ErrorResponse" }
+    Unauthorized:
+      description: "인증 필요"
+      content:
+        application/json:
+          schema: { $ref: "#/components/schemas/ErrorResponse" }
+    Forbidden:
+      description: "권한 없음"
+      content:
+        application/json:
+          schema: { $ref: "#/components/schemas/ErrorResponse" }
+    NotFound:
+      description: "리소스 없음"
+      content:
+        application/json:
+          schema: { $ref: "#/components/schemas/ErrorResponse" }
+    Conflict:
+      description: "충돌(중복 요청 등)"
+      content:
+        application/json:
+          schema: { $ref: "#/components/schemas/ErrorResponse" }
+    TooManyRequests:
+      description: "요청 과다(레이트리밋)"
+      content:
+        application/json:
+          schema:
+            $ref: "#/components/schemas/RateLimitError"
+
+  schemas:
+    ErrorResponse:
+      type: object
+      properties:
+        code: { type: string, example: "BAD_REQUEST" }
+        message: { type: string, example: "요청 값이 올바르지 않습니다." }
+        traceId: { type: string, example: "01J..." }
+      required: [code, message]
+
+    RateLimitError:
+      type: object
+      properties:
+        code: { type: string, example: "TOO_MANY_REQUESTS" }
+        message: { type: string, example: "요청이 너무 많습니다. 잠시 후 다시 시도해주세요." }
+        retryAfterSeconds: { type: integer, example: 30 }
+      required: [code, message]
+
+    # ---- Auth ----
+    KakaoTokenExchangeRequest:
+      type: object
+      properties:
+        code: { type: string, description: "카카오 인가 코드" }
+        redirectUri: { type: string, format: uri }
+      required: [code, redirectUri]
+
+    AuthTokenResponse:
+      type: object
+      properties:
+        accessToken: { type: string }
+        refreshToken: { type: string }
+        tokenType: { type: string, example: "Bearer" }
+        expiresIn: { type: integer, example: 3600 }
+      required: [accessToken, tokenType, expiresIn]
+
+    UserMe:
+      type: object
+      properties:
+        userId: { type: string }
+        email: { type: string, nullable: true }
+        provider: { type: string, example: "KAKAO" }
+        createdAt: { type: string, format: date-time }
+      required: [userId, provider, createdAt]
+
+    # ---- Profile / Onboarding ----
+    UserProfile:
+      type: object
+      properties:
+        region:
+          $ref: "#/components/schemas/Region"
+        birthDate:
+          type: string
+          format: date
+        incomeBracket:
+          type: string
+          description: "소득분위(가이드 기반)"
+          example: "3"
+        householdSize:
+          type: integer
+          minimum: 1
+        situationTags:
+          type: array
+          items:
+            type: string
+            example: "이사예정"
+      required: [region, birthDate, incomeBracket, householdSize]
+
+    UserProfileUpsertRequest:
+      allOf:
+        - $ref: "#/components/schemas/UserProfile"
+
+    Region:
+      type: object
+      properties:
+        sido: { type: string, example: "서울특별시" }
+        sigungu: { type: string, example: "관악구" }
+      required: [sido, sigungu]
+
+    Consent:
+      type: object
+      properties:
+        kakaoAlimtalk: { type: boolean }
+        email: { type: boolean }
+        sms: { type: boolean }
+      required: [kakaoAlimtalk, email, sms]
+
+    ConsentUpdateRequest:
+      type: object
+      properties:
+        kakaoAlimtalk: { type: boolean }
+        email: { type: boolean }
+        sms: { type: boolean }
+      additionalProperties: false
+
+    OnboardingStatus:
+      type: object
+      properties:
+        completed: { type: boolean }
+        missingFields:
+          type: array
+          items:
+            type: string
+            example: "incomeBracket"
+        updatedAt: { type: string, format: date-time, nullable: true }
+      required: [completed, missingFields]
+
+    RegionMetaResponse:
+      type: object
+      properties:
+        items:
+          type: array
+          items:
+            type: object
+            properties:
+              sido: { type: string }
+              sigungus:
+                type: array
+                items: { type: string }
+            required: [sido, sigungus]
+      required: [items]
+
+    SituationTagMetaResponse:
+      type: object
+      properties:
+        items:
+          type: array
+          items:
+            type: object
+            properties:
+              code: { type: string, example: "MOVE_PLAN" }
+              label: { type: string, example: "이사예정" }
+              enabledFor:
+                type: array
+                items:
+                  type: string
+                  enum: [SUPPORT_POLICY_ONLY]
+            required: [code, label]
+      required: [items]
+
+    IncomeGuideResponse:
+      type: object
+      properties:
+        source: { type: string, example: "건보료 기준 가이드" }
+        updatedAt: { type: string, format: date-time, nullable: true }
+        notes:
+          type: array
+          items: { type: string }
+        brackets:
+          type: array
+          items:
+            type: object
+            properties:
+              bracket: { type: string, example: "3" }
+              description: { type: string, example: "중위소득 ~XX% 수준" }
+              hint: { type: string, nullable: true }
+            required: [bracket, description]
+      required: [brackets]
+
+    # ---- Announcements ----
+    AnnouncementCard:
+      type: object
+      properties:
+        announcementId: { type: string }
+        title: { type: string }
+        publisher: { type: string, example: "LH" }
+        startDate: { type: string, format: date, nullable: true }
+        endDate: { type: string, format: date, nullable: true }
+        status:
+          type: string
+          enum: [UPCOMING, OPEN, CLOSING_SOON, CLOSED]
+        fitScore:
+          type: number
+          format: float
+          nullable: true
+      required: [announcementId, title, publisher, status]
+
+    PagedAnnouncementCard:
+      type: object
+      properties:
+        page: { type: integer }
+        size: { type: integer }
+        totalElements: { type: integer }
+        items:
+          type: array
+          items: { $ref: "#/components/schemas/AnnouncementCard" }
+      required: [page, size, totalElements, items]
+
+    AnnouncementDetail:
+      type: object
+      properties:
+        announcementId: { type: string }
+        title: { type: string }
+        publisher: { type: string }
+        status:
+          type: string
+          enum: [UPCOMING, OPEN, CLOSING_SOON, CLOSED]
+        startDate: { type: string, format: date, nullable: true }
+        endDate: { type: string, format: date, nullable: true }
+        summaryCards:
+          type: array
+          description: "[대상/금액/기간/방법] 등 시각화 데이터"
+          items:
+            $ref: "#/components/schemas/KeyValueCard"
+        outboundUrl:
+          type: string
+          format: uri
+          nullable: true
+      required: [announcementId, title, publisher, status]
+
+    AnnouncementSummary:
+      type: object
+      properties:
+        announcementId: { type: string }
+        summaryText: { type: string }
+        generatedAt: { type: string, format: date-time, nullable: true }
+        method:
+          type: string
+          enum: [MANUAL, RULE_BASED, AI]
+      required: [announcementId, summaryText, method]
+
+    KeyValueCard:
+      type: object
+      properties:
+        label: { type: string, example: "대상" }
+        value: { type: string, example: "만 19~34세 무주택자" }
+      required: [label, value]
+
+    AnnouncementDocument:
+      type: object
+      properties:
+        type:
+          type: string
+          enum: [PDF, HWP, LINK]
+        name: { type: string, example: "공고문.pdf" }
+        url: { type: string, format: uri }
+      required: [type, url]
+
+    RecommendedBanner:
+      type: object
+      properties:
+        bannerId: { type: string }
+        title: { type: string }
+        announcementId: { type: string }
+        imageUrl: { type: string, format: uri, nullable: true }
+      required: [bannerId, title, announcementId]
+
+    ShareEventCreateRequest:
+      type: object
+      properties:
+        channel:
+          type: string
+          enum: [LINK_COPY, KAKAO, INSTAGRAM, FACEBOOK, X, ETC]
+        meta:
+          type: object
+          additionalProperties: true
+      required: [channel]
+
+    OutboundClickRequest:
+      type: object
+      properties:
+        source:
+          type: string
+          enum: [DETAIL_BUTTON, CARD_BUTTON, BANNER]
+      additionalProperties: false
+
+    # ---- Eligibility ----
+    EligibilityCheckRequest:
+      type: object
+      description: "기본은 저장된 유저 프로필로 계산. 필요 시 임시 값으로 오버라이드 가능."
+      properties:
+        overrideProfile:
+          $ref: "#/components/schemas/UserProfileUpsertRequest"
+      additionalProperties: false
+
+    EligibilityCheckResult:
+      type: object
+      properties:
+        eligible: { type: boolean }
+        rank:
+          type: integer
+          nullable: true
+          description: "1/2/3순위 등"
+        bonusPoints:
+          type: integer
+          nullable: true
+        reasons:
+          type: array
+          items: { type: string }
+      required: [eligible, reasons]
+
+    EligibilityRuleSet:
+      type: object
+      properties:
+        announcementId: { type: string }
+        version: { type: integer, example: 1 }
+        rules:
+          type: array
+          items: { $ref: "#/components/schemas/EligibilityRule" }
+        updatedAt: { type: string, format: date-time, nullable: true }
+      required: [announcementId, version, rules]
+
+    EligibilityRuleSetUpsertRequest:
+      type: object
+      properties:
+        version: { type: integer, example: 1 }
+        rules:
+          type: array
+          items: { $ref: "#/components/schemas/EligibilityRule" }
+      required: [version, rules]
+      additionalProperties: false
+
+    EligibilityRule:
+      type: object
+      description: "공고별 자격 기준(초안). 실제 운영 시 룰 표현식/DSL/테이블 모델 중 하나로 확정 필요."
+      properties:
+        key:
+          type: string
+          example: "AGE_MAX"
+        operator:
+          type: string
+          enum: [EQ, NE, GT, GTE, LT, LTE, IN, NOT_IN]
+        value:
+          oneOf:
+            - type: string
+            - type: number
+            - type: integer
+            - type: boolean
+            - type: array
+              items:
+                oneOf:
+                  - type: string
+                  - type: number
+                  - type: integer
+        message:
+          type: string
+          example: "만 34세 이하만 지원 가능합니다."
+      required: [key, operator, value]
+
+    # ---- Applications ----
+    ApplicationCreateRequest:
+      type: object
+      properties:
+        status:
+          type: string
+          enum: [VISITED, APPLIED]
+        memo:
+          type: string
+          maxLength: 500
+          nullable: true
+      required: [status]
+
+    UserApplication:
+      type: object
+      properties:
+        applicationId: { type: string }
+        announcementId: { type: string }
+        status:
+          type: string
+          enum: [VISITED, APPLIED]
+        createdAt: { type: string, format: date-time }
+      required: [applicationId, announcementId, status, createdAt]
+
+    PagedUserApplication:
+      type: object
+      properties:
+        page: { type: integer }
+        size: { type: integer }
+        totalElements: { type: integer }
+        items:
+          type: array
+          items: { $ref: "#/components/schemas/UserApplication" }
+      required: [page, size, totalElements, items]
+
+    # ---- Checklist / Todos ----
+    TodoGenerateRequest:
+      type: object
+      properties:
+        templateType:
+          type: string
+          enum: [HOUSING, GRANT]
+        dueDateOverride:
+          type: string
+          format: date
+          nullable: true
+      required: [templateType]
+
+    ChecklistDetail:
+      type: object
+      properties:
+        checklistId: { type: string }
+        announcementId: { type: string }
+        progress:
+          type: object
+          properties:
+            completed: { type: integer }
+            total: { type: integer }
+            percent: { type: number, format: float }
+          required: [completed, total, percent]
+        todos:
+          type: array
+          items: { $ref: "#/components/schemas/TodoItem" }
+      required: [checklistId, progress, todos]
+
+    PagedChecklist:
+      type: object
+      properties:
+        page: { type: integer }
+        size: { type: integer }
+        totalElements: { type: integer }
+        items:
+          type: array
+          items:
+            type: object
+            properties:
+              checklistId: { type: string }
+              announcementId: { type: string }
+              title: { type: string }
+              percent: { type: number, format: float }
+            required: [checklistId, title, percent]
+      required: [page, size, totalElements, items]
+
+    TodoItem:
+      type: object
+      properties:
+        todoId: { type: string }
+        checklistId: { type: string }
+        title: { type: string, example: "서류접수" }
+        status:
+          type: string
+          enum: [PENDING, DONE]
+        dueDate:
+          type: string
+          format: date
+          nullable: true
+      required: [todoId, title, status]
+
+    TodoUpdateRequest:
+      type: object
+      properties:
+        status:
+          type: string
+          enum: [PENDING, DONE]
+      required: [status]
+      additionalProperties: false
+
+    # ---- Calendar ----
+    CalendarEvent:
+      type: object
+      properties:
+        eventId: { type: string }
+        date: { type: string, format: date }
+        title: { type: string }
+        type:
+          type: string
+          enum: [ANNOUNCEMENT_DEADLINE, TODO_DUE]
+        refId:
+          type: string
+          description: "announcementId 또는 todoId"
+      required: [eventId, date, title, type, refId]
+
+    # ---- Comments ----
+    Comment:
+      type: object
+      properties:
+        commentId: { type: string }
+        announcementId: { type: string }
+        parentId: { type: string, nullable: true }
+        authorId: { type: string }
+        content: { type: string, maxLength: 1000 }
+        likeCount: { type: integer }
+        createdAt: { type: string, format: date-time }
+        deleted: { type: boolean }
+      required: [commentId, announcementId, authorId, content, likeCount, createdAt, deleted]
+
+    PagedComment:
+      type: object
+      properties:
+        page: { type: integer }
+        size: { type: integer }
+        totalElements: { type: integer }
+        items:
+          type: array
+          items: { $ref: "#/components/schemas/Comment" }
+      required: [page, size, totalElements, items]
+
+    CommentCreateRequest:
+      type: object
+      properties:
+        parentId:
+          type: string
+          nullable: true
+          description: "null이면 최초댓글(질문), 값이 있으면 대댓글(답변)"
+        content:
+          type: string
+          maxLength: 1000
+      required: [content]
+
+    CommentUpdateRequest:
+      type: object
+      properties:
+        content:
+          type: string
+          maxLength: 1000
+      required: [content]
+      additionalProperties: false
+
+    ReportCreateRequest:
+      type: object
+      properties:
+        reason:
+          type: string
+          enum: [ABUSE, SPAM, HATE, PRIVACY, ETC]
+        detail:
+          type: string
+          maxLength: 500
+          nullable: true
+      required: [reason]
+
+    CommentModerationRequest:
+      type: object
+      properties:
+        action:
+          type: string
+          enum: [HIDE, UNHIDE, RESOLVE_REPORTS]
+        memo:
+          type: string
+          maxLength: 500
+          nullable: true
+      required: [action]
+      additionalProperties: false
+
+    CommentReport:
+      type: object
+      properties:
+        reportId: { type: string }
+        commentId: { type: string }
+        announcementId: { type: string }
+        reason:
+          type: string
+          enum: [ABUSE, SPAM, HATE, PRIVACY, ETC]
+        status:
+          type: string
+          enum: [OPEN, RESOLVED]
+        createdAt: { type: string, format: date-time }
+      required: [reportId, commentId, reason, status, createdAt]
+
+    PagedCommentReport:
+      type: object
+      properties:
+        page: { type: integer }
+        size: { type: integer }
+        totalElements: { type: integer }
+        items:
+          type: array
+          items: { $ref: "#/components/schemas/CommentReport" }
+      required: [page, size, totalElements, items]
+
+    # ---- Gamification ----
+    GamificationSummary:
+      type: object
+      properties:
+        level: { type: integer }
+        exp: { type: integer }
+        title: { type: string, nullable: true }
+        equippedBadgeId: { type: string, nullable: true }
+      required: [level, exp]
+
+    Mission:
+      type: object
+      properties:
+        missionId: { type: string }
+        name: { type: string, example: "탐색왕" }
+        description: { type: string }
+        rewardExp: { type: integer }
+      required: [missionId, name, rewardExp]
+
+    Badge:
+      type: object
+      properties:
+        badgeId: { type: string }
+        name: { type: string }
+        owned: { type: boolean }
+        iconUrl: { type: string, format: uri, nullable: true }
+      required: [badgeId, name, owned]
+
+    # ---- Notifications ----
+    NotificationSettings:
+      type: object
+      properties:
+        kakaoAlimtalkEnabled: { type: boolean }
+        emailEnabled: { type: boolean }
+        reminderTime:
+          type: string
+          example: "09:00"
+          description: "로컬 기준 HH:mm"
+      required: [kakaoAlimtalkEnabled, emailEnabled, reminderTime]
+
+    NotificationSettingsUpdateRequest:
+      type: object
+      properties:
+        kakaoAlimtalkEnabled: { type: boolean }
+        emailEnabled: { type: boolean }
+        reminderTime: { type: string, example: "09:00" }
+      additionalProperties: false
+
+    NotificationHistoryItem:
+      type: object
+      properties:
+        notificationId: { type: string }
+        channel:
+          type: string
+          enum: [KAKAO_ALIMTALK, EMAIL, SMS]
+        type:
+          type: string
+          enum: [REMINDER_D1, REMINDER_DDAY, NEW_ANNOUNCEMENT, REOPENED, RETRY_DRAW, ETC]
+        status:
+          type: string
+          enum: [REQUESTED, SENT, FAILED]
+        sentAt: { type: string, format: date-time, nullable: true }
+        announcementId: { type: string, nullable: true }
+        messagePreview: { type: string, nullable: true }
+      required: [notificationId, channel, type, status]
+
+    PagedNotificationHistory:
+      type: object
+      properties:
+        page: { type: integer }
+        size: { type: integer }
+        totalElements: { type: integer }
+        items:
+          type: array
+          items: { $ref: "#/components/schemas/NotificationHistoryItem" }
+      required: [page, size, totalElements, items]
+
+    NotificationJob:
+      type: object
+      properties:
+        jobId: { type: string }
+        status:
+          type: string
+          enum: [QUEUED, RUNNING, SUCCEEDED, FAILED]
+        startedAt: { type: string, format: date-time, nullable: true }
+        finishedAt: { type: string, format: date-time, nullable: true }
+        summary:
+          type: object
+          additionalProperties: true
+      required: [jobId, status]
+
+    KakaoTestSendRequest:
+      type: object
+      properties:
+        toUserId: { type: string }
+        message:
+          type: string
+          maxLength: 200
+      required: [toUserId, message]
+
+    # ---- Newsletter ----
+    Newsletter:
+      type: object
+      properties:
+        newsletterId: { type: string }
+        title: { type: string }
+        contentHtml: { type: string }
+        publishedAt: { type: string, format: date-time, nullable: true }
+        createdAt: { type: string, format: date-time }
+      required: [newsletterId, title, contentHtml, createdAt]
+
+    NewsletterCreateRequest:
+      type: object
+      properties:
+        title: { type: string }
+        contentHtml: { type: string }
+        publishNow: { type: boolean, default: false }
+      required: [title, contentHtml]
+
+    NewsletterUpdateRequest:
+      type: object
+      properties:
+        title: { type: string }
+        contentHtml: { type: string }
+      additionalProperties: false
+
+    PagedNewsletter:
+      type: object
+      properties:
+        page: { type: integer }
+        size: { type: integer }
+        totalElements: { type: integer }
+        items:
+          type: array
+          items: { $ref: "#/components/schemas/Newsletter" }
+      required: [page, size, totalElements, items]
+
+    NewsletterBanner:
+      type: object
+      properties:
+        newsletterId: { type: string }
+        title: { type: string }
+        subtitle: { type: string, nullable: true }
+        imageUrl: { type: string, format: uri, nullable: true }
+      required: [newsletterId, title]
+
+    NewsletterSubscription:
+      type: object
+      properties:
+        subscribed: { type: boolean }
+        channel:
+          type: string
+          enum: [EMAIL]
+        updatedAt: { type: string, format: date-time, nullable: true }
+      required: [subscribed, channel]
+
+    NewsletterSubscriptionUpdateRequest:
+      type: object
+      properties:
+        subscribed: { type: boolean }
+      required: [subscribed]
+      additionalProperties: false
+
+    # ---- Sync ----
+    SyncTriggerRequest:
+      type: object
+      properties:
+        sources:
+          type: array
+          items:
+            type: string
+            enum: [LH, SH, MYHOME, LOCAL_PORTAL, BOKJIRO]
+        mode:
+          type: string
+          enum: [FULL, INCREMENTAL]
+          default: INCREMENTAL
+      additionalProperties: false
+
+    UserRefreshSyncRequest:
+      type: object
+      properties:
+        sources:
+          type: array
+          items:
+            type: string
+            enum: [LH, SH, MYHOME, LOCAL_PORTAL, BOKJIRO]
+        reason:
+          type: string
+          enum: [PULL_TO_REFRESH, MANUAL_REFRESH]
+          default: PULL_TO_REFRESH
+      additionalProperties: false
+
+    SyncJob:
+      type: object
+      properties:
+        jobId: { type: string }
+        status:
+          type: string
+          enum: [QUEUED, RUNNING, SUCCEEDED, FAILED]
+        startedAt: { type: string, format: date-time, nullable: true }
+        finishedAt: { type: string, format: date-time, nullable: true }
+        summary:
+          type: object
+          additionalProperties: true
+      required: [jobId, status]
