@@ -1,0 +1,536 @@
+openapi: 3.0.3
+info:
+  title: Project API
+  version: 0.1.0
+
+servers:
+  - url: https://api.example.com
+
+tags:
+  - name: "0.1.1 데이터 동기화"
+  - name: "1.1.1 소셜 로그인"
+  - name: "1.2.1 맞춤 프로필 설정"
+  - name: "2.1.1 맞춤 공고 확인하기"
+  - name: "2.1.2 맞춤 추천 배너"
+  - name: "2.2.1 공고 상세 페이지"
+  - name: "2.2.2 문서 뷰어"
+  - name: "2.2.3 자격 자가 진단"
+  - name: "3.1.1 개별 Todo 생성"
+  - name: "3.1.2 체크리스트 관리"
+  - name: "3.2.1 캘린더"
+  - name: "4.1.1 공고별 댓글"
+  - name: "5.1.1 자발 미션"
+  - name: "5.2.1 배지 시스템"
+  - name: "6.1.1 알림 리마인더"
+  - name: "6.2.1 뉴스레터"
+
+paths:
+  # 0.1.1 데이터 동기화 (내부/운영용: 공개 API랑 분리 권장)
+  /internal/sync/jobs:
+    post:
+      tags: ["0.1.1 데이터 동기화"]
+      summary: "데이터 동기화 작업(Job) 생성"
+      operationId: createSyncJob
+    get:
+      tags: ["0.1.1 데이터 동기화"]
+      summary: "동기화 작업 목록 조회"
+      operationId: listSyncJobs
+      parameters:
+        - in: query
+          name: status
+          schema: { type: string }
+        - in: query
+          name: source
+          schema: { type: string }
+
+  /internal/sync/jobs/{jobId}:
+    get:
+      tags: ["0.1.1 데이터 동기화"]
+      summary: "동기화 작업 단건 조회"
+      operationId: getSyncJob
+      parameters:
+        - in: path
+          name: jobId
+          required: true
+          schema: { type: string }
+
+  # 1.1.1 소셜 로그인
+  /api/auth/kakao/login:
+    post:
+      tags: ["1.1.1 소셜 로그인"]
+      summary: "카카오 로그인(Authorization Code 교환)"
+      operationId: kakaoLogin
+
+  /api/auth/refresh:
+    post:
+      tags: ["1.1.1 소셜 로그인"]
+      summary: "액세스 토큰 재발급"
+      operationId: refreshToken
+
+  /api/auth/logout:
+    post:
+      tags: ["1.1.1 소셜 로그인"]
+      summary: "로그아웃"
+      operationId: logout
+
+  # 1.2.1 맞춤 프로필 설정 (프론트 편의: me 사용)
+  /api/me/profile:
+    get:
+      tags: ["1.2.1 맞춤 프로필 설정"]
+      summary: "내 프로필 조회"
+      operationId: getMyProfile
+    put:
+      tags: ["1.2.1 맞춤 프로필 설정"]
+      summary: "내 프로필 저장(전체)"
+      operationId: putMyProfile
+    patch:
+      tags: ["1.2.1 맞춤 프로필 설정"]
+      summary: "내 프로필 수정(부분)"
+      operationId: patchMyProfile
+
+  # 2.1.1 맞춤 공고 확인하기
+  /api/announcements/recommended:
+    get:
+      tags: ["2.1.1 맞춤 공고 확인하기"]
+      summary: "맞춤 공고 목록 조회"
+      operationId: listRecommendedAnnouncements
+      parameters:
+        - in: query
+          name: cursor
+          schema: { type: string }
+        - in: query
+          name: size
+          schema: { type: integer, default: 20 }
+
+  /api/announcements:
+    get:
+      tags: ["2.1.1 맞춤 공고 확인하기"]
+      summary: "공고 검색/필터 목록 조회"
+      operationId: searchAnnouncements
+      parameters:
+        - in: query
+          name: q
+          schema: { type: string }
+        - in: query
+          name: region
+          schema: { type: string }
+        - in: query
+          name: type
+          schema: { type: string }
+        - in: query
+          name: cursor
+          schema: { type: string }
+        - in: query
+          name: size
+          schema: { type: integer, default: 20 }
+
+  # 2.1.2 맞춤 추천 배너
+  /api/banners:
+    get:
+      tags: ["2.1.2 맞춤 추천 배너"]
+      summary: "배너 목록 조회(위치/슬롯별)"
+      operationId: listBanners
+      parameters:
+        - in: query
+          name: placement
+          schema: { type: string, example: home }
+
+  /api/banners/{bannerId}:
+    get:
+      tags: ["2.1.2 맞춤 추천 배너"]
+      summary: "배너 단건 조회"
+      operationId: getBanner
+      parameters:
+        - in: path
+          name: bannerId
+          required: true
+          schema: { type: string }
+
+  # 2.2.1 공고 상세 페이지
+  /api/announcements/{announcementId}:
+    get:
+      tags: ["2.2.1 공고 상세 페이지"]
+      summary: "공고 상세 조회"
+      operationId: getAnnouncement
+      parameters:
+        - in: path
+          name: announcementId
+          required: true
+          schema: { type: string }
+
+  # 2.2.2 문서 뷰어
+  /api/announcements/{announcementId}/documents:
+    get:
+      tags: ["2.2.2 문서 뷰어"]
+      summary: "공고 첨부 문서 목록 조회"
+      operationId: listAnnouncementDocuments
+      parameters:
+        - in: path
+          name: announcementId
+          required: true
+          schema: { type: string }
+
+  /api/documents/{documentId}:
+    get:
+      tags: ["2.2.2 문서 뷰어"]
+      summary: "문서 메타데이터 조회"
+      operationId: getDocument
+      parameters:
+        - in: path
+          name: documentId
+          required: true
+          schema: { type: string }
+
+  /api/documents/{documentId}/download:
+    get:
+      tags: ["2.2.2 문서 뷰어"]
+      summary: "문서 다운로드(또는 redirect)"
+      operationId: downloadDocument
+      parameters:
+        - in: path
+          name: documentId
+          required: true
+          schema: { type: string }
+
+  # 2.2.3 자격 자가 진단
+  /api/announcements/{announcementId}/eligibility-checks:
+    post:
+      tags: ["2.2.3 자격 자가 진단"]
+      summary: "자가진단 실행(응답 제출 → 결과 생성)"
+      operationId: createEligibilityCheck
+      parameters:
+        - in: path
+          name: announcementId
+          required: true
+          schema: { type: string }
+
+  /api/eligibility-checks/{checkId}:
+    get:
+      tags: ["2.2.3 자격 자가 진단"]
+      summary: "자가진단 결과 조회"
+      operationId: getEligibilityCheck
+      parameters:
+        - in: path
+          name: checkId
+          required: true
+          schema: { type: string }
+
+  # 3.1.1 개별 Todo 생성
+  /api/me/todos:
+    post:
+      tags: ["3.1.1 개별 Todo 생성"]
+      summary: "내 Todo 생성(수동)"
+      operationId: createMyTodo
+    get:
+      tags: ["3.1.2 체크리스트 관리"]
+      summary: "내 Todo 목록 조회"
+      operationId: listMyTodos
+      parameters:
+        - in: query
+          name: status
+          schema: { type: string }
+        - in: query
+          name: from
+          schema: { type: string, format: date }
+        - in: query
+          name: to
+          schema: { type: string, format: date }
+
+  /api/announcements/{announcementId}/todos:
+    post:
+      tags: ["3.1.1 개별 Todo 생성"]
+      summary: "공고 기반 Todo 생성"
+      operationId: createTodoFromAnnouncement
+      parameters:
+        - in: path
+          name: announcementId
+          required: true
+          schema: { type: string }
+
+  # 3.1.2 체크리스트 관리 (체크리스트 = Todo 묶음)
+  /api/me/checklists:
+    post:
+      tags: ["3.1.2 체크리스트 관리"]
+      summary: "체크리스트 생성"
+      operationId: createChecklist
+    get:
+      tags: ["3.1.2 체크리스트 관리"]
+      summary: "체크리스트 목록 조회"
+      operationId: listChecklists
+
+  /api/me/checklists/{checklistId}:
+    get:
+      tags: ["3.1.2 체크리스트 관리"]
+      summary: "체크리스트 단건 조회"
+      operationId: getChecklist
+      parameters:
+        - in: path
+          name: checklistId
+          required: true
+          schema: { type: string }
+    patch:
+      tags: ["3.1.2 체크리스트 관리"]
+      summary: "체크리스트 수정"
+      operationId: patchChecklist
+      parameters:
+        - in: path
+          name: checklistId
+          required: true
+          schema: { type: string }
+    delete:
+      tags: ["3.1.2 체크리스트 관리"]
+      summary: "체크리스트 삭제"
+      operationId: deleteChecklist
+      parameters:
+        - in: path
+          name: checklistId
+          required: true
+          schema: { type: string }
+
+  /api/me/checklists/{checklistId}/items:
+    post:
+      tags: ["3.1.2 체크리스트 관리"]
+      summary: "체크리스트 아이템(Todo) 추가"
+      operationId: addChecklistItem
+      parameters:
+        - in: path
+          name: checklistId
+          required: true
+          schema: { type: string }
+
+  /api/me/checklists/{checklistId}/items/{itemId}:
+    patch:
+      tags: ["3.1.2 체크리스트 관리"]
+      summary: "체크리스트 아이템 수정(완료/제목/기한 등)"
+      operationId: patchChecklistItem
+      parameters:
+        - in: path
+          name: checklistId
+          required: true
+          schema: { type: string }
+        - in: path
+          name: itemId
+          required: true
+          schema: { type: string }
+    delete:
+      tags: ["3.1.2 체크리스트 관리"]
+      summary: "체크리스트 아이템 삭제"
+      operationId: deleteChecklistItem
+      parameters:
+        - in: path
+          name: checklistId
+          required: true
+          schema: { type: string }
+        - in: path
+          name: itemId
+          required: true
+          schema: { type: string }
+
+  # 3.2.1 캘린더
+  /api/me/calendar/events:
+    get:
+      tags: ["3.2.1 캘린더"]
+      summary: "캘린더 이벤트 조회(기간)"
+      operationId: listCalendarEvents
+      parameters:
+        - in: query
+          name: from
+          required: true
+          schema: { type: string, format: date }
+        - in: query
+          name: to
+          required: true
+          schema: { type: string, format: date }
+    post:
+      tags: ["3.2.1 캘린더"]
+      summary: "캘린더 이벤트 생성"
+      operationId: createCalendarEvent
+
+  /api/me/calendar/events/{eventId}:
+    patch:
+      tags: ["3.2.1 캘린더"]
+      summary: "캘린더 이벤트 수정"
+      operationId: patchCalendarEvent
+      parameters:
+        - in: path
+          name: eventId
+          required: true
+          schema: { type: string }
+    delete:
+      tags: ["3.2.1 캘린더"]
+      summary: "캘린더 이벤트 삭제"
+      operationId: deleteCalendarEvent
+      parameters:
+        - in: path
+          name: eventId
+          required: true
+          schema: { type: string }
+
+  # 4.1.1 공고별 댓글
+  /api/announcements/{announcementId}/comments:
+    get:
+      tags: ["4.1.1 공고별 댓글"]
+      summary: "댓글 목록 조회"
+      operationId: listAnnouncementComments
+      parameters:
+        - in: path
+          name: announcementId
+          required: true
+          schema: { type: string }
+        - in: query
+          name: cursor
+          schema: { type: string }
+        - in: query
+          name: size
+          schema: { type: integer, default: 20 }
+    post:
+      tags: ["4.1.1 공고별 댓글"]
+      summary: "댓글 작성"
+      operationId: createAnnouncementComment
+      parameters:
+        - in: path
+          name: announcementId
+          required: true
+          schema: { type: string }
+
+  /api/comments/{commentId}:
+    patch:
+      tags: ["4.1.1 공고별 댓글"]
+      summary: "댓글 수정"
+      operationId: patchComment
+      parameters:
+        - in: path
+          name: commentId
+          required: true
+          schema: { type: string }
+    delete:
+      tags: ["4.1.1 공고별 댓글"]
+      summary: "댓글 삭제"
+      operationId: deleteComment
+      parameters:
+        - in: path
+          name: commentId
+          required: true
+          schema: { type: string }
+
+  /api/comments/{commentId}/reports:
+    post:
+      tags: ["4.1.1 공고별 댓글"]
+      summary: "댓글 신고"
+      operationId: reportComment
+      parameters:
+        - in: path
+          name: commentId
+          required: true
+          schema: { type: string }
+
+  # 5.1.1 자발 미션
+  /api/missions:
+    get:
+      tags: ["5.1.1 자발 미션"]
+      summary: "미션 목록(정의) 조회"
+      operationId: listMissions
+
+  /api/me/missions:
+    get:
+      tags: ["5.1.1 자발 미션"]
+      summary: "내 미션 진행 상태 목록 조회"
+      operationId: listMyMissions
+
+  /api/me/missions/{missionId}/start:
+    post:
+      tags: ["5.1.1 자발 미션"]
+      summary: "미션 시작"
+      operationId: startMission
+      parameters:
+        - in: path
+          name: missionId
+          required: true
+          schema: { type: string }
+
+  /api/me/missions/{missionId}/complete:
+    post:
+      tags: ["5.1.1 자발 미션"]
+      summary: "미션 완료 처리"
+      operationId: completeMission
+      parameters:
+        - in: path
+          name: missionId
+          required: true
+          schema: { type: string }
+
+  # 5.2.1 배지 시스템
+  /api/badges:
+    get:
+      tags: ["5.2.1 배지 시스템"]
+      summary: "배지 목록(정의) 조회"
+      operationId: listBadges
+
+  /api/me/badges:
+    get:
+      tags: ["5.2.1 배지 시스템"]
+      summary: "내 배지 목록 조회"
+      operationId: listMyBadges
+
+  # 6.1.1 알림 리마인더
+  /api/me/reminders:
+    get:
+      tags: ["6.1.1 알림 리마인더"]
+      summary: "내 리마인더 목록 조회"
+      operationId: listMyReminders
+    post:
+      tags: ["6.1.1 알림 리마인더"]
+      summary: "리마인더 생성"
+      operationId: createReminder
+
+  /api/me/reminders/{reminderId}:
+    patch:
+      tags: ["6.1.1 알림 리마인더"]
+      summary: "리마인더 수정"
+      operationId: patchReminder
+      parameters:
+        - in: path
+          name: reminderId
+          required: true
+          schema: { type: string }
+    delete:
+      tags: ["6.1.1 알림 리마인더"]
+      summary: "리마인더 삭제"
+      operationId: deleteReminder
+      parameters:
+        - in: path
+          name: reminderId
+          required: true
+          schema: { type: string }
+
+  # 6.2.1 뉴스레터
+  /api/newsletter/subscriptions/me:
+    get:
+      tags: ["6.2.1 뉴스레터"]
+      summary: "내 뉴스레터 구독 상태 조회"
+      operationId: getMyNewsletterSubscription
+    post:
+      tags: ["6.2.1 뉴스레터"]
+      summary: "뉴스레터 구독"
+      operationId: subscribeNewsletter
+    delete:
+      tags: ["6.2.1 뉴스레터"]
+      summary: "뉴스레터 구독 해지"
+      operationId: unsubscribeNewsletter
+
+  /api/newsletters:
+    get:
+      tags: ["6.2.1 뉴스레터"]
+      summary: "뉴스레터 아카이브 목록 조회"
+      operationId: listNewsletters
+
+  /api/newsletters/{newsletterId}:
+    get:
+      tags: ["6.2.1 뉴스레터"]
+      summary: "뉴스레터 단건 조회"
+      operationId: getNewsletter
+      parameters:
+        - in: path
+          name: newsletterId
+          required: true
+         schema: { type: string }
