@@ -1,0 +1,3697 @@
+openapi: 3.0.3
+info:
+  title: Youth Policy App API
+  version: "0.1.0"
+  description: >
+    기능 요구사항 기반 초안 OpenAPI입니다. (컴포넌트/refs 미사용)
+    인증/권한은 별도 securitySchemes 없이, 필요 엔드포인트에 Authorization 헤더 파라미터로 명시합니다.
+servers:
+  - url: http://localhost:8080
+    description: Local
+  - url: https://api.example.com
+    description: Production
+
+tags:
+  - name: accounts
+    description: 계정/인증 (카카오 OAuth2)
+  - name: announcements
+    description: 공고 (홈/상세/자격진단/원문)
+  - name: mypage
+    description: 마이페이지 (체크리스트/캘린더/찜/신청기록)
+  - name: community
+    description: 커뮤니티 (댓글/대댓글/좋아요/신고)
+  - name: gamification
+    description: 게이미피케이션 (미션/배지)
+  - name: policies
+    description: 정책 (청년정책 지원)
+  - name: admin
+    description: 관리자 기능 (공고/정책 관리)
+  - name: chat
+    description: 채팅 봇
+
+
+paths:
+  ############################################################
+  # 1) 계정 / 인증 (Kakao OAuth 2.0)
+  ############################################################
+  /api/auth/kakao:
+    get:
+      tags: [accounts]
+      summary: 카카오 로그인 시작 (백엔드가 전체 OAuth 처리, JWT는 쿠키로만)
+      description: >
+        프론트는 이 URL로 이동만 하면 됩니다.
+        이후 인가/콜백/토큰교환/회원처리 전부 백엔드에서 처리합니다.
+
+        로그인 성공 시 JWT를 HttpOnly 쿠키로 설정(Set-Cookie)하고,
+        백엔드가 "/"로 리다이렉션(Location: /)합니다.
+
+        userId는 ULID를 사용합니다.
+      operationId: accounts_authKakao
+      responses:
+        "302":
+          description: Redirect (성공 시 Set-Cookie 포함, Location은 "/")
+          headers:
+            Location:
+              schema: { type: string }
+              description: 로그인 성공 시 "/"
+            Set-Cookie:
+              schema: { type: string }
+              description: JWT 쿠키(HttpOnly; Secure; SameSite 등 백엔드 정책)
+        "401":
+          description: Unauthorized
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+
+  /api/auth/naver:
+    get:
+      tags: [accounts]
+      summary: 네이버 로그인 시작 (백엔드가 전체 OAuth 처리, JWT는 쿠키로만)
+      description: >
+        프론트는 이 URL로 이동만 하면 됩니다.
+        로그인 성공 시 JWT를 HttpOnly 쿠키로 설정(Set-Cookie)하고,
+        백엔드가 "/"로 리다이렉션(Location: /)합니다.
+
+        userId는 ULID를 사용합니다.
+      operationId: accounts_authNaver
+      responses:
+        "302":
+          description: Redirect (성공 시 Set-Cookie 포함, Location은 "/")
+          headers:
+            Location:
+              schema: { type: string }
+              description: 로그인 성공 시 "/"
+            Set-Cookie:
+              schema: { type: string }
+              description: JWT 쿠키(HttpOnly; Secure; SameSite 등 백엔드 정책)
+        "401":
+          description: Unauthorized
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+
+  /api/auth/google:
+    get:
+      tags: [accounts]
+      summary: 구글 로그인 시작 (백엔드가 전체 OAuth 처리, JWT는 쿠키로만)
+      description: >
+        프론트는 이 URL로 이동만 하면 됩니다.
+
+        로그인 성공 시 JWT를 HttpOnly 쿠키로 설정(Set-Cookie)하고,
+        백엔드가 "/"로 리다이렉션(Location: /)합니다.
+
+        userId는 ULID를 사용합니다.
+      operationId: accounts_authGoogle
+      responses:
+        "302":
+          description: Redirect (성공 시 Set-Cookie 포함, Location은 "/")
+          headers:
+            Location:
+              schema: { type: string }
+              description: 로그인 성공 시 "/"
+            Set-Cookie:
+              schema: { type: string }
+              description: JWT 쿠키(HttpOnly; Secure; SameSite 등 백엔드 정책)
+        "401":
+          description: Unauthorized
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+
+  /api/auth/logout:
+    post:
+      tags: [accounts]
+      summary: 로그아웃
+      description: >
+        JWT는 HttpOnly 쿠키로 관리됩니다.
+        이 엔드포인트는 인증 쿠키를 만료(Set-Cookie)시켜 로그아웃 처리합니다.
+        (userId는 ULID를 사용)
+      operationId: accounts_logout
+      responses:
+        "204":
+          description: No Content (인증 쿠키 만료)
+          headers:
+            Set-Cookie:
+              schema: { type: string }
+              description: >
+                인증 쿠키를 만료시키는 Set-Cookie.
+                (예: access=; Max-Age=0; Path=/; HttpOnly; Secure; SameSite=... )
+        "401":
+          description: Unauthorized
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+
+  ############################################################
+  # 2) Announcements (공고 도메인)
+  ############################################################
+
+  /api/announcements/personalized:
+    get:
+      tags: [announcements]
+      summary: 맞춤 공고 목록 조회
+      description: >
+        온보딩 완료 사용자 전용 맞춤 공고 목록입니다.
+        인증은 HttpOnly 쿠키(JWT)로 처리됩니다. userId는 ULID를 사용합니다.
+        비로그인(쿠키 없음/만료)이면 401, 온보딩 미완료면 403을 반환합니다.
+      operationId: announcements_getPersonalizedAnnouncements
+      parameters:
+        - name: page
+          in: query
+          required: false
+          schema: { type: integer, minimum: 0, default: 0 }
+          description: 0부터 시작하는 페이지 번호
+        - name: size
+          in: query
+          required: false
+          schema: { type: integer, minimum: 1, maximum: 100, default: 20 }
+          description: 페이지 크기
+      responses:
+        "200":
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: object
+                required: [data, meta]
+                properties:
+                  data:
+                    type: array
+                    description: 맞춤 공고 목록
+                    items:
+                      type: object
+                      required: [announcementId, title, startDate, endDate, publisher, status]
+                      properties:
+                        announcementId:
+                          type: integer
+                          format: int64
+                          description: 공고 PK
+                          example: 12345
+                        title:
+                          type: string
+                          description: 공고명
+                          example: "OO시 반값 중개보수 지원사업"
+                        startDate:
+                          type: string
+                          format: date
+                          description: 공고 시작일
+                          example: "2025-12-01"
+                        endDate:
+                          type: string
+                          format: date
+                          description: 공고 마감일
+                          example: "2026-01-15"
+                        publisher:
+                          type: string
+                          description: 발행처(기관/지자체 등)
+                          example: "LH 한국토지주택공사"
+                        status:
+                          type: string
+                          description: 공고 접수 상태(앱 뱃지에 사용)
+                          enum: [OPEN, DUE_SOON, UPCOMING, CLOSED]
+                          example: DUE_SOON
+                  meta:
+                    type: object
+                    required: [page, size, totalElements, totalPages]
+                    properties:
+                      page: { type: integer, minimum: 0, example: 0, description: 현재 페이지 번호(0부터) }
+                      size: { type: integer, minimum: 1, maximum: 100, example: 20, description: 페이지 크기 }
+                      totalElements: { type: integer, minimum: 0, example: 134, description: 전체 항목 수 }
+                      totalPages: { type: integer, minimum: 0, example: 7, description: 전체 페이지 수 }
+
+        "401":
+          description: Unauthorized (비로그인/토큰 만료)
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+
+        "403":
+          description: Forbidden (온보딩 미완료)
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+
+        "500":
+          description: Internal Server Error
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+
+  /api/announcements/banner:
+    get:
+      tags: [announcements]
+      summary: 맞춤 추천 배너 (상황 태그 기반 1개)
+      description: >
+        유저의 상황 태그와 매칭되는 최우선 공고 1개를 배너로 반환합니다.
+        인증은 HttpOnly 쿠키(JWT)로 처리됩니다.
+        조건 불충족(비로그인/온보딩 미완료/추천 대상 없음) 시 null을 반환할 수 있습니다.
+        userId는 ULID를 사용합니다.
+      operationId: announcements_getPersonalBanner
+      responses:
+        "200":
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: object
+                nullable: true
+                properties:
+                  announcementId:
+                    type: integer
+                    format: int64
+                    description: 공고 PK
+                    example: 12345
+                  title:
+                    type: string
+                    description: 공고명
+                    example: "청년매입임대주택 모집 공고"
+                  reasonTag:
+                    type: string
+                    description: 추천 사유가 된 상황 태그
+                    example: "이사예정"
+                  # 앱 내부 라우트는 프론트가 조합하는 것을 권장하므로 기본은 미제공.
+                  # 필요 시 아래 필드를 활성화해서 내려줄 수 있음.
+                  # detailPath:
+                  #   type: string
+                  #   description: 앱 내부 공고 상세 라우트(프론트 라우팅용)
+                  #   example: "/announcements/12345"
+
+  /api/announcements/{announcementId}:
+    get:
+      tags: [announcements]
+      summary: 공고 상세 조회
+      description: >
+        공고 상세 정보를 반환합니다.
+        본문은 원문 기반 텍스트(contentText)로 제공하며,
+        digest는 AI가 추출/요약한 구조화 필드입니다(학습/검색/필터링 용도).
+        원문 링크는 originalUrl 1개만 제공합니다.
+        로그인 사용자라면 isScrapped 등 개인화 필드가 포함될 수 있습니다.
+        인증은 HttpOnly 쿠키(JWT)로 처리됩니다.
+      operationId: announcements_getAnnouncementDetail
+      parameters:
+        - name: announcementId
+          in: path
+          required: true
+          schema: { type: integer, format: int64 }
+          description: 공고 PK
+          example: 12345
+      responses:
+        "200":
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: object
+                required: [announcementId, agency, title, startDate, endDate, status, contentText, originalUrl, externalApplyUrl, digest]
+                properties:
+                  announcementId:
+                    type: integer
+                    format: int64
+                    description: 공고 PK
+                    example: 12345
+
+                  agency:
+                    type: string
+                    enum: [LH, SH]
+                    description: 공고 기관 구분(LH/SH)
+                    example: LH
+
+                  title:
+                    type: string
+                    description: 공고명
+                    example: "청년매입임대주택 모집 공고"
+
+                  startDate:
+                    type: string
+                    format: date
+                    description: 공고 시작일
+                    example: "2025-12-01"
+
+                  endDate:
+                    type: string
+                    format: date
+                    description: 공고 마감일
+                    example: "2026-01-15"
+
+                  status:
+                    type: string
+                    description: 공고 접수 상태(앱 뱃지에 사용)
+                    enum: [OPEN, DUE_SOON, UPCOMING, CLOSED]
+                    example: DUE_SOON
+
+                  dDay:
+                    type: integer
+                    nullable: true
+                    description: 마감까지 남은 일수(DUE_SOON/OPEN에서 의미)
+                    example: 3
+
+                  contentText:
+                    type: string
+                    description: 원문 기반 본문 텍스트(가공 최소화)
+                    example: "1. 신청자격\n- 만 19~34세...\n\n2. 제출서류\n- ..."
+
+                  digest:
+                    type: object
+                    description: >
+                      AI가 원문에서 추출/요약한 구조화 필드.
+                      일부 필드는 원문에 없거나 추출 실패 시 null/빈 값일 수 있습니다.
+                    required: [target, benefit, period, howToApply]
+                    properties:
+                      target:
+                        type: string
+                        nullable: true
+                        description: 지원 대상 요약
+                        example: "만 19~34세 무주택 청년"
+                      benefit:
+                        type: string
+                        nullable: true
+                        description: 지원 내용/금액 요약
+                        example: "임대료 지원(월 최대 20만원)"
+                      applyWindow:
+                        type: string
+                        nullable: true
+                        description: 접수 기간 요약
+                        example: "2026-01-01 ~ 2026-01-15"
+                      period:
+                        type: string
+                        nullable: true
+                        description: 지원 기간/거주 기간 등
+                        example: "최대 2년(연장 가능)"
+                      howToApply:
+                        type: string
+                        nullable: true
+                        description: 신청 방법 요약
+                        example: "온라인 신청(LH 청약센터)"
+                      requirements:
+                        type: array
+                        description: 핵심 요건(불릿)
+                        items: { type: string }
+                        example: ["무주택 세대구성원", "소득 4분위 이하"]
+                      documents:
+                        type: array
+                        description: 제출 서류(불릿)
+                        items: { type: string }
+                        example: ["신분증", "주민등록등본", "소득증빙서류"]
+                      contact:
+                        type: string
+                        nullable: true
+                        description: 문의처
+                        example: "LH 콜센터 1600-1004"
+                      notes:
+                        type: string
+                        nullable: true
+                        description: 기타 참고/주의사항
+                        example: "서류 미제출 시 자동 탈락"
+
+                  originalUrl:
+                    type: string
+                    format: uri
+                    description: 원문 공고 링크(외부 URL, PDF/HWP 포함 가능)
+                    example: "https://example.org/announcements/12345/original"
+
+                  externalApplyUrl:
+                    type: string
+                    format: uri
+                    description: 신청하러가기 외부 링크(아웃 트래킹 대상)
+                    example: "https://apply.example.org/form/12345"
+
+                  isScrapped:
+                    type: boolean
+                    nullable: true
+                    description: 로그인 사용자 기준 찜 여부(비로그인 시 null 또는 미포함 가능)
+                    example: true
+
+        "404":
+          description: Not Found
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+
+        "500":
+          description: Internal Server Error
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+
+  /api/announcements/{announcementId}/scrap:
+    post:
+      tags: [announcements]
+      summary: 찜하기(스크랩) 추가
+      description: >
+        공고를 찜(스크랩)합니다.
+        인증은 HttpOnly 쿠키(JWT)로 처리됩니다.
+      operationId: announcements_addScrap
+      parameters:
+        - name: announcementId
+          in: path
+          required: true
+          schema: { type: integer, format: int64 }
+          description: 공고 PK
+          example: 12345
+      responses:
+        "204":
+          description: No Content
+        "401":
+          description: Unauthorized
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+
+        "404":
+          description: Not Found
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+
+        "500":
+          description: Internal Server Error
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+
+    delete:
+      tags: [announcements]
+      summary: 찜하기(스크랩) 제거
+      description: >
+        공고 찜(스크랩)을 해제합니다.
+        인증은 HttpOnly 쿠키(JWT)로 처리됩니다.
+      operationId: announcements_removeScrap
+      parameters:
+        - name: announcementId
+          in: path
+          required: true
+          schema: { type: integer, format: int64 }
+          description: 공고 PK
+          example: 12345
+      responses:
+        "204":
+          description: No Content
+        "401":
+          description: Unauthorized
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+
+        "404":
+          description: Not Found
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+
+        "500":
+          description: Internal Server Error
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+
+  /api/announcements/{announcementId}/outbound:
+    post:
+      tags: [announcements]
+      summary: 신청하러가기(외부 이동) 기록
+      description: >
+        사용자가 공고 상세에서 '신청하러가기' 등 외부 링크로 이동하려는 행위를 기록합니다.
+        인증은 HttpOnly 쿠키(JWT)로 처리되며, 로그인 사용자만 호출할 수 있습니다.
+        세부 이벤트 타입/UA/리퍼러 등 분석 데이터는 MVP 범위 밖으로 제외합니다.
+      operationId: announcements_trackOutbound
+      parameters:
+        - name: announcementId
+          in: path
+          required: true
+          schema: { type: integer, format: int64 }
+          description: 공고 PK
+          example: 12345
+      responses:
+        "204":
+          description: No Content
+        "401":
+          description: Unauthorized
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+
+        "404":
+          description: Not Found
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+
+        "500":
+          description: Internal Server Error
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+
+  /api/announcements/{announcementId}/eligibility/check:
+    post:
+      tags: [announcements]
+      summary: 자격 자가 진단 실행
+      description: >
+        유저 프로필/온보딩 데이터와 공고 기준을 대조하여 자격 여부 및 심사 요소별 결과를 반환합니다.
+        인증은 HttpOnly 쿠키(JWT)로 처리됩니다.
+      operationId: announcements_checkEligibility
+      parameters:
+        - name: announcementId
+          in: path
+          required: true
+          schema: { type: integer, format: int64 }
+          description: 공고 PK
+          example: 12345
+      responses:
+        "200":
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: object
+                required: [eligible, checks]
+                properties:
+                  eligible:
+                    type: boolean
+                    description: 최종 자격 충족 여부
+                    example: true
+
+                  rank:
+                    type: string
+                    nullable: true
+                    description: 순위(해당 공고에서 순위 체계가 있을 때만 제공)
+                    example: "1순위"
+
+                  checks:
+                    type: array
+                    description: >
+                      심사 요소별 판정 결과.
+                      성공/실패 모두 제공.
+                    items:
+                      type: object
+                      required: [key, passed, message]
+                      properties:
+                        passed:
+                          type: boolean
+                          description: 해당 요소 통과 여부
+                          example: true
+                        expected:
+                          type: string
+                          nullable: true
+                          description: 기준 요약(선택)
+                          example: "소득 4분위 이하"
+                        actual:
+                          type: string
+                          nullable: true
+                          description: 사용자 값 요약(선택)
+                          example: "소득 3분위"
+                        message:
+                          type: string
+                          description: 사용자 노출 문구(성공/실패/주의 모두 가능)
+                          example: "소득 기준을 충족합니다."
+
+        "401":
+          description: Unauthorized
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+
+        "404":
+          description: Not Found
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+
+        "409":
+          description: 공고 기준 데이터 미구성 등으로 진단 불가
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+
+        "500":
+          description: Internal Server Error
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+
+############################################################
+  # 3) 마이페이지 - 체크리스트/캘린더/찜/신청기록
+############################################################
+  /api/mypage/profile:
+    get:
+      tags: [mypage]
+      summary: 맞춤 프로필 조회
+      operationId: mypage_getProfile
+      responses:
+        "200":
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: object
+                required: [regionSigungu, birthDate, incomeDecile, householdSize, situationTags]
+                properties:
+                  regionSigungu:
+                    type: string
+                    description: 거주지역(시군구). 맞춤 공고 필터링에 사용됩니다. 
+                    example: "서울특별시 마포구"
+                  birthDate:
+                    type: string
+                    format: date
+                    description: 생년월일(YYYY-MM-DD). 연령 조건 판단에 사용됩니다.
+                    example: "1999-01-01"
+                  incomeDecile:
+                    type: integer
+                    minimum: 1
+                    maximum: 10
+                    description: 소득분위(1~10). 건보료 기준 가이드 기반 입력값입니다.
+                    example: 4
+                  householdSize:
+                    type: integer
+                    minimum: 1
+                    description: 가구원 수(1 이상). 공고 자격 판단/추천에 사용될 수 있습니다.
+                    example: 1
+                  situationTags:
+                    type: array
+                    description: >
+                      상황 태그(멀티 선택). 추천/필터링에 사용됩니다.
+                      목록: 독립준비, 이사예정, 안전필요, 월세부담
+                    items:
+                      type: string
+                      example: "이사예정"
+                  onboardingCompleted:
+                    type: boolean
+                    description: 초기 온보딩(필수 프로필 입력) 완료 여부
+                    example: true
+        "401":
+          description: Unauthorized
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+
+    put:
+      tags: [mypage]
+      summary: 맞춤 프로필 생성/전체 저장 (초기 온보딩 포함)
+      description: >
+        맞춤 프로필을 생성하거나 전체 필드를 덮어씁니다.
+        초기 온보딩 입력에도 사용됩니다.
+        userId는 ULID를 사용합니다.
+      operationId: mypage_putProfile
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [regionSigungu, birthDate, incomeDecile, householdSize, situationTags]
+              properties:
+                regionSigungu:
+                  type: string
+                  description: 거주지역(시군구). 맞춤 공고 필터링에 사용됩니다.
+                  example: "서울특별시 마포구"
+                birthDate:
+                  type: string
+                  format: date
+                  description: 생년월일(YYYY-MM-DD). 연령 조건 판단에 사용됩니다.
+                  example: "1999-01-01"
+                incomeDecile:
+                  type: integer
+                  minimum: 1
+                  maximum: 10
+                  description: 소득분위(1~10). 건보료 기준 가이드 기반 입력값입니다.
+                  example: 4
+                householdSize:
+                  type: integer
+                  minimum: 1
+                  description: 가구원 수(1 이상).
+                  example: 1
+                situationTags:
+                  type: array
+                  description: >
+                    상황 태그(멀티 선택). 추천/필터링에 사용됩니다.
+                    목록: 독립준비, 이사예정, 안전필요, 월세부담
+                  items:
+                    type: string
+                    example: "이사예정"
+      responses:
+        "204":
+          description: No Content (저장 완료)
+        "400":
+          description: Validation Error (필드 형식/범위 오류)
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+
+        "401":
+          description: Unauthorized
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+
+  /api/patch/mypage/profile:
+    patch:
+      tags: [mypage]
+      summary: 맞춤 프로필 부분 수정
+      description: >
+        전달된 필드만 수정됩니다.
+        userId는 ULID를 사용합니다.
+      operationId: patch_mypage_profile
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              description: >
+                전달된 필드만 수정됩니다. 포함되지 않은 필드는 변경되지 않습니다.
+              properties:
+                regionSigungu:
+                  type: string
+                  description: 거주지역(시군구). 맞춤 공고 필터링에 사용됩니다.
+                  example: "서울특별시 마포구"
+                birthDate:
+                  type: string
+                  format: date
+                  description: 생년월일(YYYY-MM-DD). 연령 조건 판단에 사용됩니다.
+                  example: "1999-01-01"
+                incomeDecile:
+                  type: integer
+                  minimum: 1
+                  maximum: 10
+                  description: 소득분위(1~10). 건보료 기준 가이드 기반 입력값입니다.
+                  example: 4
+                householdSize:
+                  type: integer
+                  minimum: 1
+                  description: 가구원 수(1 이상).
+                  example: 1
+                situationTags:
+                  type: array
+                  description: >
+                    상황 태그(멀티 선택). 추천/필터링에 사용됩니다.
+                    목록: 독립준비, 이사예정, 안전필요, 월세부담
+                  items:
+                    type: string
+                    example: "이사예정"
+      responses:
+        "204":
+          description: No Content (수정 완료)
+        "400":
+          description: Validation Error (필드 형식/범위 오류)
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+
+        "401":
+          description: Unauthorized
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+
+  /api/mypage/scraps:
+    get:
+      tags: [mypage]
+      summary: 내가 찜한 공고 리스트
+      description: >
+        유저가 찜(스크랩)한 공고 목록을 페이지네이션으로 조회합니다.
+        JWT는 HttpOnly 쿠키로 인증됩니다.
+      operationId: mypage_listScraps
+      parameters:
+        - name: page
+          in: query
+          required: false
+          schema: { type: integer, minimum: 0, default: 0 }
+          description: 0부터 시작하는 페이지 번호
+        - name: size
+          in: query
+          required: false
+          schema: { type: integer, minimum: 1, maximum: 100, default: 20 }
+          description: 페이지 크기
+      responses:
+        "200":
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: object
+                required: [items, page, size, totalElements, totalPages]
+                properties:
+                  items:
+                    type: array
+                    description: 찜(스크랩)한 공고 목록
+                    items:
+                      type: object
+                      required: [announcementId, provider, title, endDate, publisher]
+                      properties:
+                        announcementId:
+                          type: integer
+                          format: int64
+                          description: 공고 PK (오픈된 공고 정보의 내부 식별자)
+                          example: 12345
+                        provider:
+                          type: string
+                          description: 공고 제공처
+                          enum: [LH, SH]
+                          example: LH
+                        title:
+                          type: string
+                          description: 공고명
+                          example: "청년매입임대주택 모집 공고"
+                        endDate:
+                          type: string
+                          format: date
+                          description: 마감일(YYYY-MM-DD)
+                          example: "2026-01-15"
+                        publisher:
+                          type: string
+                          description: 발행처(기관/부서명 등)
+                          example: "LH 한국토지주택공사"
+                  page:
+                    type: integer
+                    minimum: 0
+                    description: 현재 페이지 번호(0부터)
+                    example: 0
+                  size:
+                    type: integer
+                    minimum: 1
+                    maximum: 100
+                    description: 페이지 크기
+                    example: 20
+                  totalElements:
+                    type: integer
+                    minimum: 0
+                    description: 전체 항목 수
+                    example: 134
+                  totalPages:
+                    type: integer
+                    minimum: 0
+                    description: 전체 페이지 수
+                    example: 7
+        "401":
+          description: Unauthorized
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+
+        "500":
+          description: Internal Server Error
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+
+  /api/mypage/outbounds:
+    get:
+      tags: [mypage]
+      summary: 신청하러가기(외부 이동) 눌러본 공고 기록
+      description: >
+        공고 상세에서 '신청하러가기'를 눌러 외부 링크로 이동했던 공고 목록입니다.
+        실제 신청 여부(applied)는 유저가 이후에 입력하는 값입니다.
+        JWT는 HttpOnly 쿠키로 인증됩니다.
+      operationId: mypage_listOutbounds
+      parameters:
+        - name: page
+          in: query
+          required: false
+          schema: { type: integer, minimum: 0, default: 0 }
+          description: 0부터 시작하는 페이지 번호
+        - name: size
+          in: query
+          required: false
+          schema: { type: integer, minimum: 1, maximum: 100, default: 20 }
+          description: 페이지 크기
+      responses:
+        "200":
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: object
+                required: [data, meta]
+                properties:
+                  data:
+                    type: array
+                    description: 신청하러가기(외부 이동) 기록 목록
+                    items:
+                      type: object
+                      required: [outboundId, announcementId, agency, clickedAt, applied]
+                      properties:
+                        outboundId:
+                          type: integer
+                          format: int64
+                          description: 신청하러가기(외부 이동) 기록 PK
+                          example: 98765
+                        announcementId:
+                          type: integer
+                          format: int64
+                          description: 공고 PK
+                          example: 12345
+                        agency:
+                          type: string
+                          enum: [LH, SH]
+                          description: 공고 기관 구분(LH/SH)
+                          example: LH
+                        clickedAt:
+                          type: string
+                          format: date-time
+                          description: 사용자가 '신청하러가기'를 클릭한 시각(ISO-8601)
+                          example: "2025-12-29T00:10:15+09:00"
+                        applied:
+                          type: boolean
+                          description: 실제 신청 여부(유저가 입력)
+                          example: false
+                        appliedAt:
+                          type: string
+                          format: date-time
+                          nullable: true
+                          description: 실제 신청 시각(유저가 입력, 미입력 시 null)
+                          example: null
+                  meta:
+                    type: object
+                    required: [page, size, totalElements, totalPages]
+                    properties:
+                      page:
+                        type: integer
+                        minimum: 0
+                        description: 현재 페이지 번호(0부터)
+                        example: 0
+                      size:
+                        type: integer
+                        minimum: 1
+                        maximum: 100
+                        description: 페이지 크기
+                        example: 20
+                      totalElements:
+                        type: integer
+                        minimum: 0
+                        description: 전체 항목 수
+                        example: 134
+                      totalPages:
+                        type: integer
+                        minimum: 0
+                        description: 전체 페이지 수
+                        example: 7
+        "401":
+          description: Unauthorized
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+
+        "500":
+          description: Internal Server Error
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+
+  /api/mypage/outbounds/{announcementId}/applied:
+    put:
+      tags: [mypage]
+      summary: 실제 신청 여부 등록/변경
+      description: >
+        사용자가 '신청하러가기'를 눌렀던 공고(announcementId)에 대해
+        실제 신청 여부를 등록/변경합니다.
+        JWT는 HttpOnly 쿠키로 인증됩니다.
+      operationId: mypage_putAppliedStatus
+      parameters:
+        - name: announcementId
+          in: path
+          required: true
+          schema: { type: integer, format: int64 }
+          description: 공고 PK
+          example: 12345
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [applied]
+              properties:
+                applied:
+                  type: boolean
+                  description: true=신청함, false=신청 안 함
+                  example: true
+                appliedAt:
+                  type: string
+                  format: date-time
+                  nullable: true
+                  description: >
+                    신청 시각(선택). applied=true일 때만 의미가 있으며,
+                    미전달 시 서버가 현재 시각으로 기록할 수 있습니다.
+                  example: "2025-12-29T00:10:15+09:00"
+      responses:
+        "204":
+          description: No Content (저장 완료)
+        "400":
+          description: Validation Error
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+
+        "401":
+          description: Unauthorized
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+
+        "404":
+          description: Not Found (해당 공고의 외부 이동 기록이 없음)
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+
+        "500":
+          description: Internal Server Error
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+
+  /api/mypage/notification-settings/kakao:
+    get:
+      tags: [mypage]
+      summary: 카카오 알림톡 수신 설정 조회
+      description: >
+        카카오 알림톡 수신 설정을 조회합니다.
+        카카오 회원(카카오 OAuth로 가입/연동된 사용자)이 아닌 경우 해당 채널은 지원되지 않습니다.
+        JWT는 HttpOnly 쿠키로 인증됩니다. userId는 ULID를 사용합니다.
+      operationId: mypage_getKakaoNotificationSetting
+      responses:
+        "200":
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: object
+                required: [enabled]
+                properties:
+                  enabled:
+                    type: boolean
+                    description: true=수신, false=미수신
+                    example: true
+        "401":
+          description: Unauthorized
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+
+        "403":
+          description: Forbidden (카카오 회원이 아님)
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+
+        "500":
+          description: Internal Server Error
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+
+  /api/patch/mypage/notification-settings/kakao:
+    patch:
+      tags: [mypage]
+      summary: 카카오 알림톡 수신 설정 변경
+      description: >
+        카카오 알림톡 수신 설정을 변경합니다.
+        카카오 회원(카카오 OAuth로 가입/연동된 사용자)이 아닌 경우 해당 채널은 지원되지 않습니다.
+        JWT는 HttpOnly 쿠키로 인증됩니다. userId는 ULID를 사용합니다.
+      operationId: patch_mypage_kakaoNotificationSetting
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [enabled]
+              properties:
+                enabled:
+                  type: boolean
+                  description: true=수신, false=미수신
+                  example: true
+      responses:
+        "204":
+          description: No Content
+        "400":
+          description: Validation Error
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+
+        "401":
+          description: Unauthorized
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+
+        "403":
+          description: Forbidden (카카오 회원이 아님)
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+
+        "500":
+          description: Internal Server Error
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+
+  /api/mypage/notification-settings/email:
+    get:
+      tags: [mypage]
+      summary: 이메일 알림 수신 설정 조회
+      description: >
+        이메일 알림 수신 설정을 조회합니다.
+        JWT는 HttpOnly 쿠키로 인증됩니다. userId는 ULID를 사용합니다.
+      operationId: mypage_getEmailNotificationSetting
+      responses:
+        "200":
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: object
+                required: [enabled]
+                properties:
+                  enabled:
+                    type: boolean
+                    description: true=수신, false=미수신
+                    example: false
+        "401":
+          description: Unauthorized
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+
+        "500":
+          description: Internal Server Error
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+
+  /api/patch/mypage/notification-settings/email:
+    patch:
+      tags: [mypage]
+      summary: 이메일 알림 수신 설정 변경
+      description: >
+        이메일 알림 수신 설정을 변경합니다.
+        JWT는 HttpOnly 쿠키로 인증됩니다. userId는 ULID를 사용합니다.
+      operationId: patch_mypage_emailNotificationSetting
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [enabled]
+              properties:
+                enabled:
+                  type: boolean
+                  description: true=수신, false=미수신
+                  example: false
+      responses:
+        "204":
+          description: No Content
+        "400":
+          description: Validation Error
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+
+        "401":
+          description: Unauthorized
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+
+        "500":
+          description: Internal Server Error
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+
+  /api/mypage/reminder-settings:
+    get:
+      tags: [mypage]
+      summary: 리마인더 설정 조회
+      description: >
+        마감일 리마인더(예: D-1, D-Day)를 어떤 채널로, 몇 시에 보낼지에 대한
+        사용자 설정을 조회합니다. (공고별 설정은 지원하지 않음)
+
+        enabled=false인 경우 리마인더를 발송하지 않습니다.
+        sendAtHour는 0~23시(로컬 기준)입니다.
+        JWT는 HttpOnly 쿠키로 인증됩니다. userId는 ULID를 사용합니다.
+      operationId: mypage_getReminderSettings
+      responses:
+        "200":
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: object
+                required: [enabled, sendAtHour, rules]
+                properties:
+                  enabled:
+                    type: boolean
+                    description: 리마인더 기능 사용 여부 (false면 발송하지 않음)
+                    example: true
+                  sendAtHour:
+                    type: integer
+                    minimum: 0
+                    maximum: 23
+                    description: >
+                      리마인더 발송 시각(시 단위, 0~23).
+                      분/초는 서버 정책에 따르며 기본은 정각(00분)으로 동작할 수 있습니다.
+                    example: 9
+                  rules:
+                    type: array
+                    description: >
+                      리마인더 규칙 목록. 기본은 D-1, D-Day 두 가지 규칙을 사용합니다.
+                      공고별 예외/개별 설정은 지원하지 않습니다.
+                    items:
+                      type: object
+                      required: [when, channel]
+                      properties:
+                        when:
+                          type: string
+                          description: 발송 기준일
+                          enum: [D_MINUS_1, D_DAY]
+                          example: D_MINUS_1
+                        channel:
+                          type: string
+                          description: 발송 채널
+                          enum: [KAKAO_ALIMTALK, EMAIL]
+                          example: KAKAO_ALIMTALK
+        "401":
+          description: Unauthorized
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+
+        "500":
+          description: Internal Server Error
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+
+    put:
+      tags: [mypage]
+      summary: 리마인더 설정 저장
+      description: >
+        마감일 리마인더 설정을 저장(전체 덮어쓰기)합니다. (공고별 설정은 지원하지 않음)
+
+        enabled=false로 저장하면 리마인더를 발송하지 않습니다.
+        rules는 사용할 규칙 목록이며, when+channel 조합은 중복되지 않도록 서버에서 검증합니다.
+        JWT는 HttpOnly 쿠키로 인증됩니다. userId는 ULID를 사용합니다.
+      operationId: mypage_putReminderSettings
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [enabled, sendAtHour, rules]
+              properties:
+                enabled:
+                  type: boolean
+                  description: 리마인더 기능 사용 여부
+                  example: true
+                sendAtHour:
+                  type: integer
+                  minimum: 0
+                  maximum: 23
+                  description: 발송 시각(시 단위, 0~23)
+                  example: 9
+                rules:
+                  type: array
+                  description: >
+                    리마인더 규칙 목록. 기본은 D-1, D-Day를 사용합니다.
+                    공고별 예외/개별 설정은 지원하지 않습니다.
+                  items:
+                    type: object
+                    required: [when, channel]
+                    properties:
+                      when:
+                        type: string
+                        description: 발송 기준일
+                        enum: [D_MINUS_1, D_DAY]
+                        example: D_DAY
+                      channel:
+                        type: string
+                        description: 발송 채널
+                        enum: [KAKAO_ALIMTALK, EMAIL]
+                        example: EMAIL
+      responses:
+        "204":
+          description: No Content (저장 완료)
+        "400":
+          description: Validation Error
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+
+        "401":
+          description: Unauthorized
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+
+        "500":
+          description: Internal Server Error
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+
+  /api/mypage/interest-alert-settings:
+    get:
+      tags: [mypage]
+      summary: 관심 공고 알림 설정 조회
+      description: >
+        관심 공고 알림(관심있을 만한 공고 추천, 신규 공고, 재추첨 공고 등) 수신 설정을 조회합니다.
+        JWT는 HttpOnly 쿠키로 인증됩니다. userId는 ULID를 사용합니다.
+      operationId: mypage_getInterestAlertSettings
+      responses:
+        "200":
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: object
+                required: [enabled, types]
+                properties:
+                  enabled:
+                    type: boolean
+                    description: 관심 공고 알림 기능 사용 여부 (false면 전체 미발송)
+                    example: true
+                  types:
+                    type: array
+                    description: >
+                      수신할 관심 공고 알림 유형 목록.
+                      enabled=true일 때만 의미가 있습니다.
+                    items:
+                      type: string
+                      enum: [RECOMMENDED, NEW_ANNOUNCEMENT, REOPENED]
+                      example: NEW_ANNOUNCEMENT
+                  channels:
+                    type: array
+                    description: >
+                      관심 공고 알림 발송 채널. 미지정 시 서버 기본 채널 정책을 따를 수 있습니다.
+                      (예: 카카오 가능하면 카카오, 아니면 이메일)
+                    items:
+                      type: string
+                      enum: [KAKAO_ALIMTALK, EMAIL]
+                      example: EMAIL
+        "401":
+          description: Unauthorized
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+
+        "500":
+          description: Internal Server Error
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+
+    put:
+      tags: [mypage]
+      summary: 관심 공고 알림 설정 저장
+      description: >
+        관심 공고 알림 설정을 저장(전체 덮어쓰기)합니다.
+        JWT는 HttpOnly 쿠키로 인증됩니다. userId는 ULID를 사용합니다.
+      operationId: mypage_putInterestAlertSettings
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [enabled, types]
+              properties:
+                enabled:
+                  type: boolean
+                  description: 관심 공고 알림 기능 사용 여부
+                  example: true
+                types:
+                  type: array
+                  description: 수신할 관심 공고 알림 유형 목록
+                  items:
+                    type: string
+                    enum: [RECOMMENDED, NEW_ANNOUNCEMENT, REOPENED]
+                channels:
+                  type: array
+                  description: 발송 채널 목록(선택). 미지정 시 서버 기본 채널 정책 적용 가능
+                  items:
+                    type: string
+                    enum: [KAKAO_ALIMTALK, EMAIL]
+      responses:
+        "204":
+          description: No Content (저장 완료)
+        "400":
+          description: Validation Error
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+
+        "401":
+          description: Unauthorized
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+
+        "500":
+          description: Internal Server Error
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+
+  /api/mypage/notification-status:
+    get:
+      tags: [mypage]
+      summary: 현재 알림 상태 조회
+      description: >
+        현재 사용자의 알림 채널 사용 가능 여부 및 주요 알림 설정 상태를 요약해 반환합니다.
+        JWT는 HttpOnly 쿠키로 인증됩니다. userId는 ULID를 사용합니다.
+      operationId: mypage_getNotificationStatus
+      responses:
+        "200":
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: object
+                required: [channels, reminder, interestAlerts]
+                properties:
+                  channels:
+                    type: object
+                    description: 채널별 사용 가능/수신 설정 요약
+                    required: [kakao, email]
+                    properties:
+                      kakao:
+                        type: object
+                        required: [supported, enabled]
+                        properties:
+                          supported:
+                            type: boolean
+                            description: 카카오 회원(연동)이라 알림톡 채널 사용 가능 여부
+                            example: true
+                          enabled:
+                            type: boolean
+                            description: 카카오 알림톡 수신 설정
+                            example: true
+                      email:
+                        type: object
+                        required: [supported, enabled]
+                        properties:
+                          supported:
+                            type: boolean
+                            description: (이메일 보유/검증 완료 등 서버 정책)
+                            example: true
+                          enabled:
+                            type: boolean
+                            description: 이메일 수신 설정
+                            example: false
+                  reminder:
+                    type: object
+                    description: 마감일 리마인더 설정 요약
+                    required: [enabled, sendAtHour]
+                    properties:
+                      enabled:
+                        type: boolean
+                        example: true
+                      sendAtHour:
+                        type: integer
+                        minimum: 0
+                        maximum: 23
+                        example: 9
+                  interestAlerts:
+                    type: object
+                    description: 관심 공고 알림 설정 요약
+                    required: [enabled]
+                    properties:
+                      enabled:
+                        type: boolean
+                        example: true
+        "401":
+          description: Unauthorized
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+
+        "500":
+          description: Internal Server Error
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+
+  ############################################################
+  # 4) 커뮤니티 - 공고별 댓글/대댓글/좋아요/신고
+  ############################################################
+  
+  /api/community/announcements/{announcementId}/comments:
+    get:
+      tags: [community]
+      summary: "공고별 댓글 목록 조회(질문/답변 구조)"
+      description: "공고 상세 하단의 Q/A 댓글을 페이지 기반으로 조회합니다. 비속어/개인정보/스팸/성적 표현은 마스킹(*) 처리될 수 있습니다."
+      operationId: community_listComments
+      parameters:
+        - name: announcementId
+          in: path
+          required: true
+          description: "댓글을 조회할 공고 ID"
+          schema:
+            type: string
+            example: "ann_LH_20251229_000123"
+        - name: page
+          in: query
+          required: false
+          description: "0부터 시작하는 페이지 번호"
+          schema:
+            type: integer
+            default: 0
+            minimum: 0
+            example: 0
+        - name: size
+          in: query
+          required: false
+          description: "페이지 크기"
+          schema:
+            type: integer
+            default: 20
+            minimum: 1
+            maximum: 50
+            example: 20
+        - name: sort
+          in: query
+          required: false
+          description: "정렬 기준(기본: 최신순)"
+          schema:
+            type: string
+            default: LATEST
+            enum: [LATEST, POPULAR]
+            example: "LATEST"
+      responses:
+        "200":
+          description: "OK"
+          content:
+            application/json:
+              schema:
+                type: object
+                description: "댓글 목록 응답"
+                required: [items, meta]
+                properties:
+                  items:
+                    type: array
+                    description: "댓글 목록(parentId=0이면 질문, parentId>0이면 답변)"
+                    items:
+                      type: object
+                      description: "댓글 단건"
+                      required:
+                        [
+                          id, announcementId, parentId, kind,
+                          content, contentFilter,
+                          likeCount, reportCount,
+                          deleted, createdAt, updatedAt,
+                          author
+                        ]
+                      properties:
+                        id:
+                          type: integer
+                          format: int64
+                          description: "댓글 PK"
+                          example: 101
+                        announcementId:
+                          type: string
+                          description: "공고 ID"
+                          example: "ann_LH_20251229_000123"
+                        parentId:
+                          type: integer
+                          format: int64
+                          description: "부모 댓글 PK(없으면 0, 답변이면 질문 댓글 PK)"
+                          example: 0
+                        kind:
+                          type: string
+                          description: "댓글 유형(질문/답변)"
+                          enum: [QUESTION, ANSWER]
+                          example: "QUESTION"
+                        content:
+                          type: string
+                          description: "댓글 내용(필터링 대상은 마스킹(*) 처리, 소프트삭제면 '삭제된 댓글입니다.'로 내려갈 수 있음)"
+                          example: "이 공고는 **** 기준이 어떻게 되나요?"
+                        contentFilter:
+                          type: string
+                          description: "콘텐츠 필터링 상태"
+                          enum: [NONE, PROFANITY, SEXUAL, PERSONAL_INFO, SPAM]
+                          example: "PROFANITY"
+                        likeCount:
+                          type: integer
+                          description: "좋아요 수"
+                          example: 7
+                        reportCount:
+                          type: integer
+                          description: "누적 신고 수"
+                          example: 2
+                        deleted:
+                          type: boolean
+                          description: "소프트 삭제 여부(예: 신고 3회 누적 시 true)"
+                          example: false
+                        deletedAt:
+                          type: string
+                          format: date-time
+                          nullable: true
+                          description: "삭제 시각(삭제되지 않았다면 null)"
+                          example: null
+                        createdAt:
+                          type: string
+                          format: date-time
+                          description: "생성 시각"
+                          example: "2025-12-29T09:05:00+09:00"
+                        updatedAt:
+                          type: string
+                          format: date-time
+                          nullable: true
+                          description: "수정 시각(수정 없으면 null)"
+                          example: "2025-12-29T09:12:00+09:00"
+                        author:
+                          type: object
+                          description: "작성자 정보"
+                          required: [userId]
+                          properties:
+                            userId:
+                              type: string
+                              description: "작성자 유저 ID(ULID)"
+                              example: "01JH6Z8R8V5K0Q9N7Z2F3M1T8A"
+                            nickname:
+                              type: string
+                              nullable: true
+                              description: "작성자 닉네임"
+                              example: "siu"
+                  meta:
+                    $ref: "#/components/schemas/PageMeta"
+        "400":
+          description: "Bad Request"
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+
+        "500":
+          description: "Internal Server Error"
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+
+    post:
+      tags: [community]
+      summary: "댓글 작성(질문/답변)"
+      description: "질문은 parentId=0, 답변은 parentId에 질문 댓글 PK를 넣어 작성합니다. 필터링 대상은 저장/노출 정책에 따라 마스킹(*) 처리될 수 있습니다."
+      operationId: community_createComment
+      parameters:
+        - name: announcementId
+          in: path
+          required: true
+          description: "댓글을 작성할 공고 ID"
+          schema:
+            type: string
+            example: "ann_LH_20251229_000123"
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              description: "댓글 작성 요청"
+              required: [parentId, content]
+              properties:
+                parentId:
+                  type: integer
+                  format: int64
+                  description: "부모 댓글 PK(질문은 0, 답변은 질문 댓글 PK)"
+                  example: 0
+                content:
+                  type: string
+                  description: "댓글 내용(서버 정책으로 길이/비속어/개인정보/스팸/성적표현 필터링 적용)"
+                  example: "원문 기준으로는 소득 기준이 어떻게 되나요?"
+      responses:
+        "201":
+          description: "Created"
+          content:
+            application/json:
+              schema:
+                type: object
+                description: "댓글 생성 응답"
+                required: [id]
+                properties:
+                  id:
+                    type: integer
+                    format: int64
+                    description: "생성된 댓글 PK"
+                    example: 123
+        "400":
+          description: "Bad Request"
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+
+        "404":
+          description: "Not Found"
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+
+        "500":
+          description: "Internal Server Error"
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+
+  /api/community/comments/{commentPk}:
+    patch:
+      tags: [community]
+      summary: "댓글 수정"
+      description: "작성자만 수정 가능합니다. 소프트 삭제된 댓글은 정책에 따라 수정이 제한될 수 있습니다."
+      operationId: community_updateComment
+      parameters:
+        - name: commentPk
+          in: path
+          required: true
+          description: "수정할 댓글 PK"
+          schema:
+            type: integer
+            format: int64
+            example: 123
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              description: "댓글 수정 요청"
+              required: [content]
+              properties:
+                content:
+                  type: string
+                  description: "수정할 댓글 내용"
+                  example: "조건이 변경됐을 수도 있으니 공고 원문도 확인해보세요."
+      responses:
+        "200":
+          description: "OK"
+          content:
+            application/json:
+              schema:
+                type: object
+                description: "댓글 수정 응답"
+                required: [id, updatedAt]
+                properties:
+                  id:
+                    type: integer
+                    format: int64
+                    description: "댓글 PK"
+                    example: 123
+                  updatedAt:
+                    type: string
+                    format: date-time
+                    description: "수정 시각"
+                    example: "2025-12-29T09:20:00+09:00"
+        "403":
+          description: "Forbidden"
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+
+        "404":
+          description: "Not Found"
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+
+        "500":
+          description: "Internal Server Error"
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+
+    delete:
+      tags: [community]
+      summary: "댓글 삭제"
+      description: "작성자만 삭제 가능합니다. 운영상 소프트 삭제를 권장합니다."
+      operationId: community_deleteComment
+      parameters:
+        - name: commentPk
+          in: path
+          required: true
+          description: "삭제할 댓글 PK"
+          schema:
+            type: integer
+            format: int64
+            example: 123
+      responses:
+        "204":
+          description: "No Content"
+        "403":
+          description: "Forbidden"
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+
+        "404":
+          description: "Not Found"
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+
+        "500":
+          description: "Internal Server Error"
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+
+  /api/community/comments/{commentPk}/like:
+    post:
+      tags: [community]
+      summary: "댓글 좋아요"
+      description: "댓글에 좋아요를 추가합니다. 본인 댓글에는 좋아요가 불가능합니다."
+      operationId: community_likeComment
+      parameters:
+        - name: commentPk
+          in: path
+          required: true
+          description: "좋아요할 댓글 PK"
+          schema:
+            type: integer
+            format: int64
+            example: 101
+      responses:
+        "204":
+          description: "No Content"
+        "403":
+          description: "Forbidden"
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+
+        "404":
+          description: "Not Found"
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+
+        "409":
+          description: "Conflict"
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+
+        "500":
+          description: "Internal Server Error"
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+
+    delete:
+      tags: [community]
+      summary: "댓글 좋아요 취소"
+      description: "댓글 좋아요를 취소합니다."
+      operationId: community_unlikeComment
+      parameters:
+        - name: commentPk
+          in: path
+          required: true
+          description: "좋아요 취소할 댓글 PK"
+          schema:
+            type: integer
+            format: int64
+            example: 101
+      responses:
+        "204":
+          description: "No Content"
+        "404":
+          description: "Not Found"
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+
+        "409":
+          description: "Conflict"
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+
+        "500":
+          description: "Internal Server Error"
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+
+  /api/community/comments/{commentPk}/report:
+    post:
+      tags: [community]
+      summary: "댓글 신고"
+      description: "댓글을 신고합니다. 누적 3회 도달 시 댓글이 소프트 삭제 처리될 수 있습니다."
+      operationId: community_reportComment
+      parameters:
+        - name: commentPk
+          in: path
+          required: true
+          description: "신고할 댓글 PK"
+          schema:
+            type: integer
+            format: int64
+            example: 101
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              description: "댓글 신고 요청"
+              required: [reasonType]
+              properties:
+                reasonType:
+                  type: string
+                  description: "신고 사유 타입"
+                  enum: [PROFANITY, SEXUAL, PERSONAL_INFO, SPAM]
+                  example: "SPAM"
+                reason:
+                  type: string
+                  nullable: true
+                  description: "추가 설명(선택)"
+                  example: "광고 링크 반복 도배"
+      responses:
+        "200":
+          description: "OK"
+          content:
+            application/json:
+              schema:
+                type: object
+                description: "신고 처리 결과(누적 3회 도달 시 소프트 삭제)"
+                required: [commentPk, action, reportCount, deleted, deletedAt]
+                properties:
+                  commentPk:
+                    type: integer
+                    format: int64
+                    description: "신고 처리된 댓글 PK"
+                    example: 101
+                  action:
+                    type: string
+                    description: "처리 결과"
+                    enum: [REPORTED, SOFT_DELETED]
+                    example: "REPORTED"
+                  reportCount:
+                    type: integer
+                    description: "현재 누적 신고 수"
+                    example: 2
+                  deleted:
+                    type: boolean
+                    description: "소프트 삭제 여부"
+                    example: false
+                  deletedAt:
+                    type: string
+                    format: date-time
+                    nullable: true
+                    description: "삭제 시각(삭제되었을 때만)"
+                    example: null
+        "409":
+          description: "Conflict"
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+
+        "404":
+          description: "Not Found"
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+
+        "500":
+          description: "Internal Server Error"
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+
+  ############################################################
+  # 5) 게이미피케이션 - 미션/배지
+  ############################################################
+  
+  /api/gamification/missions:
+      get:
+        tags: [gamification]
+        summary: "미션/레벨 진행 상태 조회"
+        description: "유저의 레벨/경험치/칭호와 미션 진행 상태를 조회합니다."
+        operationId: gamification_getMissions
+        responses:
+          "200":
+            description: "OK"
+            content:
+              application/json:
+                schema:
+                  type: object
+                  description: "미션 진행 상태 응답"
+                  required: [level, exp, missions]
+                  properties:
+                    level:
+                      type: integer
+                      description: "현재 레벨"
+                      example: 3
+                    exp:
+                      type: integer
+                      description: "현재 누적 경험치"
+                      example: 120
+                    title:
+                      type: string
+                      nullable: true
+                      description: "현재 칭호(없으면 null)"
+                      example: "탐색왕"
+                    expToNextLevel:
+                      type: integer
+                      nullable: true
+                      description: "다음 레벨까지 남은 경험치(표시용)"
+                      example: 80
+                    missions:
+                      type: array
+                      description: "미션 목록"
+                      items:
+                        type: object
+                        description: "미션 단건"
+                        required: [missionId, name, category, progress, target, completed]
+                        properties:
+                          missionId:
+                            type: string
+                            description: "미션 식별자"
+                            example: "msn_view_10"
+                          name:
+                            type: string
+                            description: "미션 이름"
+                            example: "공고 10회 조회"
+                          category:
+                            type: string
+                            description: "미션 분류"
+                            enum: [ATTENDANCE, ONBOARDING, USAGE, TODO, COMMUNITY]
+                            example: "USAGE"
+                          progress:
+                            type: integer
+                            description: "현재 진행 수치"
+                            example: 4
+                          target:
+                            type: integer
+                            description: "목표 수치"
+                            example: 10
+                          completed:
+                            type: boolean
+                            description: "완료 여부"
+                            example: false
+                          rewardExp:
+                            type: integer
+                            nullable: true
+                            description: "완료 시 지급 경험치(표시용)"
+                            example: 30
+                          lastUpdatedAt:
+                            type: string
+                            format: date-time
+                            nullable: true
+                            description: "진행도 갱신 시각"
+                            example: "2025-12-29T08:55:00+09:00"
+          "401":
+            description: "Unauthorized"
+            content:
+              application/json:
+                schema:
+                  $ref: "#/components/schemas/ErrorResponse"
+
+          "500":
+            description: "Internal Server Error"
+            content:
+              application/json:
+                schema:
+                  $ref: "#/components/schemas/ErrorResponse"
+
+  /api/gamification/badges:
+    get:
+      tags: [gamification]
+      summary: "배지 목록/장착 상태 조회"
+      description: "유저가 획득한 배지와 현재 장착 배지를 조회합니다."
+      operationId: gamification_listBadges
+      responses:
+        "200":
+          description: "OK"
+          content:
+            application/json:
+              schema:
+                type: object
+                description: "배지 목록 응답"
+                required: [items, equippedBadgeId]
+                properties:
+                  equippedBadgeId:
+                    type: string
+                    nullable: true
+                    description: "현재 장착된 배지 ID(없으면 null)"
+                    example: "bdg_explorer"
+                  items:
+                    type: array
+                    description: "배지 목록"
+                    items:
+                      type: object
+                      description: "배지 단건"
+                      required: [badgeId, name, owned]
+                      properties:
+                        badgeId:
+                          type: string
+                          description: "배지 ID"
+                          example: "bdg_explorer"
+                        name:
+                          type: string
+                          description: "배지 이름"
+                          example: "탐색왕 배지"
+                        iconUrl:
+                          type: string
+                          format: uri
+                          nullable: true
+                          description: "배지 아이콘 URL(없으면 null)"
+                          example: "https://cdn.example.com/badges/explorer.png"
+                        owned:
+                          type: boolean
+                          description: "보유 여부"
+                          example: true
+                        acquiredAt:
+                          type: string
+                          format: date-time
+                          nullable: true
+                          description: "획득 시각(보유 시 의미 있음)"
+                          example: "2025-12-20T13:00:00+09:00"
+        "401":
+          description: "Unauthorized"
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+
+        "500":
+          description: "Internal Server Error"
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+
+  /api/patch/gamification/badges/equip:
+    patch:
+      tags: [gamification]
+      summary: "배지 장착 변경"
+      description: "badgeId가 null이면 장착 해제합니다."
+      operationId: patch_gamification_equipBadge
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              description: "배지 장착 변경 요청"
+              required: [badgeId]
+              properties:
+                badgeId:
+                  type: string
+                  nullable: true
+                  description: "장착할 배지 ID(null이면 해제)"
+                  example: "bdg_explorer"
+      responses:
+        "200":
+          description: "OK"
+          content:
+            application/json:
+              schema:
+                type: object
+                description: "배지 장착 변경 응답"
+                required: [equippedBadgeId]
+                properties:
+                  equippedBadgeId:
+                    type: string
+                    nullable: true
+                    description: "현재 장착된 배지 ID(없으면 null)"
+                    example: "bdg_explorer"
+        "409":
+          description: "Conflict"
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+
+        "401":
+          description: "Unauthorized"
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+
+        "500":
+          description: "Internal Server Error"
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+
+############################################################
+# 6) POLICIES
+############################################################
+
+  /api/policies/personalized:
+    get:
+      tags: [policies]
+      summary: 맞춤 정책 목록 조회
+      description: >
+        로그인 + 온보딩(프로필) 완료 사용자를 대상으로,
+        유저 프로필(지역/소득/상황태그 등) 기반으로 맞춤 정책 목록을 반환합니다.
+        인증은 HttpOnly 쿠키(JWT)로 처리됩니다.
+      operationId: policies_getPersonalizedPolicies
+      parameters:
+        - name: page
+          in: query
+          required: false
+          schema: { type: integer, minimum: 0, default: 0 }
+          description: 0부터 시작하는 페이지 번호
+        - name: size
+          in: query
+          required: false
+          schema: { type: integer, minimum: 1, maximum: 100, default: 20 }
+          description: 페이지 크기
+      responses:
+        "200":
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: object
+                required: [data, meta]
+                properties:
+                  data:
+                    type: array
+                    description: 맞춤 정책 목록
+                    items:
+                      type: object
+                      required: [policyId, title, updatedAt]
+                      properties:
+                        policyId:
+                          type: integer
+                          format: int64
+                          description: 정책 상세 PK
+                          example: 8800123
+                        title:
+                          type: string
+                          description: 정책명
+                          example: "청년 월세 지원 사업"
+                        updatedAt:
+                          type: string
+                          format: date-time
+                          description: 최종 수정일(ISO-8601)
+                          example: "2025-12-29T00:10:15+09:00"
+                        applicationStartDate:
+                          type: string
+                          format: date
+                          nullable: true
+                          description: 신청 시작일(없으면 null)
+                          example: "2026-01-01"
+                        applicationEndDate:
+                          type: string
+                          format: date
+                          nullable: true
+                          description: 신청 마감일(없으면 null)
+                          example: "2026-01-31"
+                  meta:
+                    type: object
+                    required: [page, size, totalElements, totalPages]
+                    properties:
+                      page:
+                        type: integer
+                        minimum: 0
+                        description: 현재 페이지 번호(0부터)
+                        example: 0
+                      size:
+                        type: integer
+                        minimum: 1
+                        maximum: 100
+                        description: 페이지 크기
+                        example: 20
+                      totalElements:
+                        type: integer
+                        minimum: 0
+                        description: 전체 항목 수
+                        example: 134
+                      totalPages:
+                        type: integer
+                        minimum: 0
+                        description: 전체 페이지 수
+                        example: 7
+        "401":
+          description: Unauthorized (로그인 필요)
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+
+        "403":
+          description: Forbidden (온보딩/프로필 미완료 등으로 맞춤 제공 불가)
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+
+        "500":
+          description: Internal Server Error
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+
+  /api/announcements/{announcementId}/policies:
+    get:
+      tags: [policies]
+      summary: 공고 기준 정책 목록 조회
+      description: >
+        특정 공고(announcementId)와 연관된 정책 목록을 반환합니다.
+        인증은 HttpOnly 쿠키(JWT)로 처리됩니다.
+        (공고 상세에서 함께 노출되는 '관련 정책' 섹션 등에 사용)
+      operationId: policies_listByAnnouncementId
+      parameters:
+        - name: announcementId
+          in: path
+          required: true
+          schema: { type: integer, format: int64 }
+          description: 공고 PK
+          example: 12345
+        - name: page
+          in: query
+          required: false
+          schema: { type: integer, minimum: 0, default: 0 }
+          description: 0부터 시작하는 페이지 번호
+        - name: size
+          in: query
+          required: false
+          schema: { type: integer, minimum: 1, maximum: 100, default: 20 }
+          description: 페이지 크기
+      responses:
+        "200":
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: object
+                required: [data, meta]
+                properties:
+                  data:
+                    type: array
+                    description: 공고 연관 정책 목록
+                    items:
+                      type: object
+                      required: [policyId, title, updatedAt]
+                      properties:
+                        policyId:
+                          type: integer
+                          format: int64
+                          description: 정책 상세 PK
+                          example: 8800123
+                        title:
+                          type: string
+                          description: 정책명
+                          example: "청년 월세 지원 사업"
+                        updatedAt:
+                          type: string
+                          format: date-time
+                          description: 최종 수정일(ISO-8601)
+                          example: "2025-12-29T00:10:15+09:00"
+                        applicationStartDate:
+                          type: string
+                          format: date
+                          nullable: true
+                          description: 신청 시작일(없으면 null)
+                          example: "2026-01-01"
+                        applicationEndDate:
+                          type: string
+                          format: date
+                          nullable: true
+                          description: 신청 마감일(없으면 null)
+                          example: "2026-01-31"
+                  meta:
+                    type: object
+                    required: [page, size, totalElements, totalPages]
+                    properties:
+                      page:
+                        type: integer
+                        minimum: 0
+                        description: 현재 페이지 번호(0부터)
+                        example: 0
+                      size:
+                        type: integer
+                        minimum: 1
+                        maximum: 100
+                        description: 페이지 크기
+                        example: 20
+                      totalElements:
+                        type: integer
+                        minimum: 0
+                        description: 전체 항목 수
+                        example: 12
+                      totalPages:
+                        type: integer
+                        minimum: 0
+                        description: 전체 페이지 수
+                        example: 1
+        "401":
+          description: Unauthorized
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+
+        "404":
+          description: Not Found (공고 없음 또는 연관 정책 없음 - 운영 정책에 따름)
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+
+        "500":
+          description: Internal Server Error
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+
+  /api/policies/{policyId}:
+    get:
+      tags: [policies]
+      summary: 정책 상세 조회
+      description: >
+        정책 상세 정보를 반환합니다.
+        인증은 HttpOnly 쿠키(JWT)로 처리됩니다.
+      operationId: policies_getPolicyDetail
+      parameters:
+        - name: policyId
+          in: path
+          required: true
+          schema: { type: integer, format: int64 }
+          description: 정책 상세 PK
+          example: 8800123
+      responses:
+        "200":
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: object
+                required: [policyId, title, updatedAt, status, descriptionText]
+                properties:
+                  status:
+                    type: object
+                    description: 상태/필터 정보(화면 상단 배지/필터 표시용)
+                    required: [periodStatus]
+                    properties:
+                      periodStatus:
+                        type: string
+                        description: 기간 상태
+                        enum: [OPEN, UPCOMING, CLOSED, ALWAYS]
+                        example: OPEN
+                      regionFilter:
+                        type: string
+                        nullable: true
+                        description: 지역 필터 요약(있으면 표시)
+                        example: "서울특별시"
+                      category:
+                        type: string
+                        nullable: true
+                        description: 정책 분야(있으면 표시)
+                        example: "주거"
+                  policyId:
+                    type: integer
+                    format: int64
+                    description: 정책 상세 PK
+                    example: 8800123
+                  title:
+                    type: string
+                    description: 정책명
+                    example: "청년 월세 지원 사업"
+                  policyNo:
+                    type: string
+                    nullable: true
+                    description: 정책번호(원천에서 제공되는 식별자, 없으면 null)
+                    example: "P-2026-001122"
+                  updatedAt:
+                    type: string
+                    format: date-time
+                    description: 최종 수정일(ISO-8601)
+                    example: "2025-12-29T00:10:15+09:00"
+                  viewCount:
+                    type: integer
+                    format: int64
+                    nullable: true
+                    description: 조회수(선택, 없으면 null)
+                    example: 12034
+                  scrapCount:
+                    type: integer
+                    format: int64
+                    nullable: true
+                    description: 스크랩 수(선택, 없으면 null)
+                    example: 532
+                  descriptionText:
+                    type: string
+                    description: 정책 설명(본문 텍스트)
+                    example: "본 사업은 청년의 주거비 부담을 완화하기 위해 월세를 지원합니다..."
+                  summary:
+                    type: object
+                    nullable: true
+                    description: 정책 요약(있으면 표시)
+                    properties:
+                      field:
+                        type: string
+                        nullable: true
+                        description: 정책분야
+                        example: "주거"
+                      benefit:
+                        type: string
+                        nullable: true
+                        description: 지원내용
+                        example: "월 최대 20만원 지원"
+                      operatingPeriod:
+                        type: string
+                        nullable: true
+                        description: 사업 운영 기간
+                        example: "2026-01-01 ~ 2026-12-31"
+                      applicationPeriod:
+                        type: string
+                        nullable: true
+                        description: 사업 신청 기간
+                        example: "2026-01-01 ~ 2026-01-31"
+                      scale:
+                        type: string
+                        nullable: true
+                        description: 지원 규모(명 등)
+                        example: "총 5,000명"
+                  eligibility:
+                    type: object
+                    nullable: true
+                    description: 신청자격(항목별 텍스트)
+                    properties:
+                      age: { type: string, nullable: true, example: "만 19~34세" }
+                      region: { type: string, nullable: true, example: "서울 거주" }
+                      income: { type: string, nullable: true, example: "중위소득 150% 이하" }
+                      education: { type: string, nullable: true, example: "무관" }
+                      major: { type: string, nullable: true, example: "무관" }
+                      employmentStatus: { type: string, nullable: true, example: "재직/미취업 모두 가능" }
+                      specializedField: { type: string, nullable: true, example: "무관" }
+                      additionalNotes: { type: string, nullable: true, example: "임대차계약서 필수" }
+                      restricted: { type: string, nullable: true, example: "기타 동일/유사 사업 중복 수혜자" }
+                  application:
+                    type: object
+                    nullable: true
+                    description: 신청방법(절차/제출서류/사이트)
+                    properties:
+                      procedure: { type: string, nullable: true, example: "온라인 신청 → 서류 심사 → 발표" }
+                      screeningAndResult: { type: string, nullable: true, example: "서류 심사 후 개별 통보" }
+                      siteUrl:
+                        type: string
+                        format: uri
+                        nullable: true
+                        description: 신청 사이트 URL(있으면 제공)
+                        example: "https://example.gov/apply"
+                      documents: { type: string, nullable: true, example: "주민등록등본, 임대차계약서, 소득증빙" }
+                  etc:
+                    type: object
+                    nullable: true
+                    description: 기타 정보
+                    properties:
+                      notes: { type: string, nullable: true, example: "예산 소진 시 조기 마감 가능" }
+                      hostAgency: { type: string, nullable: true, example: "OO시 청년정책과" }
+
+        "401":
+          description: Unauthorized
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+
+        "404":
+          description: Not Found
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+
+        "500":
+          description: Internal Server Error
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+
+############################################################
+# 7) ToDo
+############################################################
+
+  /api/todos:
+      get:
+        tags: [todo]
+        summary: "나의 Todo 목록 조회"
+        description: "유저가 생성/보유한 Todo 목록을 페이지 기반으로 조회합니다."
+        operationId: todo_listTodos
+        parameters:
+          - name: status
+            in: query
+            required: false
+            description: "Todo 상태 필터(ACTIVE/COMPLETED)"
+            schema:
+              type: string
+              enum: [ACTIVE, COMPLETED]
+              default: ACTIVE
+              example: "ACTIVE"
+          - name: announcementId
+            in: query
+            required: false
+            description: "특정 공고의 Todo만 조회할 때 사용하는 공고 ID"
+            schema:
+              type: string
+              example: "ann_LH_20251229_000123"
+          - name: page
+            in: query
+            required: false
+            description: "0부터 시작하는 페이지 번호"
+            schema:
+              type: integer
+              default: 0
+              minimum: 0
+              example: 0
+          - name: size
+            in: query
+            required: false
+            description: "페이지 크기"
+            schema:
+              type: integer
+              default: 20
+              minimum: 1
+              maximum: 50
+              example: 20
+        responses:
+          "200":
+            description: "OK"
+            content:
+              application/json:
+                schema:
+                  type: object
+                  description: "Todo 목록 응답"
+                  required: [items, meta]
+                  properties:
+                    items:
+                      type: array
+                      description: "Todo 목록"
+                      items:
+                        type: object
+                        description: "Todo 단건"
+                        required: [id, title, completed, createdAt, updatedAt]
+                        properties:
+                          id:
+                            type: integer
+                            format: int64
+                            description: "Todo PK"
+                            example: 501
+                          announcementId:
+                            type: string
+                            nullable: true
+                            description: "연결된 공고 ID(없으면 null)"
+                            example: "ann_LH_20251229_000123"
+                          title:
+                            type: string
+                            description: "Todo 제목/단계명"
+                            example: "서류접수"
+                          completed:
+                            type: boolean
+                            description: "완료 여부"
+                            example: false
+                          dueDate:
+                            type: string
+                            format: date
+                            nullable: true
+                            description: "마감일(없으면 null)"
+                            example: "2026-01-03"
+                          order:
+                            type: integer
+                            nullable: true
+                            description: "정렬 순서(단계 정렬용)"
+                            example: 3
+                          createdAt:
+                            type: string
+                            format: date-time
+                            description: "생성 시각"
+                            example: "2025-12-29T09:00:00+09:00"
+                          updatedAt:
+                            type: string
+                            format: date-time
+                            nullable: true
+                            description: "수정 시각(없으면 null)"
+                            example: "2025-12-29T09:10:00+09:00"
+                    meta:
+                      $ref: "#/components/schemas/PageMeta"
+          "401":
+            description: "Unauthorized"
+            content:
+              application/json:
+                schema:
+                  $ref: "#/components/schemas/ErrorResponse"
+
+          "500":
+            description: "Internal Server Error"
+            content:
+              application/json:
+                schema:
+                  $ref: "#/components/schemas/ErrorResponse"
+
+      post:
+        tags: [todo]
+        summary: "Todo 생성"
+        description: "유저가 직접 Todo를 생성합니다."
+        operationId: todo_createTodo
+        requestBody:
+          required: true
+          content:
+            application/json:
+              schema:
+                type: object
+                description: "Todo 생성 요청"
+                required: [title]
+                properties:
+                  announcementId:
+                    type: string
+                    nullable: true
+                    description: "연결할 공고 ID(없으면 null)"
+                    example: "ann_LH_20251229_000123"
+                  title:
+                    type: string
+                    description: "Todo 제목"
+                    example: "자격자가진단"
+                  dueDate:
+                    type: string
+                    format: date
+                    nullable: true
+                    description: "마감일(없으면 null)"
+                    example: "2026-01-02"
+        responses:
+          "201":
+            description: "Created"
+            content:
+              application/json:
+                schema:
+                  type: object
+                  description: "Todo 생성 응답"
+                  required: [id,createdAt,updatedAt]
+                  properties:
+                    id:
+                      type: integer
+                      format: int64
+                      description: "생성된 Todo PK"
+                      example: 601
+                    createdAt:
+                      type: string 
+                      format: date-time 
+                      description: "생성 시각"
+                      example: "2025-12-29T09:00:00+09:00"
+                    updatedAt:
+                      type: string 
+                      format: date-time 
+                      description: "수정시각"
+                      example: "2025-12-29T09:00:00+09:00"
+          "400":
+            description: "Bad Request"
+            content:
+              application/json:
+                schema:
+                  $ref: "#/components/schemas/ErrorResponse"
+
+          "401":
+            description: "Unauthorized"
+            content:
+              application/json:
+                schema:
+                  $ref: "#/components/schemas/ErrorResponse"
+
+          "500":
+            description: "Internal Server Error"
+            content:
+              application/json:
+                schema:
+                  $ref: "#/components/schemas/ErrorResponse"
+
+  /api/todos/date/{date}:
+    get:
+      tags: [todo]
+      summary: "날짜로 Todo 조회"
+      description: "특정 날짜(dueDate=YYYY-MM-DD)에 해당하는 Todo 목록을 페이지 기반으로 조회합니다."
+      operationId: todo_listTodosByDate
+      parameters:
+        - name: date
+          in: path
+          required: true
+          description: "조회할 날짜(YYYY-MM-DD)"
+          schema:
+            type: string
+            format: date
+            example: "2026-01-03"
+        - name: page
+          in: query
+          required: false
+          description: "0부터 시작하는 페이지 번호"
+          schema:
+            type: integer
+            default: 0
+            minimum: 0
+            example: 0
+        - name: size
+          in: query
+          required: false
+          description: "페이지 크기"
+          schema:
+            type: integer
+            default: 20
+            minimum: 1
+            maximum: 50
+            example: 20
+      responses:
+        "200":
+          description: "OK"
+          content:
+            application/json:
+              schema:
+                type: object
+                description: "Todo 날짜 조회 응답"
+                required: [items, meta]
+                properties:
+                  items:
+                    type: array
+                    description: "해당 날짜의 Todo 목록"
+                    items:
+                      type: object
+                      description: "Todo 단건"
+                      required: [id, title, completed, dueDate, createdAt, updatedAt]
+                      properties:
+                        id:
+                          type: integer
+                          format: int64
+                          description: "Todo PK"
+                          example: 701
+                        announcementId:
+                          type: string
+                          nullable: true
+                          description: "연결된 공고 ID(없으면 null)"
+                          example: "ann_LH_20251229_000123"
+                        title:
+                          type: string
+                          description: "Todo 제목"
+                          example: "서류접수"
+                        completed:
+                          type: boolean
+                          description: "완료 여부"
+                          example: false
+                        dueDate:
+                          type: string
+                          format: date
+                          description: "마감일"
+                          example: "2026-01-03"
+                        createdAt:
+                          type: string
+                          format: date-time
+                          description: "생성 시각"
+                          example: "2025-12-29T09:00:00+09:00"
+                        updatedAt:
+                          type: string
+                          format: date-time
+                          nullable: true
+                          description: "수정 시각(없으면 null)"
+                          example: "2025-12-29T09:10:00+09:00"
+                  meta:
+                    $ref: "#/components/schemas/PageMeta"
+        "401":
+          description: "Unauthorized"
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+
+        "500":
+          description: "Internal Server Error"
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+
+  /api/todos/{todoPk}:
+    patch:
+      tags: [todo]
+      summary: "Todo 수정"
+      description: "Todo의 제목/마감일/정렬 순서를 수정합니다."
+      operationId: todo_updateTodo
+      parameters:
+        - name: todoPk
+          in: path
+          required: true
+          description: "수정할 Todo PK"
+          schema:
+            type: integer
+            format: int64
+            example: 601
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              description: "Todo 수정 요청"
+              properties:
+                title:
+                  type: string
+                  nullable: true
+                  description: "변경할 제목(미전달 시 유지)"
+                  example: "서류접수"
+                dueDate:
+                  type: string
+                  format: date
+                  nullable: true
+                  description: "변경할 마감일(null이면 제거)"
+                  example: "2026-01-03"
+                order:
+                  type: integer
+                  nullable: true
+                  description: "변경할 정렬 순서"
+                  example: 2
+      responses:
+        "200":
+          description: "OK"
+          content:
+            application/json:
+              schema:
+                type: object
+                description: "Todo 수정 응답"
+                required: [id, createdAt, updatedAt]
+                properties:
+                  id:
+                    type: integer
+                    format: int64
+                    description: "Todo PK"
+                    example: 601
+                  createdAt:
+                    type: string
+                    format: date-time
+                    description: "생성 시각"
+                    example: "2025-12-29T09:00:00+09:00"
+                  updatedAt:
+                    type: string
+                    format: date-time
+                    description: "수정 시각"
+                    example: "2025-12-29T09:15:00+09:00"
+        "401":
+          description: "Unauthorized"
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+
+        "404":
+          description: "Not Found"
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+
+        "500":
+          description: "Internal Server Error"
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+
+    delete:
+      tags: [todo]
+      summary: "Todo 삭제"
+      description: "Todo를 삭제합니다."
+      operationId: todo_deleteTodo
+      parameters:
+        - name: todoPk
+          in: path
+          required: true
+          description: "삭제할 Todo PK"
+          schema:
+            type: integer
+            format: int64
+            example: 601
+      responses:
+        "204":
+          description: "No Content"
+        "401":
+          description: "Unauthorized"
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+
+        "404":
+          description: "Not Found"
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+
+        "500":
+          description: "Internal Server Error"
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+
+  /api/todos/{todoPk}/complete:
+    post:
+      tags: [todo]
+      summary: "Todo 완료 처리"
+      description: "Todo를 완료 상태로 변경합니다."
+      operationId: todo_completeTodo
+      parameters:
+        - name: todoPk
+          in: path
+          required: true
+          description: "완료 처리할 Todo PK"
+          schema:
+            type: integer
+            format: int64
+            example: 601
+      responses:
+        "200":
+          description: "OK"
+          content:
+            application/json:
+              schema:
+                type: object
+                description: "Todo 완료 처리 응답"
+                required: [id, completed, createdAt, updatedAt]
+                properties:
+                  id:
+                    type: integer
+                    format: int64
+                    description: "Todo PK"
+                    example: 601
+                  completed:
+                    type: boolean
+                    description: "완료 여부"
+                    example: true
+                  createdAt:
+                    type: string
+                    format: date-time
+                    description: "생성 시각"
+                    example: "2025-12-29T09:00:00+09:00"
+                  updatedAt:
+                    type: string
+                    format: date-time
+                    description: "완료 처리 시각"
+                    example: "2025-12-29T09:16:00+09:00"
+        "401":
+          description: "Unauthorized"
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+
+        "404":
+          description: "Not Found"
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+
+        "500":
+          description: "Internal Server Error"
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+
+  /api/todos/{todoPk}/uncomplete:
+    post:
+      tags: [todo]
+      summary: "Todo 완료 취소"
+      description: "Todo 완료 상태를 취소합니다."
+      operationId: todo_uncompleteTodo
+      parameters:
+        - name: todoPk
+          in: path
+          required: true
+          description: "완료 취소할 Todo PK"
+          schema:
+            type: integer
+            format: int64
+            example: 601
+      responses:
+        "200":
+          description: "OK"
+          content:
+            application/json:
+              schema:
+                type: object
+                description: "Todo 완료 취소 응답"
+                required: [id, completed, createdAt, updatedAt]
+                properties:
+                  id:
+                    type: integer
+                    format: int64
+                    description: "Todo PK"
+                    example: 601
+                  completed:
+                    type: boolean
+                    description: "완료 여부"
+                    example: false
+                  createdAt:
+                    type: string
+                    format: date-time
+                    description: "생성 시각"
+                    example: "2025-12-29T09:00:00+09:00"
+                  updatedAt:
+                    type: string
+                    format: date-time
+                    description: "완료 취소 처리 시각"
+                    example: "2025-12-29T09:18:00+09:00"
+        "401":
+          description: "Unauthorized"
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+
+        "404":
+          description: "Not Found"
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+
+        "500":
+          description: "Internal Server Error"
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+
+############################################################
+# 8) ADMIN - Inboxes (신규 처리 대상)
+############################################################
+
+  /api/admin/inboxes:
+    get:
+      tags: [admin]
+      summary: (어드민) 신규 공고 처리 대상 목록 조회
+      description: >
+        어드민이 처리해야 하는 신규/대기 상태의 "공고" 목록을 조회합니다.
+        각 항목은 공고 PK(announcementId)를 포함합니다.
+        인증은 HttpOnly 쿠키(JWT)로 처리됩니다.
+      operationId: admin_listAnnouncementInboxes
+      responses:
+        "200":
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: object
+                required: [data]
+                properties:
+                  data:
+                    type: array
+                    description: 신규 처리 대상 공고 목록(서버 내부 큐/대기열에서 반환)
+                    items:
+                      type: object
+                      required: [announcementId, createdAt, title]
+                      properties:
+                        announcementId:
+                          type: integer
+                          format: int64
+                          description: 공고 PK
+                          example: 12345
+                        createdAt:
+                          type: string
+                          format: date-time
+                          description: 유입 시각(ISO-8601)
+                          example: "2025-12-29T00:10:15+09:00"
+                        title:
+                          type: string
+                          description: 공고 제목
+                          example: "청년매입임대주택 모집 공고"
+        "401":
+          description: Unauthorized
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+
+        "500":
+          description: Internal Server Error
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+
+  /api/admin/announcements/{announcementId}:
+    get:
+      tags: [admin, announcements]
+      summary: (어드민) 공고 AI 요약/추출 결과 조회(참고용)
+      description: >
+        공고(announcementId)에 대해 수집/AI가 생성한 요약/추출 결과를 조회합니다.
+        이 데이터는 참고용이며 정확성을 보장하지 않습니다.
+        오류/누락이 있는 경우 어드민이 수기 작성한 정규 공고 데이터(별도 저장 API) 기준으로 내부 교정합니다.
+        인증은 HttpOnly 쿠키(JWT)로 처리됩니다.
+      operationId: admin_getAnnouncementAiDigest
+      parameters:
+        - name: announcementId
+          in: path
+          required: true
+          schema: { type: integer, format: int64 }
+          description: 공고 PK
+          example: 12345
+      responses:
+        "200":
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: object
+                required: [provider, title, contentText]
+                properties:
+                  provider:
+                    type: string
+                    enum: [LH, SH]
+                    description: 공고 기관(추출값)
+                    example: LH
+                  title:
+                    type: string
+                    description: 공고명(추출값)
+                    example: "청년매입임대주택 모집 공고"
+                  publisher:
+                    type: string
+                    nullable: true
+                    description: 발행처(추출값)
+                    example: "LH 한국토지주택공사"
+                  startDate:
+                    type: string
+                    format: date
+                    nullable: true
+                    description: 공고 시작일(추출값, 없을 수 있음)
+                    example: "2025-12-01"
+                  endDate:
+                    type: string
+                    format: date
+                    nullable: true
+                    description: 공고 마감일(추출값, 없을 수 있음)
+                    example: "2026-01-15"
+                  contentText:
+                    type: string
+                    description: 원문/가공 본문(추출값)
+                    example: "본 공고는 ... (중략)"
+                  aiDigest:
+                    type: string
+                    nullable: true
+                    description: AI 요약 텍스트
+                    example: "청년 대상 매입임대주택 모집. 온라인 신청..."
+                  extracted:
+                    type: object
+                    nullable: true
+                    description: AI가 구조화 시도한 추출 결과(정확성 보장 없음)
+                    properties:
+                      target: { type: string, nullable: true, example: "만 19~34세 무주택 청년" }
+                      amount: { type: string, nullable: true, example: "임대료 시세 대비 30% 수준" }
+                      period: { type: string, nullable: true, example: "2026-01-01 ~ 2026-01-31" }
+                      method: { type: string, nullable: true, example: "온라인 신청" }
+                  externalApplyUrl:
+                    type: string
+                    format: uri
+                    nullable: true
+                    description: 외부 신청 링크(추출값)
+                    example: "https://apply.example/lh/12345"
+                  originalUrl:
+                    type: string
+                    format: uri
+                    nullable: true
+                    description: 원문 링크(추출값)
+                    example: "https://original.example/doc/abc"
+        "401":
+          description: Unauthorized
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+
+        "404":
+          description: Not Found (해당 공고의 AI 요약/추출 데이터가 없음)
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+
+        "500":
+          description: Internal Server Error
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+
+    put:
+      tags: [admin, announcements]
+      summary: (어드민) 공고 지원자격(정규화) 수기 확정 저장
+      operationId: admin_upsertAnnouncementEligibility
+      parameters:
+        - name: announcementId
+          in: path
+          required: true
+          schema: { type: integer, format: int64 }
+          description: 공고 PK(사전 발급된 ID)
+          example: 12345
+
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [organizerText, eligibility]
+              properties:
+                organizerText:
+                  type: string
+                  description: 주최/주관(기관명) - 수기 입력(자유 텍스트)
+                  example: "서울특별시 / 서울주택도시공사(SH)"
+
+                organizerDeptText:
+                  type: string
+                  nullable: true
+                  description: 담당 부서/사업명 등 추가 표기(선택)
+                  example: "청년주거지원과"
+
+                eligibility:
+                  type: object
+                  description: 지원 자격(정규화) - DB 필터링/매칭 가능한 구조
+                  required: [region, income]
+                  properties:
+                    age:
+                      type: object
+                      nullable: true
+                      properties:
+                        min: { type: integer, nullable: true, minimum: 0, example: 19 }
+                        max: { type: integer, nullable: true, minimum: 0, example: 34 }
+                        displayText:
+                          type: string
+                          nullable: true
+                          example: "만 19~34세"
+
+                    region:
+                      type: object
+                      description: 거주지역 요건(정규화)
+                      required: [scope, ruleType, codes]
+                      properties:
+                        scope:
+                          type: string
+                          enum: [NATIONWIDE, SIDO, SIGUNGU, DONG, CUSTOM]
+                          example: SIDO
+                        ruleType:
+                          type: string
+                          enum: [INCLUDE, EXCLUDE]
+                          example: INCLUDE
+                        codes:
+                          type: array
+                          items: { type: string }
+                          example: ["11"]   # 시도코드: 서울
+                        displayText:
+                          type: string
+                          nullable: true
+                          example: "서울특별시 거주"
+
+                    income:
+                      type: object
+                      description: 소득 요건(정규화)
+                      required: [metric, operator, value]
+                      properties:
+                        metric:
+                          type: string
+                          enum: [MEDIAN_INCOME_PERCENT, INCOME_DECILE, HEALTH_INSURANCE_PREMIUM]
+                          example: MEDIAN_INCOME_PERCENT
+                        operator:
+                          type: string
+                          enum: [LTE, LT, GTE, GT, EQ, BETWEEN]
+                          example: LTE
+                        value:
+                          type: number
+                          example: 150
+                        value2:
+                          type: number
+                          nullable: true
+                          example: 200
+                        householdSizeMin:
+                          type: integer
+                          nullable: true
+                          minimum: 1
+                          example: 1
+                        householdSizeMax:
+                          type: integer
+                          nullable: true
+                          minimum: 1
+                          example: 3
+                        displayText:
+                          type: string
+                          nullable: true
+                          example: "중위소득 150% 이하"
+
+                    notes:
+                      type: string
+                      nullable: true
+                      description: 예외/특기사항(정규화가 어려운 내용만)
+                      example: "일부 유형은 신혼부부 우선"
+
+                originalUrl:
+                  type: string
+                  format: uri
+                  nullable: true
+                  description: 원문 링크(선택)
+
+      responses:
+        "204": { description: No Content (저장 완료), content: {} }
+        "400":
+          description: Validation Error
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+
+        "401":
+          description: Unauthorized
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+
+        "404":
+          description: Not Found
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+
+        "409":
+          description: Conflict
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+
+        "500":
+          description: Internal Server Error
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+
+############################################################
+# 9) AI ChatBot 
+############################################################
+
+  /api/chat/recommendations:
+    post:
+      tags: [chat]
+      summary: (챗봇) 맞춤 공고/정책 추천
+      description: >
+        자연어 요청을 기반으로 맞춤 공고/정책 추천 결과를 반환합니다.
+        인증은 HttpOnly 쿠키(JWT)로 처리됩니다.
+        비로그인(쿠키 없음/만료)이면 401, 온보딩 미완료면 403을 반환합니다.
+      operationId: chat_getRecommendations
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [message]
+              properties:
+                message:
+                  type: string
+                  description: 사용자 자연어 요청(추천 중심)
+                  example: "서울 청년인데 지금 신청 가능한 거 추천해줘"
+                page:
+                  type: integer
+                  minimum: 0
+                  default: 0
+                  description: 0부터 시작하는 페이지 번호(선택)
+                  example: 0
+                size:
+                  type: integer
+                  minimum: 1
+                  maximum: 100
+                  default: 20
+                  description: 페이지 크기(선택)
+                  example: 20
+
+      responses:
+        "200":
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: object
+                required: [data, meta]
+                properties:
+                  data:
+                    type: array
+                    description: 추천 결과 카드 목록
+                    items:
+                      type: object
+                      required: [type, pk, text]
+                      properties:
+                        type:
+                          type: string
+                          description: 추천 대상 타입
+                          enum: [ANNOUNCEMENT, POLICY]
+                          example: ANNOUNCEMENT
+                        pk:
+                          type: integer
+                          format: int64
+                          description: 추천 대상 PK (공고 PK 또는 정책 PK)
+                          example: 12345
+                        text:
+                          type: string
+                          description: 추천 카드에 노출할 텍스트(한 줄 요약/추천 이유 포함 가능)
+                          example: "마감 임박: 서울 청년 대상 중개보수 지원(중위 150% 이하)"
+
+                  meta:
+                    type: object
+                    required: [page, size, totalElements, totalPages]
+                    properties:
+                      page: { type: integer, minimum: 0, example: 0, description: 현재 페이지 번호(0부터) }
+                      size: { type: integer, minimum: 1, maximum: 100, example: 20, description: 페이지 크기 }
+                      totalElements: { type: integer, minimum: 0, example: 42, description: 전체 항목 수 }
+                      totalPages: { type: integer, minimum: 0, example: 3, description: 전체 페이지 수 }
+
+        "400":
+          description: Bad Request (요청 바디 검증 실패)
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+
+        "401":
+          description: Unauthorized (비로그인/토큰 만료)
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+
+        "403":
+          description: Forbidden (온보딩 미완료)
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+
+        "429":
+          description: Too Many Requests (요청 과다/레이트리밋)
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+
+        "500":
+          description: Internal Server Error
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+
+components:
+  schemas:
+    ErrorResponse:
+      $ref: "./components/schemas/common.yml#/ErrorResponse"
+    PageMeta:
+      $ref: "./components/schemas/common.yml#/PageMeta"
+
+
