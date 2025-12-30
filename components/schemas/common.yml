@@ -5,8 +5,6 @@ ErrorResponse:
   - code
   - message
   - status
-  - timestamp
-  - traceId
   properties:
     code:
       type: string
@@ -20,15 +18,6 @@ ErrorResponse:
       type: integer
       description: HTTP 상태 코드
       example: 400
-    timestamp:
-      type: string
-      format: date-time
-      description: 에러 발생 시각
-      example: '2025-12-29T09:10:00+09:00'
-    traceId:
-      type: string
-      description: 추적용 ID(로그 상관관계)
-      example: tr_01JH6Z9A1B2C3D4E5F6G7H8J9K
     details:
       type: object
       nullable: true
