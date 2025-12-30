@@ -3469,24 +3469,32 @@ paths:
 
                     region:
                       type: object
-                      description: 거주지역 요건(정규화)
-                      required: [scope, ruleType, codes]
+                      description: |
+                        거주지역 요건(정규화) - MVP: 동(DONG) 단위로 고정
+                        - codes는 동(읍/면/동) 코드 목록
+                        - ruleType으로 포함/제외 규칙을 지정
+                      required: [ruleType, codes]
                       properties:
-                        scope:
-                          type: string
-                          enum: [NATIONWIDE, SIDO, SIGUNGU, DONG, CUSTOM]
-                          example: SIDO
                         ruleType:
                           type: string
                           enum: [INCLUDE, EXCLUDE]
+                          description: |
+                            codes 적용 방식
+                            - INCLUDE: codes에 포함된 지역만 허용
+                            - EXCLUDE: codes에 포함된 지역은 제외
                           example: INCLUDE
                         codes:
                           type: array
                           items: { type: string }
-                          example: ["11"]   # 시도코드: 서울
+                          description: |
+                            대상 동(읍/면/동) 코드 목록
+                            - scope는 동(DONG)으로 고정되며, codes는 동 코드만 사용
+                            - 여러 개 지정 가능
+                          example: ["11"]
                         displayText:
                           type: string
                           nullable: true
+                          description: 화면 표기용(원문 요약) - 필터링 로직은 codes/ruleType 기준
                           example: "서울특별시 거주"
 
                     income:
@@ -3497,17 +3505,34 @@ paths:
                         metric:
                           type: string
                           enum: [MEDIAN_INCOME_PERCENT, INCOME_DECILE, HEALTH_INSURANCE_PREMIUM]
+                          description: |
+                            값 해석 기준(단위/의미)
+                            - MEDIAN_INCOME_PERCENT: 중위소득 퍼센트(예: 150 = 150%)
+                            - INCOME_DECILE: 소득 분위(예: 3 = 3분위)
+                            - HEALTH_INSURANCE_PREMIUM: 건강보험료(원, 월 기준)
                           example: MEDIAN_INCOME_PERCENT
                         operator:
                           type: string
                           enum: [LTE, LT, GTE, GT, EQ, BETWEEN]
+                          description: |
+                            비교 연산자
+                            - LTE/LT/GTE/GT/EQ: value 단일 기준
+                            - BETWEEN: value(하한) ~ value2(상한) 범위
                           example: LTE
                         value:
                           type: number
+                          description: |
+                            기준값
+                            - metric에 따라 단위가 달라짐(퍼센트/분위/원)
+                            - operator=BETWEEN이면 하한값
                           example: 150
                         value2:
                           type: number
                           nullable: true
+                          description: |
+                            보조 기준값
+                            - operator=BETWEEN일 때만 사용(상한값)
+                            - 그 외에는 null
                           example: 200
                         householdSizeMin:
                           type: integer
