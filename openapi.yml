@@ -584,6 +584,41 @@ paths:
                     description: 로그인 사용자 기준 찜 여부(비로그인 시 null 또는 미포함 가능)
                     example: true
 
+        "400":
+          description: Bad Request (Validation Error)
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+
+        "401":
+          description: Unauthorized (인증 필요/만료)
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+
+        "403":
+          description: Forbidden (권한 없음)
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+
+        "404":
+          description: Not Found (공고 없음)
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+
+        "500":
+          description: Internal Server Error
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+
   /api/announcements/{announcementId}/scrap:
     post:
       tags: [announcements]
