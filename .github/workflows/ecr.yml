@@ -1,0 +1,38 @@
+name: Build & Push to ECR
+
+on:
+  push:
+    branches: [ "main" ]
+
+permissions:
+  contents: read
+  id-token: write
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Configure AWS credentials (OIDC)
+        uses: aws-actions/configure-aws-credentials@v4
+        with:
+          role-to-assume: arn:aws:iam::514994861854:role/GithubOIDCECRRoll
+          aws-region: ap-northeast-2
+
+      - name: Login to ECR
+        uses: aws-actions/amazon-ecr-login@v2
+
+      - name: Build Docker image
+        run: |
+          docker build -t api-spec:latest .
+
+      - name: Tag & Push
+        run: |
+          docker tag api-spec:latest \
+            514994861854.dkr.ecr.ap-northeast-2.amazonaws.com/api-spec:latest
+
+          docker push \
+            514994861854.dkr.ecr.ap-northeast-2.amazonaws.com/api-spec:latest

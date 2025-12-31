@@ -1,0 +1,8 @@
+# Git / CI
+.git
+.github
+
+# Docs
+Readme.md
+*.md
+
