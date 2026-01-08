@@ -2615,7 +2615,6 @@ paths:
               schema:
                 $ref: '#/components/schemas/ErrorResponse'
 
-
   /api/mypage/profile:
     get:
       tags:
@@ -2635,7 +2634,6 @@ paths:
                 - birthDate
                 - regionSigungu
                 - householdSize
-                - isHouseholder
                 - householdRole
                 - incomeDecile
                 - onboardingCompleted
@@ -2661,12 +2659,9 @@ paths:
                   householdSize:
                     type: integer
                     minimum: 1
+                    maximum: 100
                     description: 가구원 수(1 이상). 공고 자격 판단/추천에 사용될 수 있습니다.
                     example: 1
-                  isHouseholder:
-                    type: boolean
-                    description: 세대주 여부
-                    example: true
                   householdRole:
                     type: string
                     description: 세대 내 역할(세대주/세대원)
@@ -2691,7 +2686,6 @@ paths:
                     birthDate: '1999-01-01'
                     regionSigungu: 서울특별시 마포구
                     householdSize: 1
-                    isHouseholder: true
                     householdRole: HOUSEHOLDER
                     incomeDecile: 4
                     onboardingCompleted: true
@@ -2722,12 +2716,12 @@ paths:
               - birthDate
               - regionSigungu
               - householdSize
-              - isHouseholder
               - householdRole
               - incomeDecile
               properties:
                 name:
                   type: string
+                  maxLength: 10
                   description: 사용자 이름(표시용)
                   example: 홍길동
                 gender:
@@ -2742,17 +2736,15 @@ paths:
                   example: '1999-01-01'
                 regionSigungu:
                   type: string
+                  maxLength: 100
                   description: 거주지역(시군구). 맞춤 공고 필터링에 사용됩니다.
                   example: 서울특별시 마포구
                 householdSize:
                   type: integer
                   minimum: 1
+                  maximum: 100
                   description: 가구원 수(1 이상).
                   example: 1
-                isHouseholder:
-                  type: boolean
-                  description: 세대주 여부
-                  example: true
                 householdRole:
                   type: string
                   description: 세대 내 역할(세대주/세대원)
@@ -2768,11 +2760,31 @@ paths:
         '204':
           description: No Content (저장 완료)
         '400':
-          description: Validation Error (필드 형식/범위 오류)
+          description: Validation Error (지역 코드/형식 오류 등)
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/ErrorResponse'
+                type: object
+                required: [code, message, status, details]
+                properties:
+                  code: { type: string }
+                  message: { type: string }
+                  status: { type: integer }
+                  details:
+                    type: object
+                    required: [field, reason]
+                    properties:
+                      field: { type: string }
+                      reason: { type: string }
+              examples:
+                invalidRegionSigungu:
+                  value:
+                    code: INVALID_REGION_SIGUNGU
+                    message: 유효하지 않은 거주지역(시군구)입니다.
+                    status: 400
+                    details:
+                      field: regionSigungu
+                      reason: regionSigungu 값이 올바르지 않습니다.
         '401':
           description: Unauthorized
           content:
@@ -2780,7 +2792,6 @@ paths:
               schema:
                 $ref: '#/components/schemas/ErrorResponse'
 
-  /api/patch/mypage/profile:
     patch:
       tags:
       - mypage
@@ -2799,44 +2810,67 @@ paths:
 
                 '
               properties:
-                regionSigungu:
+                name:
                   type: string
-                  description: 거주지역(시군구). 맞춤 공고 필터링에 사용됩니다.
-                  example: 서울특별시 마포구
+                  maxLength: 10
+                  example: 홍길동
+                gender:
+                  type: string
+                  enum: [MALE, FEMALE, OTHER, UNKNOWN]
+                  example: MALE
                 birthDate:
                   type: string
                   format: date
                   description: 생년월일(YYYY-MM-DD). 연령 조건 판단에 사용됩니다.
                   example: '1999-01-01'
+                regionSigungu:
+                  type: string
+                  maxLength: 100
+                  description: 거주지역(시군구). 맞춤 공고 필터링에 사용됩니다.
+                  example: 서울특별시 마포구
+                householdSize:
+                  type: integer
+                  minimum: 1
+                  maximum: 100
+                  example: 1
+                householdRole:
+                  type: string
+                  enum: [HOUSEHOLDER, MEMBER]
+                  example: HOUSEHOLDER
                 incomeDecile:
                   type: integer
                   minimum: 1
                   maximum: 10
-                  description: 소득분위(1~10). 건보료 기준 가이드 기반 입력값입니다.
                   example: 4
-                householdSize:
-                  type: integer
-                  minimum: 1
-                  description: 가구원 수(1 이상).
-                  example: 1
-                situationTags:
-                  type: array
-                  description: '상황 태그(멀티 선택). 추천/필터링에 사용됩니다. 목록: 독립준비, 이사예정, 안전필요,
-                    월세부담
-
-                    '
-                  items:
-                    type: string
-                    example: 이사예정
       responses:
         '204':
           description: No Content (수정 완료)
         '400':
-          description: Validation Error (필드 형식/범위 오류)
+          description: Validation Error (지역 코드/형식 오류 등)
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/ErrorResponse'
+                type: object
+                required: [code, message, status, details]
+                properties:
+                  code: { type: string }
+                  message: { type: string }
+                  status: { type: integer }
+                  details:
+                    type: object
+                    required: [field, reason]
+                    properties:
+                      field: { type: string }
+                      reason: { type: string }
+              examples:
+                invalidRegionSigungu:
+                  value:
+                    code: INVALID_REGION_SIGUNGU
+                    message: 유효하지 않은 거주지역(시군구)입니다.
+                    status: 400
+                    details:
+                      field: regionSigungu
+                      reason: regionSigungu 값이 올바르지 않습니다.
         '401':
           description: Unauthorized
           content:
@@ -3341,6 +3375,8 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/ErrorResponse'
+
+
   /api/mypage/notification-settings/kakao:
     get:
       tags:
@@ -3357,35 +3393,23 @@ paths:
           content:
             application/json:
               schema:
-                type: object
-                required:
-                - enabled
-                properties:
-                  enabled:
-                    type: boolean
-                    description: true=수신, false=미수신
-                    example: true
+                type: boolean
               examples:
                 mock1:
                   summary: Scenario 1
-                  value:
-                    enabled: false
+                  value: false
                 mock2:
                   summary: Scenario 2
-                  value:
-                    enabled: true
+                  value: true
                 mock3:
                   summary: Scenario 3
-                  value:
-                    enabled: false
+                  value: false
                 mock4:
                   summary: Scenario 4
-                  value:
-                    enabled: true
+                  value: true
                 mock5:
                   summary: Scenario 5
-                  value:
-                    enabled: false
+                  value: false
         '401':
           description: Unauthorized
           content:
@@ -3405,7 +3429,6 @@ paths:
               schema:
                 $ref: '#/components/schemas/ErrorResponse'
 
-  /api/patch/mypage/notification-settings/kakao:
     patch:
       tags:
       - mypage
@@ -3455,6 +3478,8 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/ErrorResponse'
+
+
   /api/mypage/notification-settings/email:
     get:
       tags:
@@ -3470,35 +3495,23 @@ paths:
           content:
             application/json:
               schema:
-                type: object
-                required:
-                - enabled
-                properties:
-                  enabled:
-                    type: boolean
-                    description: true=수신, false=미수신
-                    example: false
+                type: boolean
               examples:
                 mock1:
                   summary: Scenario 1
-                  value:
-                    enabled: false
+                  value: false
                 mock2:
                   summary: Scenario 2
-                  value:
-                    enabled: true
+                  value: true
                 mock3:
                   summary: Scenario 3
-                  value:
-                    enabled: false
+                  value: false
                 mock4:
                   summary: Scenario 4
-                  value:
-                    enabled: true
+                  value: true
                 mock5:
                   summary: Scenario 5
-                  value:
-                    enabled: false
+                  value: false
         '401':
           description: Unauthorized
           content:
@@ -3511,7 +3524,7 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/ErrorResponse'
-  /api/patch/mypage/notification-settings/email:
+
     patch:
       tags:
       - mypage
@@ -3554,6 +3567,8 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/ErrorResponse'
+
+
   /api/mypage/reminder-settings:
     get:
       tags:
@@ -3577,98 +3592,55 @@ paths:
                 required:
                 - enabled
                 - sendAtHour
-                - rules
+                - daysBefore
                 properties:
                   enabled:
                     type: boolean
-                    description: 리마인더 기능 사용 여부 (false면 발송하지 않음)
+                    description: sendAtHour가 null이면 false, 아니면 true
                     example: true
                   sendAtHour:
                     type: integer
                     minimum: 0
                     maximum: 23
-                    description: '리마인더 발송 시각(시 단위, 0~23). 분/초는 서버 정책에 따르며 기본은 정각(00분)으로
-                      동작할 수 있습니다.
-
-                      '
+                    nullable: true
                     example: 9
-                  rules:
-                    type: array
-                    description: '리마인더 규칙 목록. 기본은 D-1, D-Day 두 가지 규칙을 사용합니다. 공고별 예외/개별
-                      설정은 지원하지 않습니다.
-
-                      '
-                    items:
-                      type: object
-                      required:
-                      - when
-                      - channel
-                      properties:
-                        when:
-                          type: string
-                          description: 발송 기준일
-                          enum:
-                          - D_MINUS_1
-                          - D_DAY
-                          example: D_MINUS_1
-                        channel:
-                          type: string
-                          description: 발송 채널
-                          enum:
-                          - KAKAO_ALIMTALK
-                          - EMAIL
-                          example: KAKAO_ALIMTALK
+                  daysBefore:
+                    type: integer
+                    minimum: 0
+                    maximum: 365
+                    nullable: true
+                    example: 1
               examples:
                 mock1:
                   summary: Scenario 1
                   value:
                     enabled: false
-                    sendAtHour: 7
-                    rules:
-                    - when: D_MINUS_1
-                      channel: KAKAO_ALIMTALK
-                    - when: D_MINUS_1
-                      channel: KAKAO_ALIMTALK
+                    sendAtHour: null
+                    daysBefore: null
                 mock2:
                   summary: Scenario 2
                   value:
                     enabled: true
                     sendAtHour: 14
-                    rules:
-                    - when: D_DAY
-                      channel: EMAIL
-                    - when: D_DAY
-                      channel: EMAIL
+                    daysBefore: 1
                 mock3:
                   summary: Scenario 3
                   value:
                     enabled: false
-                    sendAtHour: 21
-                    rules:
-                    - when: D_MINUS_1
-                      channel: KAKAO_ALIMTALK
-                    - when: D_MINUS_1
-                      channel: KAKAO_ALIMTALK
+                    sendAtHour: null
+                    daysBefore: null
                 mock4:
                   summary: Scenario 4
                   value:
                     enabled: true
                     sendAtHour: 4
-                    rules:
-                    - when: D_DAY
-                      channel: EMAIL
-                    - when: D_DAY
-                      channel: EMAIL
+                    daysBefore: 3
                 mock5:
                   summary: Scenario 5
                   value:
                     enabled: false
-                    sendAtHour: 11
-                    rules:
-                    - when: D_MINUS_1
-                      channel: KAKAO_ALIMTALK
-                    - when: D_MINUS_1
-                      channel: KAKAO_ALIMTALK
+                    sendAtHour: null
+                    daysBefore: null
         '401':
           description: Unauthorized
           content:
@@ -3681,14 +3653,14 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/ErrorResponse'
+
     put:
       tags:
       - mypage
       summary: 리마인더 설정 저장
       description: '마감일 리마인더 설정을 저장(전체 덮어쓰기)합니다. (공고별 설정은 지원하지 않음)
 
-        enabled=false로 저장하면 리마인더를 발송하지 않습니다. rules는 사용할 규칙 목록이며, when+channel 조합은
-        중복되지 않도록 서버에서 검증합니다. JWT는 HttpOnly 쿠키로 인증됩니다. userId는 ULID를 사용합니다.
+        sendAtHour는 0~23시(로컬 기준)입니다. JWT는 HttpOnly 쿠키로 인증됩니다. userId는 ULID를 사용합니다.
 
         '
       operationId: mypage_putReminderSettings
@@ -3698,47 +3670,17 @@ paths:
           application/json:
             schema:
               type: object
-              required:
-              - enabled
-              - sendAtHour
-              - rules
               properties:
-                enabled:
-                  type: boolean
-                  description: 리마인더 기능 사용 여부
-                  example: true
                 sendAtHour:
                   type: integer
                   minimum: 0
                   maximum: 23
-                  description: 발송 시각(시 단위, 0~23)
                   example: 9
-                rules:
-                  type: array
-                  description: '리마인더 규칙 목록. 기본은 D-1, D-Day를 사용합니다. 공고별 예외/개별 설정은 지원하지
-                    않습니다.
-
-                    '
-                  items:
-                    type: object
-                    required:
-                    - when
-                    - channel
-                    properties:
-                      when:
-                        type: string
-                        description: 발송 기준일
-                        enum:
-                        - D_MINUS_1
-                        - D_DAY
-                        example: D_DAY
-                      channel:
-                        type: string
-                        description: 발송 채널
-                        enum:
-                        - KAKAO_ALIMTALK
-                        - EMAIL
-                        example: EMAIL
+                daysBefore:
+                  type: integer
+                  minimum: 0
+                  maximum: 365
+                  example: 1
       responses:
         '204':
           description: No Content (저장 완료)
@@ -3754,354 +3696,44 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/ErrorResponse'
-        '500':
-          description: Internal Server Error
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/ErrorResponse'
-  /api/mypage/interest-alert-settings:
-    get:
-      tags:
-      - mypage
-      summary: 관심 공고 알림 설정 조회
-      description: '관심 공고 알림(관심있을 만한 공고 추천, 신규 공고, 재추첨 공고 등) 수신 설정을 조회합니다. JWT는 HttpOnly
-        쿠키로 인증됩니다. userId는 ULID를 사용합니다.
-
-        '
-      operationId: mypage_getInterestAlertSettings
-      responses:
-        '200':
-          description: OK
+        '409':
+          description: Conflict (알림 채널 비활성화)
           content:
             application/json:
               schema:
                 type: object
-                required:
-                - enabled
-                - types
+                required: [code, message, status, details]
                 properties:
-                  enabled:
-                    type: boolean
-                    description: 관심 공고 알림 기능 사용 여부 (false면 전체 미발송)
-                    example: true
-                  types:
-                    type: array
-                    description: '수신할 관심 공고 알림 유형 목록. enabled=true일 때만 의미가 있습니다.
-
-                      '
-                    items:
-                      type: string
-                      enum:
-                      - RECOMMENDED
-                      - NEW_ANNOUNCEMENT
-                      - REOPENED
-                      example: NEW_ANNOUNCEMENT
-                  channels:
-                    type: array
-                    description: '관심 공고 알림 발송 채널. 미지정 시 서버 기본 채널 정책을 따를 수 있습니다. (예:
-                      카카오 가능하면 카카오, 아니면 이메일)
-
-                      '
-                    items:
-                      type: string
-                      enum:
-                      - KAKAO_ALIMTALK
-                      - EMAIL
-                      example: EMAIL
+                  code: { type: string }
+                  message: { type: string }
+                  status: { type: integer }
+                  details:
+                    type: object
+                    required: [field, reason]
+                    properties:
+                      field: { type: string }
+                      reason: { type: string }
               examples:
-                mock1:
-                  summary: Scenario 1
+                notificationChannelDisabled:
                   value:
-                    enabled: false
-                    types:
-                    - RECOMMENDED
-                    - RECOMMENDED
-                    channels:
-                    - KAKAO_ALIMTALK
-                    - KAKAO_ALIMTALK
-                mock2:
-                  summary: Scenario 2
-                  value:
-                    enabled: true
-                    types:
-                    - NEW_ANNOUNCEMENT
-                    - NEW_ANNOUNCEMENT
-                    channels:
-                    - EMAIL
-                    - EMAIL
-                mock3:
-                  summary: Scenario 3
-                  value:
-                    enabled: false
-                    types:
-                    - REOPENED
-                    - REOPENED
-                    channels:
-                    - KAKAO_ALIMTALK
-                    - KAKAO_ALIMTALK
-                mock4:
-                  summary: Scenario 4
-                  value:
-                    enabled: true
-                    types:
-                    - RECOMMENDED
-                    - RECOMMENDED
-                    channels:
-                    - EMAIL
-                    - EMAIL
-                mock5:
-                  summary: Scenario 5
-                  value:
-                    enabled: false
-                    types:
-                    - NEW_ANNOUNCEMENT
-                    - NEW_ANNOUNCEMENT
-                    channels:
-                    - KAKAO_ALIMTALK
-                    - KAKAO_ALIMTALK
-        '401':
-          description: Unauthorized
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/ErrorResponse'
+                    code: NOTIFICATION_CHANNEL_DISABLED
+                    message: 알림 채널(이메일/카카오)이 모두 비활성화되어 리마인더를 설정할 수 없습니다.
+                    status: 409
+                    details:
+                      field: channels
+                      reason: 이메일/카카오 중 최소 1개는 활성화되어야 합니다.
         '500':
           description: Internal Server Error
           content:
             application/json:
               schema:
                 $ref: '#/components/schemas/ErrorResponse'
-    put:
-      tags:
-      - mypage
-      summary: 관심 공고 알림 설정 저장
-      description: '관심 공고 알림 설정을 저장(전체 덮어쓰기)합니다. JWT는 HttpOnly 쿠키로 인증됩니다. userId는
-        ULID를 사용합니다.
 
-        '
-      operationId: mypage_putInterestAlertSettings
-      requestBody:
-        required: true
-        content:
-          application/json:
-            schema:
-              type: object
-              required:
-              - enabled
-              - types
-              properties:
-                enabled:
-                  type: boolean
-                  description: 관심 공고 알림 기능 사용 여부
-                  example: true
-                types:
-                  type: array
-                  description: 수신할 관심 공고 알림 유형 목록
-                  items:
-                    type: string
-                    enum:
-                    - RECOMMENDED
-                    - NEW_ANNOUNCEMENT
-                    - REOPENED
-                channels:
-                  type: array
-                  description: 발송 채널 목록(선택). 미지정 시 서버 기본 채널 정책 적용 가능
-                  items:
-                    type: string
-                    enum:
-                    - KAKAO_ALIMTALK
-                    - EMAIL
-      responses:
-        '204':
-          description: No Content (저장 완료)
-        '400':
-          description: Validation Error
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/ErrorResponse'
-        '401':
-          description: Unauthorized
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/ErrorResponse'
-        '500':
-          description: Internal Server Error
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/ErrorResponse'
-  /api/mypage/notification-status:
-    get:
-      tags:
-      - mypage
-      summary: 현재 알림 상태 조회
-      description: '현재 사용자의 알림 채널 사용 가능 여부 및 주요 알림 설정 상태를 요약해 반환합니다. JWT는 HttpOnly
-        쿠키로 인증됩니다. userId는 ULID를 사용합니다.
 
-        '
-      operationId: mypage_getNotificationStatus
-      responses:
-        '200':
-          description: OK
-          content:
-            application/json:
-              schema:
-                type: object
-                required:
-                - channels
-                - reminder
-                - interestAlerts
-                properties:
-                  channels:
-                    type: object
-                    description: 채널별 사용 가능/수신 설정 요약
-                    required:
-                    - kakao
-                    - email
-                    properties:
-                      kakao:
-                        type: object
-                        required:
-                        - supported
-                        - enabled
-                        properties:
-                          supported:
-                            type: boolean
-                            description: 카카오 회원(연동)이라 알림톡 채널 사용 가능 여부
-                            example: true
-                          enabled:
-                            type: boolean
-                            description: 카카오 알림톡 수신 설정
-                            example: true
-                      email:
-                        type: object
-                        required:
-                        - supported
-                        - enabled
-                        properties:
-                          supported:
-                            type: boolean
-                            description: (이메일 보유/검증 완료 등 서버 정책)
-                            example: true
-                          enabled:
-                            type: boolean
-                            description: 이메일 수신 설정
-                            example: false
-                  reminder:
-                    type: object
-                    description: 마감일 리마인더 설정 요약
-                    required:
-                    - enabled
-                    - sendAtHour
-                    properties:
-                      enabled:
-                        type: boolean
-                        example: true
-                      sendAtHour:
-                        type: integer
-                        minimum: 0
-                        maximum: 23
-                        example: 9
-                  interestAlerts:
-                    type: object
-                    description: 관심 공고 알림 설정 요약
-                    required:
-                    - enabled
-                    properties:
-                      enabled:
-                        type: boolean
-                        example: true
-              examples:
-                mock1:
-                  summary: Scenario 1
-                  value:
-                    channels:
-                      kakao:
-                        supported: false
-                        enabled: false
-                      email:
-                        supported: false
-                        enabled: false
-                    reminder:
-                      enabled: false
-                      sendAtHour: 7
-                    interestAlerts:
-                      enabled: false
-                mock2:
-                  summary: Scenario 2
-                  value:
-                    channels:
-                      kakao:
-                        supported: true
-                        enabled: true
-                      email:
-                        supported: true
-                        enabled: true
-                    reminder:
-                      enabled: true
-                      sendAtHour: 14
-                    interestAlerts:
-                      enabled: true
-                mock3:
-                  summary: Scenario 3
-                  value:
-                    channels:
-                      kakao:
-                        supported: false
-                        enabled: false
-                      email:
-                        supported: false
-                        enabled: false
-                    reminder:
-                      enabled: false
-                      sendAtHour: 21
-                    interestAlerts:
-                      enabled: false
-                mock4:
-                  summary: Scenario 4
-                  value:
-                    channels:
-                      kakao:
-                        supported: true
-                        enabled: true
-                      email:
-                        supported: true
-                        enabled: true
-                    reminder:
-                      enabled: true
-                      sendAtHour: 4
-                    interestAlerts:
-                      enabled: true
-                mock5:
-                  summary: Scenario 5
-                  value:
-                    channels:
-                      kakao:
-                        supported: false
-                        enabled: false
-                      email:
-                        supported: false
-                        enabled: false
-                    reminder:
-                      enabled: false
-                      sendAtHour: 11
-                    interestAlerts:
-                      enabled: false
-        '401':
-          description: Unauthorized
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/ErrorResponse'
-        '500':
-          description: Internal Server Error
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/ErrorResponse'
+
+
+
+
   /api/community/announcements/{announcementId}/comments:
     get:
       tags:
