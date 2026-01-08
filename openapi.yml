@@ -3378,107 +3378,118 @@ paths:
 
 
   /api/mypage/notification-settings/kakao:
-    get:
-      tags:
-      - mypage
-      summary: 카카오 알림톡 수신 설정 조회
-      description: '카카오 알림톡 수신 설정을 조회합니다. 카카오 회원(카카오 OAuth로 가입/연동된 사용자)이 아닌 경우 해당
-        채널은 지원되지 않습니다. JWT는 HttpOnly 쿠키로 인증됩니다. userId는 ULID를 사용합니다.
+      get:
+        tags:
+        - mypage
+        summary: 카카오 알림톡 수신 설정 조회
+        description: '카카오 알림톡 수신 설정을 조회합니다. 카카오 회원(카카오 OAuth로 가입/연동된 사용자)이 아닌 경우 해당
+          채널은 지원되지 않습니다. JWT는 HttpOnly 쿠키로 인증됩니다. userId는 ULID를 사용합니다.
 
-        '
-      operationId: mypage_getKakaoNotificationSetting
-      responses:
-        '200':
-          description: OK
-          content:
-            application/json:
-              schema:
-                type: boolean
-              examples:
-                mock1:
-                  summary: Scenario 1
-                  value: false
-                mock2:
-                  summary: Scenario 2
-                  value: true
-                mock3:
-                  summary: Scenario 3
-                  value: false
-                mock4:
-                  summary: Scenario 4
-                  value: true
-                mock5:
-                  summary: Scenario 5
-                  value: false
-        '401':
-          description: Unauthorized
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/ErrorResponse'
-        '403':
-          description: Forbidden (카카오 회원이 아님)
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/ErrorResponse'
-        '500':
-          description: Internal Server Error
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/ErrorResponse'
+          '
+        operationId: mypage_getKakaoNotificationSetting
+        responses:
+          '200':
+            description: OK
+            content:
+              application/json:
+                schema:
+                  type: object
+                  required:
+                  - enabled
+                  properties:
+                    enabled:
+                      type: boolean
+                      description: true=수신, false=미수신
+                      example: true
+                examples:
+                  mock1:
+                    summary: Scenario 1
+                    value:
+                      enabled: false
+                  mock2:
+                    summary: Scenario 2
+                    value:
+                      enabled: true
+                  mock3:
+                    summary: Scenario 3
+                    value:
+                      enabled: false
+                  mock4:
+                    summary: Scenario 4
+                    value:
+                      enabled: true
+                  mock5:
+                    summary: Scenario 5
+                    value:
+                      enabled: false
+          '401':
+            description: Unauthorized
+            content:
+              application/json:
+                schema:
+                  $ref: '#/components/schemas/ErrorResponse'
+          '403':
+            description: Forbidden (카카오 회원이 아님)
+            content:
+              application/json:
+                schema:
+                  $ref: '#/components/schemas/ErrorResponse'
+          '500':
+            description: Internal Server Error
+            content:
+              application/json:
+                schema:
+                  $ref: '#/components/schemas/ErrorResponse'
 
-    patch:
-      tags:
-      - mypage
-      summary: 카카오 알림톡 수신 설정 변경
-      description: '카카오 알림톡 수신 설정을 변경합니다. 카카오 회원(카카오 OAuth로 가입/연동된 사용자)이 아닌 경우 해당
-        채널은 지원되지 않습니다. JWT는 HttpOnly 쿠키로 인증됩니다. userId는 ULID를 사용합니다.
+      patch:
+        tags:
+        - mypage
+        summary: 카카오 알림톡 수신 설정 변경
+        description: '카카오 알림톡 수신 설정을 변경합니다. 카카오 회원(카카오 OAuth로 가입/연동된 사용자)이 아닌 경우 해당
+          채널은 지원되지 않습니다. JWT는 HttpOnly 쿠키로 인증됩니다. userId는 ULID를 사용합니다.
 
-        '
-      operationId: patch_mypage_kakaoNotificationSetting
-      requestBody:
-        required: true
-        content:
-          application/json:
-            schema:
-              type: object
-              required:
-              - enabled
-              properties:
-                enabled:
-                  type: boolean
-                  description: true=수신, false=미수신
-                  example: true
-      responses:
-        '204':
-          description: No Content
-        '400':
-          description: Validation Error
+          '
+        operationId: patch_mypage_kakaoNotificationSetting
+        requestBody:
+          required: true
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/ErrorResponse'
-        '401':
-          description: Unauthorized
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/ErrorResponse'
-        '403':
-          description: Forbidden (카카오 회원이 아님)
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/ErrorResponse'
-        '500':
-          description: Internal Server Error
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/ErrorResponse'
-
+                type: object
+                required:
+                - enabled
+                properties:
+                  enabled:
+                    type: boolean
+                    description: true=수신, false=미수신
+                    example: true
+        responses:
+          '204':
+            description: No Content
+          '400':
+            description: Validation Error
+            content:
+              application/json:
+                schema:
+                  $ref: '#/components/schemas/ErrorResponse'
+          '401':
+            description: Unauthorized
+            content:
+              application/json:
+                schema:
+                  $ref: '#/components/schemas/ErrorResponse'
+          '403':
+            description: Forbidden (카카오 회원이 아님)
+            content:
+              application/json:
+                schema:
+                  $ref: '#/components/schemas/ErrorResponse'
+          '500':
+            description: Internal Server Error
+            content:
+              application/json:
+                schema:
+                  $ref: '#/components/schemas/ErrorResponse'
 
   /api/mypage/notification-settings/email:
     get:
@@ -3495,23 +3506,35 @@ paths:
           content:
             application/json:
               schema:
-                type: boolean
+                type: object
+                required:
+                - enabled
+                properties:
+                  enabled:
+                    type: boolean
+                    description: true=수신, false=미수신
+                    example: false
               examples:
                 mock1:
                   summary: Scenario 1
-                  value: false
+                  value:
+                    enabled: false
                 mock2:
                   summary: Scenario 2
-                  value: true
+                  value:
+                    enabled: true
                 mock3:
                   summary: Scenario 3
-                  value: false
+                  value:
+                    enabled: false
                 mock4:
                   summary: Scenario 4
-                  value: true
+                  value:
+                    enabled: true
                 mock5:
                   summary: Scenario 5
-                  value: false
+                  value:
+                    enabled: false
         '401':
           description: Unauthorized
           content:
@@ -3661,6 +3684,7 @@ paths:
       description: '마감일 리마인더 설정을 저장(전체 덮어쓰기)합니다. (공고별 설정은 지원하지 않음)
 
         sendAtHour는 0~23시(로컬 기준)입니다. JWT는 HttpOnly 쿠키로 인증됩니다. userId는 ULID를 사용합니다.
+        sendAtHour 및 daysBefore 중 하나라도 Null 이면 enabled=false로 간주됩니다.
 
         '
       operationId: mypage_putReminderSettings
