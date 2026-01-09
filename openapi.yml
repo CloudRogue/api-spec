@@ -1704,23 +1704,21 @@ paths:
   /api/announcements/{announcementId}:
     get:
       tags:
-      - announcements
+        - announcements
       summary: 공고 상세 조회
-      description: '공고 상세 정보를 반환합니다. eligibility는 원문에서 추출된 "지원 조건"을 정규화한 구조입니다.
-        일부 조건은 원문에 없거나 추출 실패 시 null/빈 값일 수 있습니다. 공고에 조건 정보가 전혀 없으면 eligibility 자체가 null일 수 있습니다.
+      description: >
+        공고 상세 정보를 반환합니다.
         인증은 HttpOnly 쿠키(JWT)로 처리됩니다.
-
-        '
       operationId: announcements_getAnnouncementDetail
       parameters:
-      - name: announcementId
-        in: path
-        required: true
-        schema:
-          type: integer
-          format: int64
-        description: 공고 PK
-        example: 12345
+        - name: announcementId
+          in: path
+          required: true
+          schema:
+            type: integer
+            format: int64
+          description: 공고 PK
+          example: 12345
       responses:
         '200':
           description: OK
@@ -1729,17 +1727,16 @@ paths:
               schema:
                 type: object
                 required:
-                - announcementId
-                - publisher
-                - title
-                - housingType
-                - startDate
-                - endDate
-                - publishedAt
-                - status
-                - originalUrl
-                - externalApplyUrl
-                - eligibility
+                  - announcementId
+                  - publisher
+                  - title
+                  - housingType
+                  - startDate
+                  - endDate
+                  - publishedAt
+                  - status
+                  - originalUrl
+                  - externalApplyUrl
                 properties:
                   announcementId:
                     type: integer
@@ -1776,11 +1773,7 @@ paths:
                   status:
                     type: string
                     description: 공고 접수 상태(앱 뱃지에 사용)
-                    enum:
-                    - OPEN
-                    - DUE_SOON
-                    - UPCOMING
-                    - CLOSED
+                    enum: [OPEN, DUE_SOON, UPCOMING, CLOSED]
                     example: DUE_SOON
                   dDay:
                     type: integer
@@ -1833,152 +1826,6 @@ paths:
                     nullable: true
                     description: 모집공고 URL
                     example: https://example.org/announcements/12345
-                  eligibility:
-                    type: object
-                    nullable: true
-                    description: '지원 조건(정규화) - 없는 항목은 null. 공고에 조건 정보가 전혀 없으면 eligibility 자체가 null일 수 있습니다.'
-                    properties:
-                      age:
-                        type: object
-                        nullable: true
-                        description: 나이 요건(없으면 null)
-                        properties:
-                          min:
-                            type: integer
-                            nullable: true
-                            minimum: 0
-                            example: 19
-                          max:
-                            type: integer
-                            nullable: true
-                            minimum: 0
-                            example: 34
-                          displayText:
-                            type: string
-                            nullable: true
-                            example: 만 19~34세
-                      region:
-                        type: object
-                        nullable: true
-                        description: 거주지역 요건(정규화, 없으면 null)
-                        properties:
-                          ruleType:
-                            type: string
-                            nullable: true
-                            enum:
-                            - INCLUDE
-                            - EXCLUDE
-                            description: 'codes 적용 방식
-
-                              - INCLUDE: codes에 포함된 지역만 허용
-
-                              - EXCLUDE: codes에 포함된 지역은 제외
-
-                              '
-                            example: INCLUDE
-                          codes:
-                            type: array
-                            items:
-                              type: string
-                            description: 대상 지역 코드 목록
-                            example:
-                            - '11'
-                          displayText:
-                            type: string
-                            nullable: true
-                            description: 화면 표기용(원문 요약)
-                            example: 서울특별시 거주
-                      income:
-                        type: object
-                        nullable: true
-                        description: 소득 요건(정규화, 없으면 null)
-                        properties:
-                          metric:
-                            type: string
-                            nullable: true
-                            enum:
-                            - MEDIAN_INCOME_PERCENT
-                            - INCOME_DECILE
-                            - HEALTH_INSURANCE_PREMIUM
-                            description: '값 해석 기준(단위/의미)
-
-                              - MEDIAN_INCOME_PERCENT: 중위소득 퍼센트(예: 150 = 150%)
-
-                              - INCOME_DECILE: 소득 분위(예: 3 = 3분위)
-
-                              - HEALTH_INSURANCE_PREMIUM: 건강보험료(원, 월 기준)
-
-                              '
-                            example: MEDIAN_INCOME_PERCENT
-                          operator:
-                            type: string
-                            nullable: true
-                            enum:
-                            - LTE
-                            - LT
-                            - GTE
-                            - GT
-                            - EQ
-                            - BETWEEN
-                            description: '비교 연산자
-
-                              - LTE/LT/GTE/GT/EQ: value 단일 기준
-
-                              - BETWEEN: value(하한) ~ value2(상한) 범위
-
-                              '
-                            example: LTE
-                          value:
-                            type: number
-                            nullable: true
-                            description: 기준값(metric에 따라 단위 상이)
-                            example: 150
-                          value2:
-                            type: number
-                            nullable: true
-                            description: operator=BETWEEN일 때 상한값
-                            example: 200
-                          householdSizeMin:
-                            type: integer
-                            nullable: true
-                            minimum: 1
-                            example: 1
-                          householdSizeMax:
-                            type: integer
-                            nullable: true
-                            minimum: 1
-                            example: 3
-                          displayText:
-                            type: string
-                            nullable: true
-                            example: 중위소득 150% 이하
-                      subscriptionAccount:
-                        type: object
-                        nullable: true
-                        description: 청약통장 요건(정규화, 없으면 null)
-                        properties:
-                          가입기간MonthsMin:
-                            type: integer
-                            nullable: true
-                            minimum: 0
-                            description: 청약통장 가입기간 최소(개월)
-                            example: 12
-                          납입횟수Min:
-                            type: integer
-                            nullable: true
-                            minimum: 0
-                            description: 청약통장 납입 횟수 최소
-                            example: 24
-                          displayText:
-                            type: string
-                            nullable: true
-                            description: 화면 표기용(원문 요약)
-                            example: 가입 12개월 이상, 납입 24회 이상
-                      notes:
-                        type: string
-                        nullable: true
-                        description: 예외/특기사항(정규화가 어려운 내용만)
-                        example: 일부 유형은 신혼부부 우선
                   originalUrl:
                     type: string
                     format: uri
@@ -1994,6 +1841,7 @@ paths:
                     nullable: true
                     description: 로그인 사용자 기준 찜 여부(비로그인 시 null 또는 미포함 가능)
                     example: true
+
               examples:
                 mock1:
                   summary: Scenario 1
@@ -2008,29 +1856,6 @@ paths:
                     status: OPEN
                     originalUrl: https://example.com/1
                     externalApplyUrl: https://example.com/1
-                    eligibility:
-                      age:
-                        min: 19
-                        max: 34
-                        displayText: 만 19~34세
-                      region:
-                        ruleType: INCLUDE
-                        codes:
-                        - '11'
-                        displayText: 서울특별시 거주
-                      income:
-                        metric: MEDIAN_INCOME_PERCENT
-                        operator: LTE
-                        value: 150
-                        value2: null
-                        householdSizeMin: 1
-                        householdSizeMax: 3
-                        displayText: 중위소득 150% 이하
-                      subscriptionAccount:
-                        가입기간MonthsMin: 12
-                        납입횟수Min: 24
-                        displayText: 가입 12개월 이상, 납입 24회 이상
-                      notes: 일부 유형은 신혼부부 우선
                     dDay: 7
                     rentGtn: 5000000
                     enty: 500000
@@ -2042,6 +1867,7 @@ paths:
                     refrnLegaldongNm: 역삼동
                     url: https://example.com/1
                     isScrapped: false
+
                 mock2:
                   summary: Scenario 2
                   value:
@@ -2055,12 +1881,6 @@ paths:
                     status: DUE_SOON
                     originalUrl: https://example.com/2
                     externalApplyUrl: https://example.com/2
-                    eligibility:
-                      age: null
-                      region: null
-                      income: null
-                      subscriptionAccount: null
-                      notes: null
                     dDay: 14
                     rentGtn: 5000000
                     enty: 500000
@@ -2072,6 +1892,7 @@ paths:
                     refrnLegaldongNm: 역삼동
                     url: https://example.com/2
                     isScrapped: true
+
                 mock3:
                   summary: Scenario 3
                   value:
@@ -2085,16 +1906,6 @@ paths:
                     status: UPCOMING
                     originalUrl: https://example.com/3
                     externalApplyUrl: https://example.com/3
-                    eligibility:
-                      age: null
-                      region:
-                        ruleType: INCLUDE
-                        codes:
-                        - '11'
-                        displayText: 서울특별시 거주
-                      income: null
-                      subscriptionAccount: null
-                      notes: null
                     dDay: 21
                     rentGtn: 5000000
                     enty: 500000
@@ -2106,6 +1917,7 @@ paths:
                     refrnLegaldongNm: 역삼동
                     url: https://example.com/3
                     isScrapped: false
+
                 mock4:
                   summary: Scenario 4
                   value:
@@ -2119,19 +1931,6 @@ paths:
                     status: CLOSED
                     originalUrl: https://example.com/4
                     externalApplyUrl: https://example.com/4
-                    eligibility:
-                      age: null
-                      region: null
-                      income:
-                        metric: MEDIAN_INCOME_PERCENT
-                        operator: LTE
-                        value: 150
-                        value2: null
-                        householdSizeMin: null
-                        householdSizeMax: null
-                        displayText: 중위소득 150% 이하
-                      subscriptionAccount: null
-                      notes: null
                     dDay: 28
                     rentGtn: 5000000
                     enty: 500000
@@ -2143,6 +1942,7 @@ paths:
                     refrnLegaldongNm: 역삼동
                     url: https://example.com/4
                     isScrapped: true
+
                 mock5:
                   summary: Scenario 5
                   value:
@@ -2156,7 +1956,6 @@ paths:
                     status: OPEN
                     originalUrl: https://example.com/5
                     externalApplyUrl: https://example.com/5
-                    eligibility: null
                     dDay: null
                     rentGtn: null
                     enty: null
@@ -2168,36 +1967,186 @@ paths:
                     refrnLegaldongNm: null
                     url: null
                     isScrapped: null
-        '400':
-          description: Bad Request (Validation Error)
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/ErrorResponse'
-        '401':
-          description: Unauthorized (인증 필요/만료)
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/ErrorResponse'
-        '403':
-          description: Forbidden (권한 없음)
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/ErrorResponse'
-        '404':
-          description: Not Found (공고 없음)
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/ErrorResponse'
-        '500':
-          description: Internal Server Error
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/ErrorResponse'
+
+
+  /api/announcements/{announcementId}/eligibility:
+
+      get:
+        tags:
+          - announcements
+        summary: (마이페이지) 공고 지원 조건(eligibility) 조회
+        description: >
+          공고(announcementId)의 지원 조건(eligibility)을 조회합니다.
+          eligibility는 원문에서 추출된 "지원 조건"을 정규화한 구조입니다.
+          일부 조건은 원문에 없거나 추출 실패 시 null/빈 값일 수 있습니다.
+          공고에 조건 정보가 전혀 없으면 eligibility 자체가 null일 수 있습니다.
+          인증은 HttpOnly 쿠키(JWT)로 처리됩니다.
+        operationId: announcements_getAnnouncementEligibility
+        parameters:
+          - name: announcementId
+            in: path
+            required: true
+            schema: { type: integer, format: int64 }
+            description: 공고 PK
+            example: 12345
+        responses:
+          '200':
+            description: OK
+            content:
+              application/json:
+                schema:
+                  type: object
+                  required: [announcementId, eligibility]
+                  properties:
+                    announcementId:
+                      type: integer
+                      format: int64
+                      description: 공고 PK
+                      example: 12345
+                    eligibility:
+                      type: object
+                      nullable: true
+                      description: >
+                        지원 조건(정규화) - 없는 항목은 null.
+                        공고에 조건 정보가 전혀 없으면 eligibility 자체가 null일 수 있습니다.
+                      properties:
+                        age:
+                          type: object
+                          nullable: true
+                          properties:
+                            min: { type: integer, nullable: true, minimum: 0, example: 19 }
+                            max: { type: integer, nullable: true, minimum: 0, example: 34 }
+                            displayText: { type: string, nullable: true, example: "만 19~34세" }
+                        region:
+                          type: object
+                          nullable: true
+                          properties:
+                            ruleType:
+                              type: string
+                              nullable: true
+                              enum: [INCLUDE, EXCLUDE]
+                              example: INCLUDE
+                            codes:
+                              type: array
+                              items: { type: string }
+                              example: ['11']
+                            displayText:
+                              type: string
+                              nullable: true
+                              example: "서울특별시 거주"
+                        income:
+                          type: object
+                          nullable: true
+                          properties:
+                            metric:
+                              type: string
+                              nullable: true
+                              enum: [MEDIAN_INCOME_PERCENT, INCOME_DECILE, HEALTH_INSURANCE_PREMIUM]
+                              example: MEDIAN_INCOME_PERCENT
+                            operator:
+                              type: string
+                              nullable: true
+                              enum: [LTE, LT, GTE, GT, EQ, BETWEEN]
+                              example: LTE
+                            value: { type: number, nullable: true, example: 150 }
+                            value2: { type: number, nullable: true, example: 200 }
+                            householdSizeMin: { type: integer, nullable: true, minimum: 1, example: 1 }
+                            householdSizeMax: { type: integer, nullable: true, minimum: 1, example: 3 }
+                            displayText:
+                              type: string
+                              nullable: true
+                              example: "중위소득 150% 이하"
+                        subscriptionAccount:
+                          type: object
+                          nullable: true
+                          properties:
+                            가입기간MonthsMin:
+                              type: integer
+                              nullable: true
+                              minimum: 0
+                              example: 12
+                            납입횟수Min:
+                              type: integer
+                              nullable: true
+                              minimum: 0
+                              example: 24
+                            displayText:
+                              type: string
+                              nullable: true
+                              example: "가입 12개월 이상, 납입 24회 이상"
+                        notes:
+                          type: string
+                          nullable: true
+                          example: "일부 유형은 신혼부부 우선"
+
+                examples:
+                  mock1:
+                    summary: Scenario 1 (age+region+income+subscriptionAccount+notes)
+                    value:
+                      announcementId: 900001
+                      eligibility:
+                        age: { min: 19, max: 34, displayText: "만 19~34세" }
+                        region: { ruleType: INCLUDE, codes: ['11'], displayText: "서울특별시 거주" }
+                        income:
+                          metric: MEDIAN_INCOME_PERCENT
+                          operator: LTE
+                          value: 150
+                          value2: null
+                          householdSizeMin: 1
+                          householdSizeMax: 3
+                          displayText: "중위소득 150% 이하"
+                        subscriptionAccount:
+                          가입기간MonthsMin: 12
+                          납입횟수Min: 24
+                          displayText: "가입 12개월 이상, 납입 24회 이상"
+                        notes: "일부 유형은 신혼부부 우선"
+
+                  mock2:
+                    summary: Scenario 2 (eligibility는 있으나 내부 항목 전부 null)
+                    value:
+                      announcementId: 900002
+                      eligibility:
+                        age: null
+                        region: null
+                        income: null
+                        subscriptionAccount: null
+                        notes: null
+
+                  mock3:
+                    summary: Scenario 3 (region만 존재)
+                    value:
+                      announcementId: 900003
+                      eligibility:
+                        age: null
+                        region: { ruleType: INCLUDE, codes: ['11'], displayText: "서울특별시 거주" }
+                        income: null
+                        subscriptionAccount: null
+                        notes: null
+
+                  mock4:
+                    summary: Scenario 4 (income만 존재)
+                    value:
+                      announcementId: 900004
+                      eligibility:
+                        age: null
+                        region: null
+                        income:
+                          metric: MEDIAN_INCOME_PERCENT
+                          operator: LTE
+                          value: 150
+                          value2: null
+                          householdSizeMin: null
+                          householdSizeMax: null
+                          displayText: "중위소득 150% 이하"
+                        subscriptionAccount: null
+                        notes: null
+
+                  mock5:
+                    summary: Scenario 5 (공고에 조건 정보 전혀 없음 -> eligibility=null)
+                    value:
+                      announcementId: 900005
+                      eligibility: null
+
 
 
   /api/announcements/{announcementId}/summary:
@@ -2426,194 +2375,284 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/ErrorResponse'
+
   /api/announcements/{announcementId}/eligibility/check:
     post:
       tags:
-      - announcements
+        - announcements
       summary: 자격 자가 진단 실행
-      description: '유저 프로필/온보딩 데이터와 공고 기준을 대조하여 자격 여부 및 심사 요소별 결과를 반환합니다. 인증은 HttpOnly
-        쿠키(JWT)로 처리됩니다.
-
-        '
+      description: >
+        유저 프로필/온보딩 데이터와 공고 기준을 대조하여 자격 진단 결과를 반환합니다.
+        인증은 HttpOnly 쿠키(JWT)로 처리됩니다.
       operationId: announcements_checkEligibility
       parameters:
-      - name: announcementId
-        in: path
-        required: true
-        schema:
-          type: integer
-          format: int64
-        description: 공고 PK
-        example: 12345
+        - name: announcementId
+          in: path
+          required: true
+          schema:
+            type: integer
+            format: int64
+          description: 공고 PK
+          example: 12345
+
       responses:
-        '200':
+        "200":
           description: OK
           content:
             application/json:
               schema:
-                type: object
-                required:
-                - eligible
-                - checks
-                properties:
-                  eligible:
-                    type: boolean
-                    description: 최종 자격 충족 여부
-                    example: true
-                  rank:
-                    type: string
-                    nullable: true
-                    description: 순위(해당 공고에서 순위 체계가 있을 때만 제공)
-                    example: 1순위
-                  checks:
-                    type: array
-                    description: '심사 요소별 판정 결과. 성공/실패 모두 제공.
+                oneOf:
+                  # 1) 지원 가능
+                  - type: object
+                    required:
+                      - supportStatus
+                      - diagnosedAt
+                      - predictedRank
+                      - predictedBonusPoints
+                      - trace
+                    additionalProperties: false
+                    properties:
+                      supportStatus:
+                        type: string
+                        enum: [ELIGIBLE, INELIGIBLE, PENDING]
+                        description: 지원 상태 (ELIGIBLE=지원가능, INELIGIBLE=지원불가능, PENDING=진단보류)
+                        example: ELIGIBLE
+                      diagnosedAt:
+                        type: string
+                        format: date-time
+                        description: 진단 최신 일시(서버 기준)
+                        example: "2026-01-09T16:10:00+09:00"
+                      predictedRank:
+                        type: integer
+                        enum: [1, 2, 3]
+                        description: 예상 순위 (지원 가능/진단 보류일 때 제공)
+                        example: 1
+                      predictedBonusPoints:
+                        type: integer
+                        minimum: 0
+                        description: 예상 가산점 (지원 가능/진단 보류일 때 제공)
+                        example: 3
+                      trace:
+                        type: array
+                        description: >
+                          가변 판정 결과 리스트(심사 요소별).
+                          key는 질문 텍스트, passed는 통과 여부, message는 AI 판단 근거/설명입니다.
+                        items:
+                          type: object
+                          required: [key, passed, message]
+                          additionalProperties: false
+                          properties:
+                            key:
+                              type: string
+                              description: 질문 텍스트(사용자에게 노출되는 문구)
+                              example: "무주택 세대구성원인가요?"
+                            passed:
+                              type: boolean
+                              description: 해당 요소 통과 여부
+                              example: true
+                            message:
+                              type: string
+                              description: AI가 어떻게 판단했는지(근거/설명)
+                              example: "프로필 상 '주택 보유: 없음'으로 확인되어 무주택 요건을 충족합니다."
+                    allOf:
+                      - type: object
+                        properties:
+                          supportStatus: { type: string, enum: [ELIGIBLE] }
 
-                      '
-                    items:
-                      type: object
-                      required:
-                      - key
-                      - passed
-                      - message
-                      properties:
-                        passed:
-                          type: boolean
-                          description: 해당 요소 통과 여부
-                          example: true
-                        expected:
-                          type: string
-                          nullable: true
-                          description: 기준 요약(선택)
-                          example: 소득 4분위 이하
-                        actual:
-                          type: string
-                          nullable: true
-                          description: 사용자 값 요약(선택)
-                          example: 소득 3분위
-                        message:
-                          type: string
-                          description: 사용자 노출 문구(성공/실패/주의 모두 가능)
-                          example: 소득 기준을 충족합니다.
+                  # 2) 지원 불가능
+                  - type: object
+                    required: [supportStatus, diagnosedAt, trace]
+                    additionalProperties: false
+                    properties:
+                      supportStatus:
+                        type: string
+                        enum: [ELIGIBLE, INELIGIBLE, PENDING]
+                        description: 지원 상태 (ELIGIBLE=지원가능, INELIGIBLE=지원불가능, PENDING=진단보류)
+                        example: INELIGIBLE
+                      diagnosedAt:
+                        type: string
+                        format: date-time
+                        description: 진단 최신 일시(서버 기준)
+                        example: "2026-01-09T16:10:00+09:00"
+                      trace:
+                        type: array
+                        description: >
+                          가변 판정 결과 리스트(심사 요소별).
+                          key는 질문 텍스트, passed는 통과 여부, message는 AI 판단 근거/설명입니다.
+                        items:
+                          type: object
+                          required: [key, passed, message]
+                          additionalProperties: false
+                          properties:
+                            key:
+                              type: string
+                              description: 질문 텍스트(사용자에게 노출되는 문구)
+                              example: "무주택 세대구성원인가요?"
+                            passed:
+                              type: boolean
+                              description: 해당 요소 통과 여부
+                              example: false
+                            message:
+                              type: string
+                              description: AI가 어떻게 판단했는지(근거/설명)
+                              example: "프로필 상 '주택 보유: 있음'으로 확인되어 무주택 요건을 충족하지 않습니다."
+                    allOf:
+                      - type: object
+                        properties:
+                          supportStatus: { type: string, enum: [INELIGIBLE] }
+
+                  # 3) 진단 보류 (항상 추가 온보딩 필요)
+                  - type: object
+                    required:
+                      - supportStatus
+                      - diagnosedAt
+                      - predictedRank
+                      - predictedBonusPoints
+                      - needsAdditionalOnboarding
+                      - requiredOnboardingProfileIds
+                      - trace
+                    additionalProperties: false
+                    properties:
+                      supportStatus:
+                        type: string
+                        enum: [ELIGIBLE, INELIGIBLE, PENDING]
+                        description: 지원 상태 (ELIGIBLE=지원가능, INELIGIBLE=지원불가능, PENDING=진단보류)
+                        example: PENDING
+                      diagnosedAt:
+                        type: string
+                        format: date-time
+                        description: 진단 최신 일시(서버 기준)
+                        example: "2026-01-09T16:10:00+09:00"
+                      predictedRank:
+                        type: integer
+                        enum: [1, 2, 3]
+                        description: 예상 순위 (지원 가능/진단 보류일 때 제공)
+                        example: 2
+                      predictedBonusPoints:
+                        type: integer
+                        minimum: 0
+                        description: 예상 가산점 (지원 가능/진단 보류일 때 제공)
+                        example: 1
+                      needsAdditionalOnboarding:
+                        type: boolean
+                        enum: [true]
+                        description: 진단 보류 시 추가 온보딩 필요 여부 (현재는 항상 true)
+                        example: true
+                      requiredOnboardingProfileIds:
+                        type: array
+                        minItems: 1
+                        description: 추가로 필요한 온보딩 질문(Profile) PK 리스트
+                        items:
+                          type: integer
+                          format: int64
+                        example: [101, 203, 305]
+                      trace:
+                        type: array
+                        description: >
+                          가변 판정 결과 리스트(심사 요소별).
+                          key는 질문 텍스트, passed는 통과 여부, message는 AI 판단 근거/설명입니다.
+                        items:
+                          type: object
+                          required: [key, passed, message]
+                          additionalProperties: false
+                          properties:
+                            key:
+                              type: string
+                              description: 질문 텍스트(사용자에게 노출되는 문구)
+                              example: "가구원 수는 몇 명인가요?"
+                            passed:
+                              type: boolean
+                              description: 해당 요소 통과 여부
+                              example: false
+                            message:
+                              type: string
+                              description: AI가 어떻게 판단했는지(근거/설명)
+                              example: "가구원 수 정보가 없어 세대원 기준 판단이 불가능합니다. 추가 입력이 필요합니다."
+                    allOf:
+                      - type: object
+                        properties:
+                          supportStatus: { type: string, enum: [PENDING] }
+
               examples:
-                mock1:
-                  summary: Scenario 1
+                eligible:
+                  summary: 지원 가능 (ELIGIBLE)
                   value:
-                    eligible: false
-                    checks:
-                    - key: null
-                      passed: false
-                      message: Mock message 내용 1
-                    - key: null
-                      passed: false
-                      message: Mock message 내용 1
-                    rank: 1순위
-                mock2:
-                  summary: Scenario 2
+                    supportStatus: ELIGIBLE
+                    diagnosedAt: "2026-01-09T16:10:00+09:00"
+                    predictedRank: 1
+                    predictedBonusPoints: 3
+                    trace:
+                      - key: "무주택 세대구성원인가요?"
+                        passed: true
+                        message: "프로필 상 '주택 보유: 없음'으로 확인되어 무주택 요건을 충족합니다."
+                      - key: "소득이 4분위 이하인가요?"
+                        passed: true
+                        message: "소득 3분위로 확인되어 기준(4분위 이하)을 충족합니다."
+
+                ineligible:
+                  summary: 지원 불가능 (INELIGIBLE)
                   value:
-                    eligible: true
-                    checks:
-                    - key: null
-                      passed: true
-                      message: 'Mock message 내용 2
+                    supportStatus: INELIGIBLE
+                    diagnosedAt: "2026-01-09T16:10:00+09:00"
+                    trace:
+                      - key: "무주택 세대구성원인가요?"
+                        passed: false
+                        message: "프로필 상 '주택 보유: 있음'으로 확인되어 무주택 요건을 충족하지 않습니다."
+                      - key: "소득이 4분위 이하인가요?"
+                        passed: true
+                        message: "소득 3분위로 확인되어 기준(4분위 이하)을 충족합니다."
 
-
-                        - 긴 텍스트 테스트
-
-                        - 항목
-
-                        - 항목
-
-                        - 항목
-
-                        - 항목
-
-                        - 항목
-
-                        '
-                    - key: null
-                      passed: true
-                      message: 'Mock message 내용 2
-
-
-                        - 긴 텍스트 테스트
-
-                        - 항목
-
-                        - 항목
-
-                        - 항목
-
-                        - 항목
-
-                        - 항목
-
-                        '
-                    rank: 1순위
-                mock3:
-                  summary: Scenario 3
+                pending_need_onboarding:
+                  summary: 진단 보류 (PENDING, 추가 온보딩 필요)
                   value:
-                    eligible: false
-                    checks:
-                    - key: null
-                      passed: false
-                      message: Mock message 내용 3
-                    - key: null
-                      passed: false
-                      message: Mock message 내용 3
-                    rank: 1순위
-                mock4:
-                  summary: Scenario 4
-                  value:
-                    eligible: true
-                    checks:
-                    - key: null
-                      passed: true
-                      message: Mock message 내용 4
-                    - key: null
-                      passed: true
-                      message: Mock message 내용 4
-                    rank: 1순위
-                mock5:
-                  summary: Scenario 5
-                  value:
-                    eligible: false
-                    checks:
-                    - key: null
-                      passed: false
-                      message: Mock message 내용 5
-                      expected: null
-                      actual: null
-                    - key: null
-                      passed: false
-                      message: Mock message 내용 5
-                      expected: null
-                      actual: null
-                    rank: null
-        '401':
+                    supportStatus: PENDING
+                    diagnosedAt: "2026-01-09T16:10:00+09:00"
+                    predictedRank: 2
+                    predictedBonusPoints: 1
+                    needsAdditionalOnboarding: true
+                    requiredOnboardingProfileIds: [101, 203, 305]
+                    trace:
+                      - key: "가구원 수는 몇 명인가요?"
+                        passed: false
+                        message: "가구원 수 정보가 없어 세대원 기준 판단이 불가능합니다. 추가 입력이 필요합니다."
+                      - key: "무주택 세대구성원인가요?"
+                        passed: true
+                        message: "프로필 상 '주택 보유: 없음'으로 확인되어 무주택 요건을 충족합니다."
+
+        "401":
           description: Unauthorized
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/ErrorResponse'
-        '404':
+                $ref: "#/components/schemas/ErrorResponse"
+
+        "403":
+          description: Forbidden (온보딩 미완료)
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+
+        "404":
           description: Not Found
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/ErrorResponse'
-        '409':
+                $ref: "#/components/schemas/ErrorResponse"
+
+        "409":
           description: 공고 기준 데이터 미구성 등으로 진단 불가
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/ErrorResponse'
-        '500':
+                $ref: "#/components/schemas/ErrorResponse"
+
+        "500":
           description: Internal Server Error
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/ErrorResponse'
+                $ref: "#/components/schemas/ErrorResponse"
 
   /api/mypage/profile:
     get:
@@ -3753,11 +3792,7 @@ paths:
               schema:
                 $ref: '#/components/schemas/ErrorResponse'
 
-
-
-
-
-
+  
   /api/community/announcements/{announcementId}/comments:
     get:
       tags:
