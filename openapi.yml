@@ -2574,6 +2574,8 @@ paths:
           content:
             application/json:
               schema: { $ref: "#/components/schemas/ErrorResponse" }
+              
+  /api/onboarding/additional-answers:
     post:
       tags: [onboarding]
       summary: 추가 온보딩 답변(복수) 일괄 제출
@@ -2603,61 +2605,37 @@ paths:
                   minItems: 1
                   items:
                     oneOf:
-                      # boolean
                       - type: object
                         additionalProperties: false
                         required: [additionalOnboardingId, type, unknown, value]
                         properties:
-                          additionalOnboardingId:
-                            type: integer
-                            format: int64
-                            example: 900001
-                          type:
-                            type: string
-                            enum: [boolean]
-                          unknown:
-                            type: boolean
-                            example: false
+                          additionalOnboardingId: { type: integer, format: int64, example: 900001 }
+                          type: { type: string, enum: [boolean] }
+                          unknown: { type: boolean, example: false }
                           value:
                             type: boolean
                             nullable: true
                             description: unknown=true이면 null, unknown=false이면 true/false
 
-                      # select
                       - type: object
                         additionalProperties: false
                         required: [additionalOnboardingId, type, unknown, value]
                         properties:
-                          additionalOnboardingId:
-                            type: integer
-                            format: int64
-                            example: 900002
-                          type:
-                            type: string
-                            enum: [select]
-                          unknown:
-                            type: boolean
-                            example: false
+                          additionalOnboardingId: { type: integer, format: int64, example: 900002 }
+                          type: { type: string, enum: [select] }
+                          unknown: { type: boolean, example: false }
                           value:
                             type: string
                             nullable: true
                             description: unknown=true이면 null, unknown=false이면 선택값(예 옵션A/옵션B)
 
-                      # input
                       - type: object
                         additionalProperties: false
                         required: [additionalOnboardingId, type, unknown, value]
                         properties:
-                          additionalOnboardingId:
-                            type: integer
-                            format: int64
-                            example: 900003
-                          type:
-                            type: string
-                            enum: [input]
-                          unknown:
-                            type: boolean
-                            example: false
+                          additionalOnboardingId: { type: integer, format: int64, example: 900003 }
+                          type: { type: string, enum: [input] }
+                          unknown: { type: boolean, example: false }
                           value:
                             type: string
                             nullable: true
@@ -2697,25 +2675,21 @@ paths:
       responses:
         "204":
           description: No Content
-
         "400":
-          description: Bad Request (unknown=true인데 value가 null이 아님, unknown=false인데 value가 null, type/value 불일치 등)
+          description: Bad Request (unknown/value/type 규칙 위반)
           content:
             application/json:
               schema: { $ref: "#/components/schemas/ErrorResponse" }
-
         "401":
           description: Unauthorized
           content:
             application/json:
               schema: { $ref: "#/components/schemas/ErrorResponse" }
-
         "404":
           description: Not Found
           content:
             application/json:
               schema: { $ref: "#/components/schemas/ErrorResponse" }
-
         "500":
           description: Internal Server Error
           content:
@@ -6831,7 +6805,6 @@ paths:
               schema:
                 $ref: '#/components/schemas/ErrorResponse'
 
-
   /api/admin/inboxes:
     get:
       tags:
@@ -7305,7 +7278,7 @@ paths:
       summary: 지원자격 입력(추가 온보딩 프로필 PK 리스트 제출)
       description: >
         자격 진단/매칭에 필요한 추가 온보딩 프로필(PK)들을 한 번에 제출합니다.
-        
+
         각 PK에 대한 값은 서버가 후속 단계에서 별도 조회/요청하거나, 이미 저장된 답변을 참조합니다.
         인증은 HttpOnly 쿠키(JWT)로 처리됩니다.
       operationId: announcements_submitEligibilityProfileIds
@@ -7525,6 +7498,129 @@ paths:
             application/json:
               schema: { $ref: "#/components/schemas/ErrorResponse" }
  
+
+  /api/admin/announcements/{announcementId}/eligibility/complete:
+    post:
+      tags: [admin, announcements]
+      summary: (어드민) 공고 입력 최종 완료(확정) 처리
+      description: >
+        어드민이 분리된 저장 API들로 입력한 내용을 기준으로,
+        서버가 완료 기준(요약/지원자격/필수 공고 입력값 등)을 최종 검증하고
+        완료 상태로 전환합니다.
+
+        완료 기준이 충족되지 않으면 409로 누락 항목을 반환합니다.
+      operationId: admin_completeAnnouncement
+
+      parameters:
+        - name: announcementId
+          in: path
+          required: true
+          schema: { type: integer, format: int64 }
+          description: 공고 PK
+          example: 12345
+
+      responses:
+        "204":
+          description: No Content (완료 처리 성공)
+
+        "409":
+          description: Conflict (완료 기준 미충족 - 누락 항목 존재)
+          content:
+            application/json:
+              schema:
+                type: object
+                additionalProperties: false
+                required: [code, message, missing]
+                properties:
+                  code:
+                    type: string
+                    example: "ANNOUNCEMENT_NOT_COMPLETED"
+                  message:
+                    type: string
+                    example: "완료 기준을 충족하지 못했습니다."
+                  missing:
+                    type: object
+                    additionalProperties: false
+                    required: [checks]
+                    properties:
+                      checks:
+                        type: array
+                        minItems: 1
+                        description: >
+                          완료 기준 체크리스트. 각 항목은 code로 식별하며,
+                          passed=false인 항목이 누락/미충족입니다.
+                        items:
+                          type: object
+                          additionalProperties: false
+                          required: [code, passed]
+                          properties:
+                            code:
+                              type: string
+                              enum:
+                                - SUMMARY_KV_DIGEST_WRITTEN
+                                - ELIGIBILITY_NORMALIZED_WRITTEN
+                                - REQUIRED_FIELDS_WRITTEN
+                                - ORIGINAL_URL_SET
+                                - SH_REQUIRED_FIELDS_WRITTEN
+                                - SH_INCOME_WRITTEN
+                              description: 완료 기준 항목 코드
+                              example: "SUMMARY_KV_DIGEST_WRITTEN"
+                            passed:
+                              type: boolean
+                              description: 충족 여부
+                              example: false
+                            message:
+                              type: string
+                              nullable: true
+                              description: 프론트 표시용 설명(선택)
+                              example: "요약(kvDigest)이 작성되지 않았습니다."
+                            routeHint:
+                              type: string
+                              nullable: true
+                              description: 프론트 라우팅/탭 이동 힌트(선택)
+                              example: "/admin/announcements/12345/summary"
+              examples:
+                missing_case:
+                  summary: 누락 케이스 예시
+                  value:
+                    code: "ANNOUNCEMENT_NOT_COMPLETED"
+                    message: "완료 기준을 충족하지 못했습니다."
+                    missing:
+                      checks:
+                        - code: "SUMMARY_KV_DIGEST_WRITTEN"
+                          passed: false
+                          message: "요약(kvDigest)이 작성되지 않았습니다."
+                          routeHint: "/admin/announcements/12345/summary"
+                        - code: "ELIGIBILITY_NORMALIZED_WRITTEN"
+                          passed: true
+                        - code: "REQUIRED_FIELDS_WRITTEN"
+                          passed: false
+                          message: "필수 공고 입력값이 누락되었습니다."
+                          routeHint: "/admin/announcements/12345/required-fields"
+
+        "400":
+          description: Validation Error
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/ErrorResponse" }
+
+        "401":
+          description: Unauthorized
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/ErrorResponse" }
+
+        "404":
+          description: Not Found
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/ErrorResponse" }
+
+        "500":
+          description: Internal Server Error
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/ErrorResponse" }
   /api/regions/cities:
     get:
       tags:
