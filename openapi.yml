@@ -2575,7 +2575,7 @@ paths:
             application/json:
               schema: { $ref: "#/components/schemas/ErrorResponse" }
               
-  /api/onboarding/additional-answers:
+  /api/additional-onboardings:
     post:
       tags: [onboarding]
       summary: 추가 온보딩 답변(복수) 일괄 제출
