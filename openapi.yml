@@ -1734,6 +1734,7 @@ paths:
                   - publisher
                   - title
                   - housingType
+                  - supplyType
                   - startDate
                   - endDate
                   - publishedAt
@@ -1758,6 +1759,12 @@ paths:
                     type: string
                     description: 주택 유형(앱 뱃지/필터에 사용)
                     example: 행복주택
+
+                  supplyType:
+                    type: string
+                    description: 공급유형(예 임대주택 등)
+                    example: 임대주택
+
                   startDate:
                     type: string
                     format: date
@@ -1773,6 +1780,20 @@ paths:
                     format: date
                     description: 발표일(게시일)
                     example: '2025-12-30'
+
+                  documentPublishedAt:
+                    type: string
+                    format: date
+                    nullable: true
+                    description: 서류발표날짜
+                    example: '2026-02-01'
+                  finalPublishedAt:
+                    type: string
+                    format: date
+                    nullable: true
+                    description: 당첨자 발표날짜
+                    example: '2026-02-15'
+
                   status:
                     type: string
                     description: 공고 접수 상태(앱 뱃지에 사용)
@@ -1853,9 +1874,12 @@ paths:
                     publisher: LH 한국토지주택공사
                     title: Mock title 1
                     housingType: 행복주택
+                    supplyType: 임대주택
                     startDate: '2026-01-01'
                     endDate: '2026-01-01'
                     publishedAt: '2026-01-01'
+                    documentPublishedAt: '2026-02-01'
+                    finalPublishedAt: '2026-02-15'
                     status: OPEN
                     originalUrl: https://example.com/1
                     externalApplyUrl: https://example.com/1
@@ -1878,9 +1902,12 @@ paths:
                     publisher: LH 한국토지주택공사
                     title: Mock title 2
                     housingType: 안심주택
+                    supplyType: 임대주택
                     startDate: '2026-01-02'
                     endDate: '2026-01-02'
                     publishedAt: '2026-01-02'
+                    documentPublishedAt: '2026-02-02'
+                    finalPublishedAt: '2026-02-16'
                     status: DUE_SOON
                     originalUrl: https://example.com/2
                     externalApplyUrl: https://example.com/2
@@ -1903,9 +1930,12 @@ paths:
                     publisher: LH 한국토지주택공사
                     title: Mock title 3
                     housingType: 장기전세
+                    supplyType: 임대주택
                     startDate: '2026-01-03'
                     endDate: '2026-01-03'
                     publishedAt: '2026-01-03'
+                    documentPublishedAt: '2026-02-03'
+                    finalPublishedAt: '2026-02-17'
                     status: UPCOMING
                     originalUrl: https://example.com/3
                     externalApplyUrl: https://example.com/3
@@ -1928,9 +1958,12 @@ paths:
                     publisher: LH 한국토지주택공사
                     title: Mock title 4
                     housingType: 행복주택
+                    supplyType: 임대주택
                     startDate: '2026-01-04'
                     endDate: '2026-01-04'
                     publishedAt: '2026-01-04'
+                    documentPublishedAt: '2026-02-04'
+                    finalPublishedAt: '2026-02-18'
                     status: CLOSED
                     originalUrl: https://example.com/4
                     externalApplyUrl: https://example.com/4
@@ -1953,9 +1986,12 @@ paths:
                     publisher: LH 한국토지주택공사
                     title: Mock title 5
                     housingType: 안심주택
+                    supplyType: 임대주택
                     startDate: '2026-01-05'
                     endDate: '2026-01-05'
                     publishedAt: '2026-01-05'
+                    documentPublishedAt: null
+                    finalPublishedAt: null
                     status: OPEN
                     originalUrl: https://example.com/5
                     externalApplyUrl: https://example.com/5
@@ -1971,24 +2007,25 @@ paths:
                     url: null
                     isScrapped: null
 
-  /api/announcements/{announcementId}/summary:
+
+  /api/announcements/{announcementId}/overview:
     get:
       tags: [announcements]
-      summary: 공고 요약(kvDigest) 조회
+      summary: 공고 개요 조회
       description: >
-        공고 요약본을 반환합니다.
-        kvDigest는 공고 요약을 위한 JSON 가변 필드이며, key/value 쌍의 목록으로 구성됩니다.
-        이 데이터는 원문(PDF 등) 및 내부 요약 결과를 기반으로 생성된 "요약"이며,
-        정확성을 보장하지 않으므로 원문 확인이 필요합니다.
+        공고 개요 정보를 정해진(스태틱) 필드로 반환합니다.
         인증은 HttpOnly 쿠키(JWT)로 처리됩니다.
-      operationId: announcements_getAnnouncementSummary
+      operationId: announcements_getAnnouncementOverview
       parameters:
         - name: announcementId
           in: path
           required: true
-          schema: { type: integer, format: int64 }
+          schema:
+            type: integer
+            format: int64
           description: 공고 PK
           example: 12345
+
       responses:
         "200":
           description: OK
@@ -1996,208 +2033,137 @@ paths:
             application/json:
               schema:
                 type: object
-                required: [kvDigest]
+                additionalProperties: false
+                required: [announcementId, content, target, regions, applyMethod]
                 properties:
-                  kvDigest:
+                  announcementId:
+                    type: integer
+                    format: int64
+                    description: 공고 PK
+                    example: 12345
+
+                  content:
+                    type: string
+                    description: 공고 내용(개요)
+                    example: "공고 내용"
+
+                  target:
+                    type: string
+                    description: 대상
+                    example: "만 19~34세 청년"
+
+                  regions:
                     type: array
-                    description: 공고 요약본(JSON 가변 필드) - key/value 목록
+                    description: 지역(시/구 등)
                     items:
-                      type: object
-                      required: [key, value]
-                      additionalProperties: false
-                      properties:
-                        key:
-                          type: string
-                          description: 요약 항목명
-                          example: "청약 기간"
-                        value:
-                          type: string
-                          description: 요약 내용
-                          example: "2년간 꾸준히 납입하면 우선순위"
+                      type: string
+                    example: ["강남구", "마포구"]
+
+                  applyMethod:
+                    type: string
+                    description: 접수 방법
+                    example: "LH 청약플러스 온라인 접수"
+
               examples:
-                mock1:
-                  summary: Scenario 1
+                overview_mock:
+                  summary: 공고 개요 예시
                   value:
-                    kvDigest:
-                      - key: "청약 기간"
-                        value: "2년간 꾸준히 납입하면 우선순위"
-                      - key: "납입 인정 기준"
-                        value: "월 10만원 이상 납입 시 인정"
-                      - key: "유의사항"
-                        value: "서류 미제출 시 자동 탈락"
-                mock2:
-                  summary: Scenario 2
-                  value:
-                    kvDigest:
-                      - key: "모집 대상"
-                        value: "무주택 청년(만 19~39세) 우선"
-                      - key: "필수 요건"
-                        value: "주택청약종합저축 가입 6개월 이상 + 6회 이상 납입"
-                      - key: "유의사항"
-                        value: "접수기간 이후 서류 보완 불가(공고문 기준)"
-                mock3:
-                  summary: Scenario 3
-                  value:
-                    kvDigest:
-                      - key: "선정 방식"
-                        value: "거주지 우선순위 후 동점 시 납입횟수/거주기간 순"
-                      - key: "동점 처리"
-                        value: "납입횟수 → 거주기간 → 추첨(단지별 상이)"
-                      - key: "유의사항"
-                        value: "제출서류 누락 시 심사 제외"
-                mock4:
-                  summary: Scenario 4
-                  value:
-                    kvDigest:
-                      - key: "가점 항목"
-                        value: "거주기간/부양가족/장애정도(또는 연령) 등"
-                      - key: "증빙"
-                        value: "등본·가족관계·장애인등록증 등 서류로 확인"
-                      - key: "유의사항"
-                        value: "가점 서류 미제출 시 해당 가점 불인정"
-                mock5:
-                  summary: Scenario 5
-                  value:
-                    kvDigest:
-                      - key: "주의"
-                        value: "스캔 PDF로 표 인식이 어려워 일부 항목 누락 가능"
-                      - key: "확인 필요"
-                        value: "접수기간/자산기준/제출처는 원문(PDF) 재확인 권장"
+                    announcementId: 12345
+                    content: "공고 내용"
+                    target: "만 19~34세 청년"
+                    regions: ["강남구", "무슨구"]
+                    applyMethod: "LH 청약플러스 온라인 접수"
+
         "401":
           description: Unauthorized
           content:
             application/json:
               schema: { $ref: "#/components/schemas/ErrorResponse" }
+
         "404":
           description: Not Found
           content:
             application/json:
               schema: { $ref: "#/components/schemas/ErrorResponse" }
+
         "500":
           description: Internal Server Error
           content:
             application/json:
               schema: { $ref: "#/components/schemas/ErrorResponse" }
 
-  /api/announcements/{announcementId}/scrap:
-    post:
-      tags:
-      - announcements
-      summary: 찜하기(스크랩) 추가
-      description: '공고를 찜(스크랩)합니다. 인증은 HttpOnly 쿠키(JWT)로 처리됩니다.
-
-        '
-      operationId: announcements_addScrap
+  /api/announcements/{announcementId}/summary:
+    get:
+      tags: [announcements]
+      summary: 공고 요약 조회
+      description: >
+        공고 요약(단일 문장)을 반환합니다.
+        이 요약은 어드민이 수기로 작성한 내용입니다.
+        인증은 HttpOnly 쿠키(JWT)로 처리됩니다.
+      operationId: announcements_getAnnouncementSummary
       parameters:
-      - name: announcementId
-        in: path
-        required: true
-        schema:
-          type: integer
-          format: int64
-        description: 공고 PK
-        example: 12345
+        - name: announcementId
+          in: path
+          required: true
+          schema:
+            type: integer
+            format: int64
+          description: 공고 PK
+          example: 12345
+
       responses:
-        '204':
-          description: No Content
-        '401':
+        "200":
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: object
+                additionalProperties: false
+                required: [announcementId, summary]
+                properties:
+                  announcementId:
+                    type: integer
+                    format: int64
+                    description: 공고 PK
+                    example: 12345
+                  summary:
+                    type: string
+                    nullable: true
+                    description: >
+                      공고 요약 단일 문장(어드민 수기).
+                      아직 작성되지 않았으면 null.
+                    example: "서울 강남/마포 대상 청년 임대주택 모집, LH 청약플러스 온라인 접수."
+
+              examples:
+                mock1:
+                  summary: 요약 존재
+                  value:
+                    announcementId: 12345
+                    summary: "서울 강남/마포 대상 청년 임대주택 모집, LH 청약플러스 온라인 접수."
+
+                mock2:
+                  summary: 요약 없음(null)
+                  value:
+                    announcementId: 12345
+                    summary: null
+
+        "401":
           description: Unauthorized
           content:
             application/json:
-              schema:
-                $ref: '#/components/schemas/ErrorResponse'
-        '404':
+              schema: { $ref: "#/components/schemas/ErrorResponse" }
+
+        "404":
           description: Not Found
           content:
             application/json:
-              schema:
-                $ref: '#/components/schemas/ErrorResponse'
-        '500':
+              schema: { $ref: "#/components/schemas/ErrorResponse" }
+
+        "500":
           description: Internal Server Error
           content:
             application/json:
-              schema:
-                $ref: '#/components/schemas/ErrorResponse'
-    delete:
-      tags:
-      - announcements
-      summary: 찜하기(스크랩) 제거
-      description: '공고 찜(스크랩)을 해제합니다. 인증은 HttpOnly 쿠키(JWT)로 처리됩니다.
-
-        '
-      operationId: announcements_removeScrap
-      parameters:
-      - name: announcementId
-        in: path
-        required: true
-        schema:
-          type: integer
-          format: int64
-        description: 공고 PK
-        example: 12345
-      responses:
-        '204':
-          description: No Content
-        '401':
-          description: Unauthorized
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/ErrorResponse'
-        '404':
-          description: Not Found
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/ErrorResponse'
-        '500':
-          description: Internal Server Error
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/ErrorResponse'
-
-  /api/announcements/{announcementId}/outbound:
-    post:
-      tags:
-      - announcements
-      summary: 신청하러가기(외부 이동) 기록
-      description: '사용자가 공고 상세에서 ''신청하러가기'' 등 외부 링크로 이동하려는 행위를 기록합니다. 인증은 HttpOnly
-        쿠키(JWT)로 처리되며, 로그인 사용자만 호출할 수 있습니다. 세부 이벤트 타입/UA/리퍼러 등 분석 데이터는 MVP 범위 밖으로
-        제외합니다.
-
-        '
-      operationId: announcements_trackOutbound
-      parameters:
-      - name: announcementId
-        in: path
-        required: true
-        schema:
-          type: integer
-          format: int64
-        description: 공고 PK
-        example: 12345
-      responses:
-        '204':
-          description: No Content
-        '401':
-          description: Unauthorized
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/ErrorResponse'
-        '404':
-          description: Not Found
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/ErrorResponse'
-        '500':
-          description: Internal Server Error
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/ErrorResponse'
+              schema: { $ref: "#/components/schemas/ErrorResponse" }
 
   /api/announcements/{announcementId}/eligibility/check:
     post:
@@ -2809,6 +2775,7 @@ paths:
                 - householdSize
                 - householdRole
                 - incomeDecile
+                - priorityCategory
                 - onboardingCompleted
                 properties:
                   name:
@@ -2846,6 +2813,27 @@ paths:
                     maximum: 10
                     description: 소득분위(1~10). 공고 소득요건 판단/추천에 사용됩니다.
                     example: 4
+
+                  priorityCategory:
+                    type: string
+                    description: >
+                      사용자 우대/우선 자격(최종 적용 기준 1개).
+                      복수 조건에 해당하더라도 중복 적용하지 않으며, 유저가 대표 1개를 선택합니다.
+                    enum:
+                      - GENERAL
+                      - MULTI_CHILD
+                      - NEWLY_MARRIED
+                      - FIRST_TIME_HOME_BUYER
+                      - SINGLE_PARENT
+                      - BASIC_LIVELIHOOD
+                      - NEAR_POOR
+                      - DISABLED
+                      - NATIONAL_MERIT
+                      - ELDERLY
+                      - YOUTH
+                      - OTHER
+                    example: SINGLE_PARENT
+
                   onboardingCompleted:
                     type: boolean
                     description: 초기 온보딩(필수 프로필 입력) 완료 여부
@@ -2861,6 +2849,7 @@ paths:
                     householdSize: 1
                     householdRole: HOUSEHOLDER
                     incomeDecile: 4
+                    priorityCategory: SINGLE_PARENT
                     onboardingCompleted: true
         '401':
           description: Unauthorized
@@ -2891,6 +2880,7 @@ paths:
               - householdSize
               - householdRole
               - incomeDecile
+              - priorityCategory
               properties:
                 name:
                   type: string
@@ -2929,6 +2919,26 @@ paths:
                   maximum: 10
                   description: 소득분위(1~10). 공고 소득요건 판단/추천에 사용됩니다.
                   example: 4
+
+                priorityCategory:
+                  type: string
+                  description: >
+                    사용자 우대/우선 자격(최종 적용 기준 1개).
+                    복수 조건에 해당하더라도 중복 적용하지 않으며, 유저가 대표 1개를 선택합니다.
+                  enum:
+                    - GENERAL
+                    - MULTI_CHILD
+                    - NEWLY_MARRIED
+                    - FIRST_TIME_HOME_BUYER
+                    - SINGLE_PARENT
+                    - BASIC_LIVELIHOOD
+                    - NEAR_POOR
+                    - DISABLED
+                    - NATIONAL_MERIT
+                    - ELDERLY
+                    - YOUTH
+                    - OTHER
+                  example: SINGLE_PARENT
       responses:
         '204':
           description: No Content (저장 완료)
@@ -3015,6 +3025,24 @@ paths:
                   minimum: 1
                   maximum: 10
                   example: 4
+
+                priorityCategory:
+                  type: string
+                  description: 사용자 우대/우선 자격(최종 적용 기준 1개)
+                  enum:
+                    - GENERAL
+                    - MULTI_CHILD
+                    - NEWLY_MARRIED
+                    - FIRST_TIME_HOME_BUYER
+                    - SINGLE_PARENT
+                    - BASIC_LIVELIHOOD
+                    - NEAR_POOR
+                    - DISABLED
+                    - NATIONAL_MERIT
+                    - ELDERLY
+                    - YOUTH
+                    - OTHER
+                  example: SINGLE_PARENT
       responses:
         '204':
           description: No Content (수정 완료)
@@ -7157,23 +7185,20 @@ paths:
           content:
             application/json:
               schema: { $ref: "#/components/schemas/ErrorResponse" }
-
-
-  /api/admin/announcements/{announcementId}/summary:
-    put:
+    post:
       tags: [admin, announcements]
-      summary: (어드민) 공고 요약(KV 리스트) 수기 확정 저장
+      summary: (어드민) 공고 필수 입력 확정 저장
       description: >
-        어드민이 PDF를 직접 읽고 정리한 "kvDigest"(KV 리스트)만 저장합니다.
+        맞춤 공고 검색에 사용되는 필수 입력 항목들을 어드민이 수기로 확정 저장합니다.
+        NULL -> 상관 없음
 
-        kvDigest의 value는 문자열만 허용합니다(중첩 구조 금지).
-      operationId: admin_upsertAnnouncementSummary
+      operationId: admin_submitAnnouncementRequiredFields
       parameters:
         - name: announcementId
           in: path
           required: true
           schema: { type: integer, format: int64 }
-          description: 공고 PK(사전 발급된 ID)
+          description: 공고 PK
           example: 12345
 
       requestBody:
@@ -7183,34 +7208,86 @@ paths:
             schema:
               type: object
               additionalProperties: false
-              required: [kvDigest]
+              required:
+                - documentPublishedAt
+                - isHomeless
+                - isMarried
+                - incomeDecile
+                - residence
+                - priorityCategory
               properties:
-                kvDigest:
-                  type: array
-                  description: 어드민이 수기로 작성한 PDF 요약(KV 리스트). value는 문자열만 허용.
-                  minItems: 1
-                  items:
-                    type: object
-                    required: [key, value]
-                    additionalProperties: false
-                    properties:
-                      key:
-                        type: string
-                        description: 항목명
-                        example: "청약 기간"
-                      value:
-                        type: string
-                        description: 항목 요약 텍스트
-                        example: "2년간 꾸준히 납입하면 우선순위"
+                documentPublishedAt:
+                  type: string
+                  format: date
+                  description: 서류 발표 날짜
+                  example: "2026-02-01"
+
+                isHomeless:
+                  type: boolean
+                  description: 무주택 여부
+                  example: true
+
+                isMarried:
+                  type: boolean
+                  description: 혼인 여부
+                  example: false
+
+                incomeDecile:
+                  type: integer
+                  minimum: 1
+                  maximum: 10
+                  description: 소득 분위(1~10)
+                  example: 4
+
+                residence:
+                  type: object
+                  additionalProperties: false
+                  required: [regionName]
+                  description: 주거지(사용자 기준)
+                  properties:
+                    regionCode:
+                      type: string
+                      nullable: true
+                      description: 지역 코드(가능하면 사용)
+                      example: "11680"
+                    regionName:
+                      type: string
+                      description: 지역명(시군구)
+                      example: "서울특별시 강남구"
+
+                priorityCategory:
+                  type: string
+                  description: >
+                    순위 우선(가점/우선공급/자격 우선순위 판단에 사용).
+                    공고/기관별로 세부 정책이 달라질 수 있어, enum은 공통 범주 기준이며
+                    매칭 불가 시 OTHER를 사용합니다.
+                  enum:
+                    - GENERAL
+                    - MULTI_CHILD
+                    - NEWLY_MARRIED
+                    - FIRST_TIME_HOME_BUYER
+                    - SINGLE_PARENT
+                    - BASIC_LIVELIHOOD
+                    - NEAR_POOR
+                    - DISABLED
+                    - NATIONAL_MERIT
+                    - ELDERLY
+                    - YOUTH
+                    - OTHER
+                  example: SINGLE_PARENT
+
             examples:
-              mock1:
-                summary: 요약(KV) 저장 예시
+              required_fields_mock:
+                summary: 필수 입력 저장
                 value:
-                  kvDigest:
-                    - key: "청약 기간"
-                      value: "2년간 꾸준히 납입하면 우선순위"
-                    - key: "납입 인정 기준"
-                      value: "월 10만원 이상 납입 시 인정"
+                  documentPublishedAt: "2026-02-01"
+                  isHomeless: true
+                  isMarried: false
+                  incomeDecile: 4
+                  residence:
+                    regionCode: "11680"
+                    regionName: "서울특별시 강남구"
+                  priorityCategory: SINGLE_PARENT
 
       responses:
         "204":
@@ -7234,20 +7311,28 @@ paths:
             application/json:
               schema: { $ref: "#/components/schemas/ErrorResponse" }
 
+        "409":
+          description: Conflict (상태 충돌 등)
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/ErrorResponse" }
+
         "500":
           description: Internal Server Error
           content:
             application/json:
               schema: { $ref: "#/components/schemas/ErrorResponse" }
 
+
+
   /api/admin/announcements/{announcementId}/sh:
     put:
       tags: [admin, announcements]
-      summary: (어드민) SH 공고 전용 - 소득 요건(income) 수기 확정 저장
+      summary: (어드민) SH 공고 전용 - 공고 핵심 필드 수기 확정 저장
       description: >
-        SH 공고에 대해서만 소득 요건(income)만 수기로 확정 저장합니다.
-        기존 저장 API(/api/admin/announcements/{announcementId}/sh)의 부분 저장 버전입니다.
-      operationId: admin_upsertShAnnouncementIncome
+        SH 공고에 대해서만 어드민이 공고의 일부 핵심 필드를 수기로 확정 저장합니다.
+        주택/공급/지역/일정/URL/금액(최소) 정보를 저장합니다.
+      operationId: admin_upsertShAnnouncementManualFields
       parameters:
         - name: announcementId
           in: path
@@ -7262,7 +7347,7 @@ paths:
             schema:
               type: object
               additionalProperties: false
-              required: [publisher, income]
+              required: [publisher]
               properties:
                 publisher:
                   type: string
@@ -7270,64 +7355,115 @@ paths:
                   description: SH 고정
                   example: SH
 
-                income:
-                  type: object
+                housingType:
+                  type: string
                   nullable: true
-                  description: >
-                    소득 요건(정규화). 조건이 전혀 없으면 null 허용.
-                    (빈 객체 {} 는 허용하지 않습니다)
-                  properties:
-                    metric:
-                      type: string
-                      nullable: true
-                      enum: [MEDIAN_INCOME_PERCENT, INCOME_DECILE, HEALTH_INSURANCE_PREMIUM]
-                      example: MEDIAN_INCOME_PERCENT
-                    operator:
-                      type: string
-                      nullable: true
-                      enum: [LTE, LT, GTE, GT, EQ, BETWEEN]
-                      example: LTE
-                    value:
-                      type: number
-                      nullable: true
-                      example: 150
-                    value2:
-                      type: number
-                      nullable: true
-                      example: 200
-                    householdSizeMin:
-                      type: integer
-                      nullable: true
-                      minimum: 1
-                      example: 1
-                    householdSizeMax:
-                      type: integer
-                      nullable: true
-                      minimum: 1
-                      example: 3
-                    displayText:
-                      type: string
-                      nullable: true
-                      example: "중위소득 150% 이하"
+                  description: 주택 유형
+                  example: "아파트"
+                supplyType:
+                  type: string
+                  nullable: true
+                  description: 공급유형
+                  example: "공공임대"
+                regionCode:
+                  type: string
+                  nullable: true
+                  description: 지역 코드
+                  example: "11440"
+                regionName:
+                  type: string
+                  nullable: true
+                  description: 시군구명
+                  example: "서울특별시 마포구"
+
+                startDate:
+                  type: string
+                  format: date
+                  nullable: true
+                  description: 모집 시작일
+                  example: "2026-01-15"
+                endDate:
+                  type: string
+                  format: date
+                  nullable: true
+                  description: 모집 종료일
+                  example: "2026-01-22"
+                documentPublishedAt:
+                  type: string
+                  format: date
+                  nullable: true
+                  description: 서류발표날짜
+                  example: "2026-02-01"
+                finalPublishedAt:
+                  type: string
+                  format: date
+                  nullable: true
+                  description: 당첨자 발표날짜
+                  example: "2026-02-15"
+
+                applyUrl:
+                  type: string
+                  format: uri
+                  nullable: true
+                  maxLength: 1000
+                  description: 공고 URL
+                  example: "https://www.i-sh.co.kr/apply/notice/12345"
+
+                rentGtn:
+                  type: integer
+                  format: int64
+                  nullable: true
+                  minimum: 0
+                  description: 임대보증금(최소)
+                  example: 10000000
+                enty:
+                  type: integer
+                  format: int64
+                  nullable: true
+                  minimum: 0
+                  description: 계약금(최소)
+                  example: 1000000
+                prtpay:
+                  type: integer
+                  format: int64
+                  nullable: true
+                  minimum: 0
+                  description: 중도금(최소)
+                  example: 3000000
+                surlus:
+                  type: integer
+                  format: int64
+                  nullable: true
+                  minimum: 0
+                  description: 잔금(최소)
+                  example: 6000000
+                mtRntchrg:
+                  type: integer
+                  format: int64
+                  nullable: true
+                  minimum: 0
+                  description: 월임대료(최소)
+                  example: 250000
 
             examples:
-              income_only:
-                summary: 소득 요건 저장
+              manual_fields:
+                summary: 핵심 필드 저장
                 value:
                   publisher: SH
-                  income:
-                    metric: MEDIAN_INCOME_PERCENT
-                    operator: LTE
-                    value: 150
-                    householdSizeMin: 1
-                    householdSizeMax: 3
-                    displayText: "중위소득 150% 이하"
-
-              income_none:
-                summary: 소득 요건 없음(null)
-                value:
-                  publisher: SH
-                  income: null
+                  housingType: "아파트"
+                  supplyType: "공공임대"
+                  regionCode: "11440"
+                  regionName: "서울특별시 마포구"
+                  startDate: "2026-01-15"
+                  endDate: "2026-01-22"
+                  documentPublishedAt: "2026-02-01"
+                  finalPublishedAt: "2026-02-15"
+                  applyUrl: "https://www.i-sh.co.kr/apply/notice/12345"
+                  rentGtn: 10000000
+                  enty: 1000000
+                  prtpay: 3000000
+                  surlus: 6000000
+                  mtRntchrg: 250000
 
       responses:
         "204":
@@ -7364,16 +7500,26 @@ paths:
               schema: { $ref: "#/components/schemas/ErrorResponse" }
 
 
-  /api/admin/announcements/eligibility/profiles:
+  /api/admin/announcements/{announcementId}/eligibility/profiles:
     post:
       tags: [admin]
       summary: 지원자격 입력(추가 온보딩 프로필 PK 리스트 제출)
       description: >
-        자격 진단/매칭에 필요한 추가 온보딩 프로필(PK)들을 한 번에 제출합니다.
+        특정 공고(announcementId)에 대해 자격 진단/매칭에 필요한
+        추가 온보딩 프로필(PK)들을 한 번에 제출합니다.
 
         각 PK에 대한 값은 서버가 후속 단계에서 별도 조회/요청하거나, 이미 저장된 답변을 참조합니다.
         인증은 HttpOnly 쿠키(JWT)로 처리됩니다.
       operationId: announcements_submitEligibilityProfileIds
+      parameters:
+        - name: announcementId
+          in: path
+          required: true
+          schema:
+            type: integer
+            format: int64
+          description: 공고 PK
+          example: 12345
 
       requestBody:
         required: true
@@ -7871,6 +8017,103 @@ paths:
               schema: { $ref: "#/components/schemas/ErrorResponse" }
  
 
+  /api/admin/announcements/{announcementId}/overview-summary:
+    post:
+      tags: [admin, announcements]
+      summary: (어드민) 공고 개요/요약 수기 저장(업서트)
+      description: >
+        어드민이 공고의 개요(overview)와 요약(summary)을 수기로 저장합니다.
+        overview는 스태틱 필드(content/target/regions/applyMethod)로 저장되며,
+        summary는 단일 문장(문자열)입니다.
+        인증은 HttpOnly 쿠키(JWT)로 처리됩니다.
+      operationId: admin_upsertAnnouncementOverviewAndSummary
+      parameters:
+        - name: announcementId
+          in: path
+          required: true
+          schema: { type: integer, format: int64 }
+          description: 공고 PK
+          example: 12345
+
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              additionalProperties: false
+              required: [overview, summary]
+              properties:
+                overview:
+                  type: object
+                  additionalProperties: false
+                  required: [content, target, regions, applyMethod]
+                  properties:
+                    content:
+                      type: string
+                      description: 공고 내용(개요)
+                      example: "공고 내용"
+                    target:
+                      type: string
+                      description: 대상
+                      example: "만 19~34세 청년"
+                    regions:
+                      type: array
+                      description: 지역(시/구 등)
+                      items: { type: string }
+                      example: ["강남구", "마포구"]
+                    applyMethod:
+                      type: string
+                      description: 접수 방법
+                      example: "LH 청약플러스 온라인 접수"
+
+                summary:
+                  type: string
+                  nullable: true
+                  description: >
+                    공고 요약 단일 문장(어드민 수기). 요약이 없으면 null 저장 가능.
+                  example: "서울 강남/마포 대상 청년 임대주택 모집, LH 청약플러스 온라인 접수."
+
+            examples:
+              upsert_mock:
+                summary: 개요/요약 저장
+                value:
+                  overview:
+                    content: "공고 내용"
+                    target: "만 19~34세 청년"
+                    regions: ["강남구", "무슨구"]
+                    applyMethod: "LH 청약플러스 온라인 접수"
+                  summary: "서울 강남/무슨구 청년 대상, LH 청약플러스 온라인 접수."
+
+      responses:
+        "204":
+          description: No Content (저장 완료)
+
+        "400":
+          description: Validation Error
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/ErrorResponse" }
+
+        "401":
+          description: Unauthorized
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/ErrorResponse" }
+
+        "404":
+          description: Not Found
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/ErrorResponse" }
+
+        "500":
+          description: Internal Server Error
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/ErrorResponse" }
+
+
   /api/admin/announcements/{announcementId}/eligibility/complete:
     post:
       tags: [admin, announcements]
@@ -7993,6 +8236,8 @@ paths:
           content:
             application/json:
               schema: { $ref: "#/components/schemas/ErrorResponse" }
+
+              
   /api/regions/cities:
     get:
       tags:
