@@ -1737,24 +1737,24 @@ paths:
                   - supplyType
                   - startDate
                   - endDate
-                  - publishedAt
                   - status
-                  - originalUrl
-                  - externalApplyUrl
                 properties:
                   announcementId:
                     type: integer
                     format: int64
                     description: 공고 PK
                     example: 12345
+
                   publisher:
                     type: string
                     description: 발행처(기관/지자체 등)
                     example: LH 한국토지주택공사
+
                   title:
                     type: string
                     description: 공고명
                     example: 청년매입임대주택 모집 공고
+
                   housingType:
                     type: string
                     description: 주택 유형(앱 뱃지/필터에 사용)
@@ -1770,40 +1770,39 @@ paths:
                     format: date
                     description: 공고 시작일
                     example: '2025-12-01'
+
                   endDate:
                     type: string
                     format: date
                     description: 공고 마감일
                     example: '2026-01-15'
-                  publishedAt:
-                    type: string
-                    format: date
-                    description: 발표일(게시일)
-                    example: '2025-12-30'
 
                   documentPublishedAt:
                     type: string
                     format: date
                     nullable: true
-                    description: 서류발표날짜
+                    description: 서류발표일
                     example: '2026-02-01'
+
                   finalPublishedAt:
                     type: string
                     format: date
                     nullable: true
-                    description: 당첨자 발표날짜
+                    description: 최종 발표일(당첨자 발표일)
                     example: '2026-02-15'
 
                   status:
                     type: string
-                    description: 공고 접수 상태(앱 뱃지에 사용)
+                    description: 공고 접수 상태(앱 뱃지에 사용). startDate/endDate(=beginDe/endDe)로 계산됩니다.
                     enum: [OPEN, DUE_SOON, UPCOMING, CLOSED]
                     example: DUE_SOON
+
                   dDay:
                     type: integer
                     nullable: true
-                    description: 마감까지 남은 일수(DUE_SOON/OPEN에서 의미)
+                    description: 마감까지 남은 일수(endDate - today). OPEN/DUE_SOON에서 의미가 있습니다.
                     example: 3
+
                   rentGtn:
                     type: number
                     nullable: true
@@ -1829,46 +1828,35 @@ paths:
                     nullable: true
                     description: 최소월임대료
                     example: 250000
+
                   fullAdres:
                     type: string
                     nullable: true
                     description: 전체주소
                     example: 서울특별시 강남구 ...
-                  rnCodeNm:
-                    type: string
-                    nullable: true
-                    description: 도로명 (주소가 도로명주소일 때 표시)
-                    example: 테헤란로
+
                   refrnLegaldongNm:
                     type: string
                     nullable: true
                     description: 참조_법정동명 (주소가 지번주소일 때 표시)
                     example: 역삼동
+
                   url:
                     type: string
                     format: uri
                     nullable: true
                     description: 모집공고 URL
                     example: https://example.org/announcements/12345
-                  originalUrl:
-                    type: string
-                    format: uri
-                    description: 원문 공고 링크(외부 URL, PDF/HWP 포함 가능)
-                    example: https://example.org/announcements/12345/original
-                  externalApplyUrl:
-                    type: string
-                    format: uri
-                    description: 신청하러가기 외부 링크(아웃 트래킹 대상)
-                    example: https://apply.example.org/form/12345
+
                   isScrapped:
                     type: boolean
                     nullable: true
-                    description: 로그인 사용자 기준 찜 여부(비로그인 시 null 또는 미포함 가능)
+                    description: 로그인 사용자 기준 찜 여부(scrap 테이블로 판단). 비로그인 시 null
                     example: true
 
               examples:
                 mock1:
-                  summary: Scenario 1
+                  summary: 예시
                   value:
                     announcementId: 900001
                     publisher: LH 한국토지주택공사
@@ -1876,13 +1864,10 @@ paths:
                     housingType: 행복주택
                     supplyType: 임대주택
                     startDate: '2026-01-01'
-                    endDate: '2026-01-01'
-                    publishedAt: '2026-01-01'
+                    endDate: '2026-01-15'
                     documentPublishedAt: '2026-02-01'
                     finalPublishedAt: '2026-02-15'
                     status: OPEN
-                    originalUrl: https://example.com/1
-                    externalApplyUrl: https://example.com/1
                     dDay: 7
                     rentGtn: 5000000
                     enty: 500000
@@ -1890,122 +1875,9 @@ paths:
                     surlus: 3500000
                     mtRntchrg: 250000
                     fullAdres: 서울특별시 강남구 ...
-                    rnCodeNm: 테헤란로
                     refrnLegaldongNm: 역삼동
                     url: https://example.com/1
                     isScrapped: false
-
-                mock2:
-                  summary: Scenario 2
-                  value:
-                    announcementId: 900002
-                    publisher: LH 한국토지주택공사
-                    title: Mock title 2
-                    housingType: 안심주택
-                    supplyType: 임대주택
-                    startDate: '2026-01-02'
-                    endDate: '2026-01-02'
-                    publishedAt: '2026-01-02'
-                    documentPublishedAt: '2026-02-02'
-                    finalPublishedAt: '2026-02-16'
-                    status: DUE_SOON
-                    originalUrl: https://example.com/2
-                    externalApplyUrl: https://example.com/2
-                    dDay: 14
-                    rentGtn: 5000000
-                    enty: 500000
-                    prtpay: 1000000
-                    surlus: 3500000
-                    mtRntchrg: 250000
-                    fullAdres: 서울특별시 강남구 ...
-                    rnCodeNm: 테헤란로
-                    refrnLegaldongNm: 역삼동
-                    url: https://example.com/2
-                    isScrapped: true
-
-                mock3:
-                  summary: Scenario 3
-                  value:
-                    announcementId: 900003
-                    publisher: LH 한국토지주택공사
-                    title: Mock title 3
-                    housingType: 장기전세
-                    supplyType: 임대주택
-                    startDate: '2026-01-03'
-                    endDate: '2026-01-03'
-                    publishedAt: '2026-01-03'
-                    documentPublishedAt: '2026-02-03'
-                    finalPublishedAt: '2026-02-17'
-                    status: UPCOMING
-                    originalUrl: https://example.com/3
-                    externalApplyUrl: https://example.com/3
-                    dDay: 21
-                    rentGtn: 5000000
-                    enty: 500000
-                    prtpay: 1000000
-                    surlus: 3500000
-                    mtRntchrg: 250000
-                    fullAdres: 서울특별시 강남구 ...
-                    rnCodeNm: 테헤란로
-                    refrnLegaldongNm: 역삼동
-                    url: https://example.com/3
-                    isScrapped: false
-
-                mock4:
-                  summary: Scenario 4
-                  value:
-                    announcementId: 900004
-                    publisher: LH 한국토지주택공사
-                    title: Mock title 4
-                    housingType: 행복주택
-                    supplyType: 임대주택
-                    startDate: '2026-01-04'
-                    endDate: '2026-01-04'
-                    publishedAt: '2026-01-04'
-                    documentPublishedAt: '2026-02-04'
-                    finalPublishedAt: '2026-02-18'
-                    status: CLOSED
-                    originalUrl: https://example.com/4
-                    externalApplyUrl: https://example.com/4
-                    dDay: 28
-                    rentGtn: 5000000
-                    enty: 500000
-                    prtpay: 1000000
-                    surlus: 3500000
-                    mtRntchrg: 250000
-                    fullAdres: 서울특별시 강남구 ...
-                    rnCodeNm: 테헤란로
-                    refrnLegaldongNm: 역삼동
-                    url: https://example.com/4
-                    isScrapped: true
-
-                mock5:
-                  summary: Scenario 5
-                  value:
-                    announcementId: 900005
-                    publisher: LH 한국토지주택공사
-                    title: Mock title 5
-                    housingType: 안심주택
-                    supplyType: 임대주택
-                    startDate: '2026-01-05'
-                    endDate: '2026-01-05'
-                    publishedAt: '2026-01-05'
-                    documentPublishedAt: null
-                    finalPublishedAt: null
-                    status: OPEN
-                    originalUrl: https://example.com/5
-                    externalApplyUrl: https://example.com/5
-                    dDay: null
-                    rentGtn: null
-                    enty: null
-                    prtpay: null
-                    surlus: null
-                    mtRntchrg: null
-                    fullAdres: null
-                    rnCodeNm: null
-                    refrnLegaldongNm: null
-                    url: null
-                    isScrapped: null
 
 
   /api/announcements/{announcementId}/overview:
@@ -5408,6 +5280,7 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/ErrorResponse'
+
   /api/announcements/{announcementId}/policies:
     get:
       tags:
@@ -7398,7 +7271,7 @@ paths:
                   type: string
                   format: date
                   nullable: true
-                  description: 당첨자 발표날짜
+                  description: 최종 발표일(당첨자 발표일)
                   example: "2026-02-15"
 
                 applyUrl:
