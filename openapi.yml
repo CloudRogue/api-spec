@@ -5774,7 +5774,8 @@ paths:
       summary: (어드민) SH 공고 필드 수기 작성
       description: >
         SH 공고에 대해서만 어드민이 공고의 일부 핵심 필드를 수기로 저장합니다.
-      
+        LH 공고는 해당 API를 사용할 수 없습니다.
+
       operationId: admin_upsertShAnnouncementManualFields
       parameters:
         - name: announcementId
