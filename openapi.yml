@@ -6301,6 +6301,103 @@ paths:
               schema:
                 $ref: "#/components/schemas/ErrorResponse"
 
+
+  /api/admin/announcements/{announcementId}/overview-summary:
+      post:
+        tags: [admin, announcements]
+        summary: (어드민) 공고 개요/요약 수기 저장
+        description: >
+          어드민이 공고의 개요(overview)와 요약(summary)을 수기로 저장합니다.
+          overview는 스태틱 필드(content/target/regions/applyMethod)로 저장되며,
+          summary는 단일 문장(문자열)입니다.
+          인증은 HttpOnly 쿠키(JWT)로 처리됩니다.
+        operationId: admin_upsertAnnouncementOverviewAndSummary
+        parameters:
+          - name: announcementId
+            in: path
+            required: true
+            schema: { type: integer, format: int64 }
+            description: 공고 PK
+            example: 12345
+
+        requestBody:
+          required: true
+          content:
+            application/json:
+              schema:
+                type: object
+                additionalProperties: false
+                required: [overview, summary]
+                properties:
+                  overview:
+                    type: object
+                    additionalProperties: false
+                    required: [content, target, regions, applyMethod]
+                    properties:
+                      content:
+                        type: string
+                        description: 공고 내용(개요)
+                        example: "공고 내용"
+                      target:
+                        type: string
+                        description: 대상
+                        example: "만 19~34세 청년"
+                      regions:
+                        type: array
+                        description: 지역(시/구 등)
+                        items: { type: string }
+                        example: ["강남구", "마포구"]
+                      applyMethod:
+                        type: string
+                        description: 접수 방법
+                        example: "LH 청약플러스 온라인 접수"
+
+                  summary:
+                    type: string
+                    nullable: true
+                    description: >
+                      공고 요약 단일 문장(어드민 수기). 요약이 없으면 null 저장 가능.
+                    example: "서울 강남/마포 대상 청년 임대주택 모집, LH 청약플러스 온라인 접수."
+
+              examples:
+                upsert_mock:
+                  summary: 개요/요약 저장
+                  value:
+                    overview:
+                      content: "공고 내용"
+                      target: "만 19~34세 청년"
+                      regions: ["강남구", "무슨구"]
+                      applyMethod: "LH 청약플러스 온라인 접수"
+                    summary: "서울 강남/무슨구 청년 대상, LH 청약플러스 온라인 접수."
+
+        responses:
+          "204":
+            description: No Content (저장 완료)
+
+          "400":
+            description: Validation Error
+            content:
+              application/json:
+                schema: { $ref: "#/components/schemas/ErrorResponse" }
+
+          "401":
+            description: Unauthorized
+            content:
+              application/json:
+                schema: { $ref: "#/components/schemas/ErrorResponse" }
+
+          "404":
+            description: Not Found
+            content:
+              application/json:
+                schema: { $ref: "#/components/schemas/ErrorResponse" }
+
+          "500":
+            description: Internal Server Error
+            content:
+              application/json:
+                schema: { $ref: "#/components/schemas/ErrorResponse" }
+
   /api/admin/announcements/{announcementId}/complete:
     post:
       tags: [admin]
