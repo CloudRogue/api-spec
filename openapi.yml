@@ -22,14 +22,8 @@ tags:
   description: 마이페이지 (체크리스트/캘린더/찜/신청기록)
 - name: community
   description: 커뮤니티 (댓글/대댓글/좋아요/신고)
-- name: gamification
-  description: 게이미피케이션 (미션/배지)
-- name: policies
-  description: 정책 (청년정책 지원)
 - name: admin
   description: 관리자 기능 (공고/정책 관리)
-- name: chat
-  description: 채팅 봇
 
 paths:
   /api/auth/kakao:
@@ -92,7 +86,7 @@ paths:
               schema:
                 $ref: '#/components/schemas/ErrorResponse'
 
-  /api/announcements/personalized:
+  /api/announcements/search/personalized:
     get:
       tags:
       - announcements
@@ -367,7 +361,7 @@ paths:
                 $ref: '#/components/schemas/ErrorResponse'
 
 
-  /api/announcements/upcoming:
+  /api/announcements/search/upcoming:
     get:
       tags:
       - announcements
@@ -530,7 +524,7 @@ paths:
                 $ref: '#/components/schemas/ErrorResponse'
 
 
-  /api/announcements/open:
+  /api/announcements/search/open:
     get:
       tags:
       - announcements
@@ -717,7 +711,7 @@ paths:
                 $ref: '#/components/schemas/ErrorResponse'
 
 
-  /api/announcements/closed:
+  /api/announcements/search/closed:
     get:
       tags:
       - announcements
@@ -880,7 +874,7 @@ paths:
                 $ref: '#/components/schemas/ErrorResponse'
 
 
-  /api/announcements/announcement-pending:
+  /api/announcements/search/announcement-pending:
     get:
       tags:
       - announcements
@@ -1704,7 +1698,7 @@ paths:
                       reasonTag: 이사예정
                       
 
-  /api/announcements/{announcementId}:
+  /api/announcements/detail/{announcementId}:
     get:
       tags:
         - announcements
@@ -1880,7 +1874,7 @@ paths:
                     isScrapped: false
 
 
-  /api/announcements/{announcementId}/overview:
+  /api/announcements/detail/{announcementId}/overview:
     get:
       tags: [announcements]
       summary: 공고 개요 조회
@@ -1964,7 +1958,7 @@ paths:
             application/json:
               schema: { $ref: "#/components/schemas/ErrorResponse" }
 
-  /api/announcements/{announcementId}/summary:
+  /api/announcements/detail/{announcementId}/summary:
     get:
       tags: [announcements]
       summary: 공고 요약 조회
@@ -2037,8 +2031,8 @@ paths:
             application/json:
               schema: { $ref: "#/components/schemas/ErrorResponse" }
 
-  /api/announcements/{announcementId}/eligibility/check:
-    post:
+  /api/announcements/detail/{announcementId}/eligibility/check:
+    put:
       tags:
         - announcements
       summary: 자격 자가 진단 실행
@@ -2641,19 +2635,25 @@ paths:
                 type: object
                 required:
                 - name
+                - email
                 - gender
                 - birthDate
                 - regionSigungu
-                - householdSize
+                - isMarried
+                - isHomeless
                 - householdRole
-                - incomeDecile
-                - priorityCategory
-                - onboardingCompleted
+                - householdSize
+                - householdMonthlyIncome
                 properties:
                   name:
                     type: string
                     description: 사용자 이름(표시용)
                     example: 홍길동
+                  email:
+                    type: string
+                    format: email
+                    description: 이메일
+                    example: gildong@example.com
                   gender:
                     type: string
                     description: 성별
@@ -2666,63 +2666,51 @@ paths:
                     example: '1999-01-01'
                   regionSigungu:
                     type: string
-                    description: 거주지역(시군구). 맞춤 공고 필터링에 사용됩니다.
+                    description: 거주지역(시군구)
                     example: 서울특별시 마포구
-                  householdSize:
-                    type: integer
-                    minimum: 1
-                    maximum: 100
-                    description: 가구원 수(1 이상). 공고 자격 판단/추천에 사용될 수 있습니다.
-                    example: 1
+
+                  isMarried:
+                    type: boolean
+                    description: 결혼 여부(true=기혼, false=미혼)
+                    example: false
+
+                  isHomeless:
+                    type: boolean
+                    description: 무주택 여부(true=무주택, false=유주택)
+                    example: true
+
                   householdRole:
                     type: string
                     description: 세대 내 역할(세대주/세대원)
                     enum: [HOUSEHOLDER, MEMBER]
                     example: HOUSEHOLDER
-                  incomeDecile:
+
+                  householdSize:
                     type: integer
                     minimum: 1
-                    maximum: 10
-                    description: 소득분위(1~10). 공고 소득요건 판단/추천에 사용됩니다.
-                    example: 4
+                    maximum: 100
+                    description: 가구원 수(1 이상)
+                    example: 1
 
-                  priorityCategory:
-                    type: string
-                    description: >
-                      사용자 우대/우선 자격(최종 적용 기준 1개).
-                      복수 조건에 해당하더라도 중복 적용하지 않으며, 유저가 대표 1개를 선택합니다.
-                    enum:
-                      - GENERAL
-                      - MULTI_CHILD
-                      - NEWLY_MARRIED
-                      - FIRST_TIME_HOME_BUYER
-                      - SINGLE_PARENT
-                      - BASIC_LIVELIHOOD
-                      - NEAR_POOR
-                      - DISABLED
-                      - NATIONAL_MERIT
-                      - ELDERLY
-                      - YOUTH
-                      - OTHER
-                    example: SINGLE_PARENT
-
-                  onboardingCompleted:
-                    type: boolean
-                    description: 초기 온보딩(필수 프로필 입력) 완료 여부
-                    example: true
+                  householdMonthlyIncome:
+                    type: integer
+                    minimum: 0
+                    description: 가구 총 월 수입(원)
+                    example: 4000000
               examples:
                 mock1:
                   summary: Scenario 1
                   value:
                     name: 홍길동
+                    email: gildong@example.com
                     gender: MALE
                     birthDate: '1999-01-01'
                     regionSigungu: 서울특별시 마포구
-                    householdSize: 1
+                    isMarried: false
+                    isHomeless: true
                     householdRole: HOUSEHOLDER
-                    incomeDecile: 4
-                    priorityCategory: SINGLE_PARENT
-                    onboardingCompleted: true
+                    householdSize: 1
+                    householdMonthlyIncome: 4000000
         '401':
           description: Unauthorized
           content:
@@ -2736,7 +2724,6 @@ paths:
       summary: 맞춤 프로필 생성/전체 저장 (초기 온보딩 포함)
       description: |
         맞춤 프로필을 생성하거나 전체 필드를 덮어씁니다. 초기 온보딩 입력에도 사용됩니다.
-        소득 정보는 월급이 아닌 '소득분위(1~10)'를 입력받습니다.
       operationId: mypage_putProfile
       requestBody:
         required: true
@@ -2746,100 +2733,96 @@ paths:
               type: object
               required:
               - name
+              - email
               - gender
               - birthDate
               - regionSigungu
-              - householdSize
+              - isMarried
+              - isHomeless
               - householdRole
-              - incomeDecile
-              - priorityCategory
+              - householdSize
+              - householdMonthlyIncome
               properties:
                 name:
                   type: string
                   maxLength: 10
                   description: 사용자 이름(표시용)
                   example: 홍길동
+
+                email:
+                  type: string
+                  format: email
+                  description: 이메일
+                  example: gildong@example.com
+
                 gender:
                   type: string
                   description: 성별
                   enum: [MALE, FEMALE, OTHER, UNKNOWN]
                   example: MALE
+
                 birthDate:
                   type: string
                   format: date
                   description: 생년월일(YYYY-MM-DD). 연령 조건 판단에 사용됩니다.
                   example: '1999-01-01'
+
                 regionSigungu:
                   type: string
                   maxLength: 100
-                  description: 거주지역(시군구). 맞춤 공고 필터링에 사용됩니다.
+                  description: 거주지역(시군구)
                   example: 서울특별시 마포구
-                householdSize:
-                  type: integer
-                  minimum: 1
-                  maximum: 100
-                  description: 가구원 수(1 이상).
-                  example: 1
+
+                isMarried:
+                  type: boolean
+                  description: 결혼 여부(true=기혼, false=미혼)
+                  example: false
+
+                isHomeless:
+                  type: boolean
+                  description: 무주택 여부(true=무주택, false=유주택)
+                  example: true
+
                 householdRole:
                   type: string
                   description: 세대 내 역할(세대주/세대원)
                   enum: [HOUSEHOLDER, MEMBER]
                   example: HOUSEHOLDER
-                incomeDecile:
+
+                householdSize:
                   type: integer
                   minimum: 1
-                  maximum: 10
-                  description: 소득분위(1~10). 공고 소득요건 판단/추천에 사용됩니다.
-                  example: 4
+                  maximum: 100
+                  description: 가구원 수(1 이상)
+                  example: 1
 
-                priorityCategory:
-                  type: string
-                  description: >
-                    사용자 우대/우선 자격(최종 적용 기준 1개).
-                    복수 조건에 해당하더라도 중복 적용하지 않으며, 유저가 대표 1개를 선택합니다.
-                  enum:
-                    - GENERAL
-                    - MULTI_CHILD
-                    - NEWLY_MARRIED
-                    - FIRST_TIME_HOME_BUYER
-                    - SINGLE_PARENT
-                    - BASIC_LIVELIHOOD
-                    - NEAR_POOR
-                    - DISABLED
-                    - NATIONAL_MERIT
-                    - ELDERLY
-                    - YOUTH
-                    - OTHER
-                  example: SINGLE_PARENT
+                householdMonthlyIncome:
+                  type: integer
+                  minimum: 0
+                  description: 가구 총 월 수입(원)
+                  example: 4000000
+
       responses:
         '204':
           description: No Content (저장 완료)
+
         '400':
-          description: Validation Error (지역 코드/형식 오류 등)
+          description: Validation Error (형식 오류 등)
           content:
             application/json:
               schema:
-                type: object
-                required: [code, message, status, details]
-                properties:
-                  code: { type: string }
-                  message: { type: string }
-                  status: { type: integer }
-                  details:
-                    type: object
-                    required: [field, reason]
-                    properties:
-                      field: { type: string }
-                      reason: { type: string }
+                $ref: '#/components/schemas/ErrorResponse'
               examples:
-                invalidRegionSigungu:
+                mock1:
+                  summary: invalidRegionSigungu
                   value:
-                    code: INVALID_REGION_SIGUNGU
-                    message: 유효하지 않은 거주지역(시군구)입니다.
+                    code: VALIDATION_ERROR
+                    message: 요청 값이 올바르지 않습니다.
                     status: 400
                     details:
                       field: regionSigungu
                       reason: regionSigungu 값이 올바르지 않습니다.
+
         '401':
           description: Unauthorized
           content:
@@ -2851,99 +2834,93 @@ paths:
       tags:
       - mypage
       summary: 맞춤 프로필 부분 수정
-      description: '전달된 필드만 수정됩니다. userId는 ULID를 사용합니다.
-
-        '
-      operationId: patch_mypage_profile
+      description: |
+        전달된 필드만 수정됩니다. 포함되지 않은 필드는 변경되지 않습니다.
+      operationId: mypage_patchProfile
       requestBody:
         required: true
         content:
           application/json:
             schema:
               type: object
-              description: '전달된 필드만 수정됩니다. 포함되지 않은 필드는 변경되지 않습니다.
-
-                '
+              additionalProperties: false
               properties:
                 name:
                   type: string
                   maxLength: 10
                   example: 홍길동
+
+                email:
+                  type: string
+                  format: email
+                  example: gildong@example.com
+
                 gender:
                   type: string
                   enum: [MALE, FEMALE, OTHER, UNKNOWN]
                   example: MALE
+
                 birthDate:
                   type: string
                   format: date
                   description: 생년월일(YYYY-MM-DD). 연령 조건 판단에 사용됩니다.
                   example: '1999-01-01'
+
                 regionSigungu:
                   type: string
                   maxLength: 100
-                  description: 거주지역(시군구). 맞춤 공고 필터링에 사용됩니다.
+                  description: 거주지역(시군구)
                   example: 서울특별시 마포구
+
+                isMarried:
+                  type: boolean
+                  description: 결혼 여부(true=기혼, false=미혼)
+                  example: false
+
+                isHomeless:
+                  type: boolean
+                  description: 무주택 여부(true=무주택, false=유주택)
+                  example: true
+
+                householdRole:
+                  type: string
+                  description: 세대 내 역할(세대주/세대원)
+                  enum: [HOUSEHOLDER, MEMBER]
+                  example: HOUSEHOLDER
+
                 householdSize:
                   type: integer
                   minimum: 1
                   maximum: 100
                   example: 1
-                householdRole:
-                  type: string
-                  enum: [HOUSEHOLDER, MEMBER]
-                  example: HOUSEHOLDER
-                incomeDecile:
-                  type: integer
-                  minimum: 1
-                  maximum: 10
-                  example: 4
 
-                priorityCategory:
-                  type: string
-                  description: 사용자 우대/우선 자격(최종 적용 기준 1개)
-                  enum:
-                    - GENERAL
-                    - MULTI_CHILD
-                    - NEWLY_MARRIED
-                    - FIRST_TIME_HOME_BUYER
-                    - SINGLE_PARENT
-                    - BASIC_LIVELIHOOD
-                    - NEAR_POOR
-                    - DISABLED
-                    - NATIONAL_MERIT
-                    - ELDERLY
-                    - YOUTH
-                    - OTHER
-                  example: SINGLE_PARENT
+                householdMonthlyIncome:
+                  type: integer
+                  minimum: 0
+                  description: 가구 총 월 수입(원)
+                  example: 4000000
+
       responses:
         '204':
           description: No Content (수정 완료)
+
         '400':
-          description: Validation Error (지역 코드/형식 오류 등)
+          description: Validation Error (형식 오류 등)
           content:
             application/json:
               schema:
-                type: object
-                required: [code, message, status, details]
-                properties:
-                  code: { type: string }
-                  message: { type: string }
-                  status: { type: integer }
-                  details:
-                    type: object
-                    required: [field, reason]
-                    properties:
-                      field: { type: string }
-                      reason: { type: string }
+                $ref: '#/components/schemas/ErrorResponse'
               examples:
-                invalidRegionSigungu:
+                mock1:
+                  summary: invalidRegionSigungu
                   value:
-                    code: INVALID_REGION_SIGUNGU
-                    message: 유효하지 않은 거주지역(시군구)입니다.
+                    code: VALIDATION_ERROR
+                    message: 요청 값이 올바르지 않습니다.
                     status: 400
                     details:
                       field: regionSigungu
                       reason: regionSigungu 값이 올바르지 않습니다.
+
         '401':
           description: Unauthorized
           content:
@@ -2957,28 +2934,32 @@ paths:
       tags:
       - mypage
       summary: 내가 찜한 공고 리스트
-      description: '유저가 찜(스크랩)한 공고 목록을 페이지네이션으로 조회합니다. JWT는 HttpOnly 쿠키로 인증됩니다.
-
-        '
+      description: >
+        유저가 찜(스크랩)한 공고 목록을 **커서 기반 페이지네이션**으로 조회합니다.
+        JWT는 HttpOnly 쿠키로 인증됩니다.
       operationId: mypage_listScraps
       parameters:
-      - name: page
-        in: query
-        required: false
-        schema:
-          type: integer
-          minimum: 0
-          default: 0
-        description: 0부터 시작하는 페이지 번호
-      - name: size
-        in: query
-        required: false
-        schema:
-          type: integer
-          minimum: 1
-          maximum: 100
-          default: 20
-        description: 페이지 크기
+        - name: cursor
+          in: query
+          required: false
+          schema:
+            type: integer
+            format: int64
+            minimum: 0
+          description: >
+            다음 페이지 조회를 위한 커서(마지막으로 조회한 항목의 cursor 값).
+            최초 조회 시 생략합니다.
+          example: 900001
+        - name: limit
+          in: query
+          required: false
+          schema:
+            type: integer
+            minimum: 1
+            maximum: 100
+            default: 20
+          description: 조회 개수
+          example: 20
       responses:
         '200':
           description: OK
@@ -2986,162 +2967,212 @@ paths:
             application/json:
               schema:
                 type: object
-                required:
-                - items
-                - page
-                - size
-                - totalElements
-                - totalPages
+                additionalProperties: false
+                required: [items, nextCursor, hasNext]
                 properties:
                   items:
                     type: array
                     description: 찜(스크랩)한 공고 목록
                     items:
                       type: object
+                      additionalProperties: false
                       required:
-                      - announcementId
-                      - provider
-                      - title
-                      - endDate
-                      - publisher
+                        - announcementId
+                        - title
+                        - housingType
+                        - startDate
+                        - endDate
+                        - publishedAt
+                        - publisher
+                        - status
                       properties:
                         announcementId:
                           type: integer
                           format: int64
-                          description: 공고 PK (오픈된 공고 정보의 내부 식별자)
-                          example: 12345
-                        provider:
-                          type: string
-                          description: 공고 제공처
-                          enum:
-                          - LH
-                          - SH
-                          example: LH
+                          description: 공고 PK
+                          example: 900001
                         title:
                           type: string
                           description: 공고명
-                          example: 청년매입임대주택 모집 공고
+                          example: Mock title 1
+                        housingType:
+                          type: string
+                          description: 주택 유형
+                          example: 행복주택
+                        startDate:
+                          type: string
+                          format: date
+                          description: 시작일(YYYY-MM-DD)
+                          example: '2026-01-01'
                         endDate:
                           type: string
                           format: date
                           description: 마감일(YYYY-MM-DD)
                           example: '2026-01-15'
+                        publishedAt:
+                          type: string
+                          format: date
+                          description: 게시일(YYYY-MM-DD)
+                          example: '2026-01-01'
                         publisher:
                           type: string
                           description: 발행처(기관/부서명 등)
                           example: LH 한국토지주택공사
-                  page:
+                        status:
+                          type: string
+                          description: 공고 상태
+                          enum: [OPEN, DUE_SOON, UPCOMING, CLOSED]
+                          example: OPEN
+                  nextCursor:
                     type: integer
-                    minimum: 0
-                    description: 현재 페이지 번호(0부터)
-                    example: 0
-                  size:
-                    type: integer
-                    minimum: 1
-                    maximum: 100
-                    description: 페이지 크기
-                    example: 20
-                  totalElements:
-                    type: integer
-                    minimum: 0
-                    description: 전체 항목 수
-                    example: 134
-                  totalPages:
-                    type: integer
-                    minimum: 0
-                    description: 전체 페이지 수
-                    example: 7
+                    format: int64
+                    nullable: true
+                    description: 다음 페이지 조회에 사용할 커서(더 이상 없으면 null)
+                    example: 899990
+                  hasNext:
+                    type: boolean
+                    description: 다음 페이지 존재 여부
+                    example: true
               examples:
                 mock1:
                   summary: Scenario 1
                   value:
                     items:
-                    - announcementId: 900001
-                      provider: LH
-                      title: Mock title 1
-                      endDate: '2026-01-01'
-                      publisher: LH 한국토지주택공사
-                    - announcementId: 900001
-                      provider: LH
-                      title: Mock title 1
-                      endDate: '2026-01-01'
-                      publisher: LH 한국토지주택공사
-                    page: 7
-                    size: 8
-                    totalElements: 7
-                    totalPages: 7
-                mock2:
-                  summary: Scenario 2
+                      - announcementId: 900001
+                        title: "Mock title 1"
+                        housingType: "행복주택"
+                        startDate: "2026-01-01"
+                        endDate: "2026-01-15"
+                        publishedAt: "2026-01-01"
+                        publisher: "LH 한국토지주택공사"
+                        status: "OPEN"
+                      - announcementId: 900000
+                        title: "Mock title 0"
+                        housingType: "청년매입임대"
+                        startDate: "2026-01-01"
+                        endDate: "2026-01-10"
+                        publishedAt: "2025-12-28"
+                        publisher: "LH 한국토지주택공사"
+                        status: "DUE_SOON"
+                    nextCursor: 900000
+                    hasNext: true
+        '401':
+          description: Unauthorized
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '500':
+          description: Internal Server Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+                
+    post:
+        tags:
+        - mypage
+        summary: 공고 찜(스크랩) 추가
+        description: >
+          공고를 찜(스크랩) 목록에 추가합니다.
+          JWT는 HttpOnly 쿠키로 인증됩니다.
+        operationId: mypage_createScrap
+        requestBody:
+          required: true
+          content:
+            application/json:
+              schema:
+                type: object
+                additionalProperties: false
+                required: [announcementId]
+                properties:
+                  announcementId:
+                    type: integer
+                    format: int64
+                    description: 공고 PK
+                    example: 900001
+              examples:
+                mock1:
+                  summary: Scenario 1
                   value:
-                    items:
-                    - announcementId: 900002
-                      provider: SH
-                      title: Mock title 2
-                      endDate: '2026-01-02'
-                      publisher: LH 한국토지주택공사
-                    - announcementId: 900002
-                      provider: SH
-                      title: Mock title 2
-                      endDate: '2026-01-02'
-                      publisher: LH 한국토지주택공사
-                    page: 14
-                    size: 15
-                    totalElements: 14
-                    totalPages: 14
-                mock3:
-                  summary: Scenario 3
+                    announcementId: 900001
+        responses:
+          '204':
+            description: No Content
+          '400':
+            description: Validation Error
+            content:
+              application/json:
+                schema:
+                  $ref: '#/components/schemas/ErrorResponse'
+                examples:
+                  mock1:
+                    summary: invalidAnnouncementId
+                    value:
+                      code: VALIDATION_ERROR
+                      message: 요청 값이 올바르지 않습니다.
+                      status: 400
+                      details:
+                        field: announcementId
+                        reason: announcementId 값이 올바르지 않습니다.
+          '401':
+            description: Unauthorized
+            content:
+              application/json:
+                schema:
+                  $ref: '#/components/schemas/ErrorResponse'
+          '500':
+            description: Internal Server Error
+            content:
+              application/json:
+                schema:
+                  $ref: '#/components/schemas/ErrorResponse'
+    delete:
+      tags:
+      - mypage
+      summary: 공고 찜(스크랩) 해제
+      description: >
+        공고 찜(스크랩)을 해제합니다.
+        JWT는 HttpOnly 쿠키로 인증됩니다.
+      operationId: mypage_deleteScrap
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              additionalProperties: false
+              required: [announcementId]
+              properties:
+                announcementId:
+                  type: integer
+                  format: int64
+                  description: 공고 PK
+                  example: 900001
+            examples:
+              mock1:
+                summary: Scenario 1
+                value:
+                  announcementId: 900001
+      responses:
+        '204':
+          description: No Content
+        '400':
+          description: Validation Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+              examples:
+                mock1:
+                  summary: invalidAnnouncementId
                   value:
-                    items:
-                    - announcementId: 900003
-                      provider: LH
-                      title: Mock title 3
-                      endDate: '2026-01-03'
-                      publisher: LH 한국토지주택공사
-                    - announcementId: 900003
-                      provider: LH
-                      title: Mock title 3
-                      endDate: '2026-01-03'
-                      publisher: LH 한국토지주택공사
-                    page: 21
-                    size: 22
-                    totalElements: 21
-                    totalPages: 21
-                mock4:
-                  summary: Scenario 4
-                  value:
-                    items:
-                    - announcementId: 900004
-                      provider: SH
-                      title: Mock title 4
-                      endDate: '2026-01-04'
-                      publisher: LH 한국토지주택공사
-                    - announcementId: 900004
-                      provider: SH
-                      title: Mock title 4
-                      endDate: '2026-01-04'
-                      publisher: LH 한국토지주택공사
-                    page: 28
-                    size: 29
-                    totalElements: 28
-                    totalPages: 28
-                mock5:
-                  summary: Scenario 5
-                  value:
-                    items:
-                    - announcementId: 900005
-                      provider: LH
-                      title: Mock title 5
-                      endDate: '2026-01-05'
-                      publisher: LH 한국토지주택공사
-                    - announcementId: 900005
-                      provider: LH
-                      title: Mock title 5
-                      endDate: '2026-01-05'
-                      publisher: LH 한국토지주택공사
-                    page: 35
-                    size: 36
-                    totalElements: 35
-                    totalPages: 35
+                    code: VALIDATION_ERROR
+                    message: 요청 값이 올바르지 않습니다.
+                    status: 400
+                    details:
+                      field: announcementId
+                      reason: announcementId 값이 올바르지 않습니다.
         '401':
           description: Unauthorized
           content:
@@ -3160,30 +3191,34 @@ paths:
     get:
       tags:
       - mypage
-      summary: 신청하러가기(외부 이동) 눌러본 공고 기록
-      description: '공고 상세에서 ''신청하러가기''를 눌러 외부 링크로 이동했던 공고 목록입니다. 실제 신청 여부(applied)는
-        유저가 이후에 입력하는 값입니다. JWT는 HttpOnly 쿠키로 인증됩니다.
-
-        '
-      operationId: mypage_listOutbounds
+      summary: 최근 열람 공고
+      description: >
+        유저가 공고 상세를 열람했거나(또는 '신청하러가기' 등으로 외부 이동을 트리거한 경우 포함)
+        최근에 확인한 공고 목록을 **커서 기반 페이지네이션**으로 조회합니다.
+        JWT는 HttpOnly 쿠키로 인증됩니다.
+      operationId: mypage_listRecentViewedAnnouncements
       parameters:
-      - name: page
-        in: query
-        required: false
-        schema:
-          type: integer
-          minimum: 0
-          default: 0
-        description: 0부터 시작하는 페이지 번호
-      - name: size
-        in: query
-        required: false
-        schema:
-          type: integer
-          minimum: 1
-          maximum: 100
-          default: 20
-        description: 페이지 크기
+        - name: cursor
+          in: query
+          required: false
+          schema:
+            type: integer
+            format: int64
+            minimum: 0
+          description: >
+            다음 페이지 조회를 위한 커서(마지막으로 조회한 항목의 cursor 값).
+            최초 조회 시 생략합니다.
+          example: 900001
+        - name: limit
+          in: query
+          required: false
+          schema:
+            type: integer
+            minimum: 1
+            maximum: 100
+            default: 20
+          description: 조회 개수
+          example: 20
       responses:
         '200':
           description: OK
@@ -3191,181 +3226,95 @@ paths:
             application/json:
               schema:
                 type: object
-                required:
-                - data
-                - meta
+                additionalProperties: false
+                required: [items, nextCursor, hasNext]
                 properties:
-                  data:
+                  items:
                     type: array
-                    description: 신청하러가기(외부 이동) 기록 목록
+                    description: 최근 열람 공고 목록
                     items:
                       type: object
+                      additionalProperties: false
                       required:
-                      - outboundId
-                      - announcementId
-                      - agency
-                      - clickedAt
-                      - applied
+                        - announcementId
+                        - title
+                        - housingType
+                        - startDate
+                        - endDate
+                        - publishedAt
+                        - publisher
+                        - status
                       properties:
-                        outboundId:
-                          type: integer
-                          format: int64
-                          description: 신청하러가기(외부 이동) 기록 PK
-                          example: 98765
                         announcementId:
                           type: integer
                           format: int64
                           description: 공고 PK
-                          example: 12345
-                        agency:
+                          example: 900001
+                        title:
                           type: string
-                          enum:
-                          - LH
-                          - SH
-                          description: 공고 기관 구분(LH/SH)
-                          example: LH
-                        clickedAt:
+                          description: 공고명
+                          example: Mock title 1
+                        housingType:
                           type: string
-                          format: date-time
-                          description: 사용자가 '신청하러가기'를 클릭한 시각(ISO-8601)
-                          example: '2025-12-29T00:10:15+09:00'
-                        applied:
-                          type: boolean
-                          description: 실제 신청 여부(유저가 입력)
-                          example: false
-                        appliedAt:
+                          description: 주택 유형
+                          example: 행복주택
+                        startDate:
                           type: string
-                          format: date-time
-                          nullable: true
-                          description: 실제 신청 시각(유저가 입력, 미입력 시 null)
-                          example: null
-                  meta:
-                    type: object
-                    required:
-                    - page
-                    - size
-                    - totalElements
-                    - totalPages
-                    properties:
-                      page:
-                        type: integer
-                        minimum: 0
-                        description: 현재 페이지 번호(0부터)
-                        example: 0
-                      size:
-                        type: integer
-                        minimum: 1
-                        maximum: 100
-                        description: 페이지 크기
-                        example: 20
-                      totalElements:
-                        type: integer
-                        minimum: 0
-                        description: 전체 항목 수
-                        example: 134
-                      totalPages:
-                        type: integer
-                        minimum: 0
-                        description: 전체 페이지 수
-                        example: 7
+                          format: date
+                          description: 시작일(YYYY-MM-DD)
+                          example: '2026-01-01'
+                        endDate:
+                          type: string
+                          format: date
+                          description: 마감일(YYYY-MM-DD)
+                          example: '2026-01-15'
+                        publishedAt:
+                          type: string
+                          format: date
+                          description: 게시일(YYYY-MM-DD)
+                          example: '2026-01-01'
+                        publisher:
+                          type: string
+                          description: 발행처(기관/부서명 등)
+                          example: LH 한국토지주택공사
+                        status:
+                          type: string
+                          description: 공고 상태
+                          enum: [OPEN, DUE_SOON, UPCOMING, CLOSED]
+                          example: OPEN
+                  nextCursor:
+                    type: integer
+                    format: int64
+                    nullable: true
+                    description: 다음 페이지 조회에 사용할 커서(더 이상 없으면 null)
+                    example: 899990
+                  hasNext:
+                    type: boolean
+                    description: 다음 페이지 존재 여부
+                    example: true
               examples:
                 mock1:
                   summary: Scenario 1
                   value:
-                    data:
-                    - outboundId: 800001
-                      announcementId: 900001
-                      agency: LH
-                      clickedAt: '2025-12-31T10:07:00+09:00'
-                      applied: false
-                    - outboundId: 800001
-                      announcementId: 900001
-                      agency: LH
-                      clickedAt: '2025-12-31T10:07:00+09:00'
-                      applied: false
-                    meta:
-                      page: 7
-                      size: 8
-                      totalElements: 7
-                      totalPages: 7
-                mock2:
-                  summary: Scenario 2
-                  value:
-                    data:
-                    - outboundId: 14
-                      announcementId: 900002
-                      agency: SH
-                      clickedAt: '2025-12-31T11:14:00+09:00'
-                      applied: true
-                    - outboundId: 14
-                      announcementId: 900002
-                      agency: SH
-                      clickedAt: '2025-12-31T11:14:00+09:00'
-                      applied: true
-                    meta:
-                      page: 14
-                      size: 15
-                      totalElements: 14
-                      totalPages: 14
-                mock3:
-                  summary: Scenario 3
-                  value:
-                    data:
-                    - outboundId: 21
-                      announcementId: 900003
-                      agency: LH
-                      clickedAt: '2025-12-31T12:21:00+09:00'
-                      applied: false
-                    - outboundId: 21
-                      announcementId: 900003
-                      agency: LH
-                      clickedAt: '2025-12-31T12:21:00+09:00'
-                      applied: false
-                    meta:
-                      page: 21
-                      size: 22
-                      totalElements: 21
-                      totalPages: 21
-                mock4:
-                  summary: Scenario 4
-                  value:
-                    data:
-                    - outboundId: 28
-                      announcementId: 900004
-                      agency: SH
-                      clickedAt: '2025-12-31T13:28:00+09:00'
-                      applied: true
-                    - outboundId: 28
-                      announcementId: 900004
-                      agency: SH
-                      clickedAt: '2025-12-31T13:28:00+09:00'
-                      applied: true
-                    meta:
-                      page: 28
-                      size: 29
-                      totalElements: 28
-                      totalPages: 28
-                mock5:
-                  summary: Scenario 5
-                  value:
-                    data:
-                    - outboundId: 35
-                      announcementId: 900005
-                      agency: LH
-                      clickedAt: '2025-12-31T14:35:00+09:00'
-                      applied: false
-                      appliedAt: null
-                    - outboundId: 35
-                      announcementId: 900005
-                      agency: LH
-                      clickedAt: '2025-12-31T14:35:00+09:00'
-                      applied: false
-                      appliedAt: null
-                    meta:
-                      page: 35
-                      size: 36
-                      totalElements: 35
-                      totalPages: 35
+                    items:
+                      - announcementId: 900001
+                        title: "Mock title 1"
+                        housingType: "행복주택"
+                        startDate: "2026-01-01"
+                        endDate: "2026-01-15"
+                        publishedAt: "2026-01-01"
+                        publisher: "LH 한국토지주택공사"
+                        status: "OPEN"
+                      - announcementId: 900000
+                        title: "Mock title 0"
+                        housingType: "청년매입임대"
+                        startDate: "2026-01-01"
+                        endDate: "2026-01-10"
+                        publishedAt: "2025-12-28"
+                        publisher: "LH 한국토지주택공사"
+                        status: "DUE_SOON"
+                    nextCursor: 900000
+                    hasNext: true
         '401':
           description: Unauthorized
           content:
@@ -3378,77 +3327,66 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/ErrorResponse'
-
-
-  /api/mypage/outbounds/{announcementId}/applied:
-    put:
-      tags:
-      - mypage
-      summary: 실제 신청 여부 등록/변경
-      description: '사용자가 ''신청하러가기''를 눌렀던 공고(announcementId)에 대해 실제 신청 여부를 등록/변경합니다.
-        JWT는 HttpOnly 쿠키로 인증됩니다.
-
-        '
-      operationId: mypage_putAppliedStatus
-      parameters:
-      - name: announcementId
-        in: path
-        required: true
-        schema:
-          type: integer
-          format: int64
-        description: 공고 PK
-        example: 12345
-      requestBody:
-        required: true
-        content:
-          application/json:
-            schema:
-              type: object
-              required:
-              - applied
-              properties:
-                applied:
-                  type: boolean
-                  description: true=신청함, false=신청 안 함
-                  example: true
-                appliedAt:
-                  type: string
-                  format: date-time
-                  nullable: true
-                  description: '신청 시각(선택). applied=true일 때만 의미가 있으며, 미전달 시 서버가 현재
-                    시각으로 기록할 수 있습니다.
-
-                    '
-                  example: '2025-12-29T00:10:15+09:00'
-      responses:
-        '204':
-          description: No Content (저장 완료)
-        '400':
-          description: Validation Error
+    post:
+        tags:
+        - mypage
+        summary: 최근 열람 공고 기록
+        description: >
+          유저가 공고 상세를 열람했음을 기록합니다.
+          같은 공고를 여러 번 열람해도 서버는 최근 열람 시각 기준으로 갱신(upsert)할 수 있습니다.
+          JWT는 HttpOnly 쿠키로 인증됩니다.
+        operationId: mypage_createRecentView
+        requestBody:
+          required: true
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/ErrorResponse'
-        '401':
-          description: Unauthorized
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/ErrorResponse'
-        '404':
-          description: Not Found (해당 공고의 외부 이동 기록이 없음)
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/ErrorResponse'
-        '500':
-          description: Internal Server Error
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/ErrorResponse'
-
+                type: object
+                additionalProperties: false
+                required: [announcementId]
+                properties:
+                  announcementId:
+                    type: integer
+                    format: int64
+                    description: 공고 PK
+                    example: 900001
+              examples:
+                mock1:
+                  summary: Scenario 1
+                  value:
+                    announcementId: 900001
+        responses:
+          '204':
+            description: No Content
+          '400':
+            description: Validation Error
+            content:
+              application/json:
+                schema:
+                  $ref: '#/components/schemas/ErrorResponse'
+                examples:
+                  mock1:
+                    summary: invalidAnnouncementId
+                    value:
+                      code: VALIDATION_ERROR
+                      message: 요청 값이 올바르지 않습니다.
+                      status: 400
+                      details:
+                        field: announcementId
+                        reason: announcementId 값이 올바르지 않습니다.
+          '401':
+            description: Unauthorized
+            content:
+              application/json:
+                schema:
+                  $ref: '#/components/schemas/ErrorResponse'
+          '500':
+            description: Internal Server Error
+            content:
+              application/json:
+                schema:
+                  $ref: '#/components/schemas/ErrorResponse'
+ 
 
   /api/mypage/notification-settings/kakao:
       get:
@@ -3665,7 +3603,7 @@ paths:
                 $ref: '#/components/schemas/ErrorResponse'
 
 
-  /api/mypage/reminder-settings:
+  /api/mypage/notification-settings/reminder-settings:
     get:
       tags:
       - mypage
@@ -4660,2143 +4598,7 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/ErrorResponse'
-  /api/gamification/missions:
-    get:
-      tags:
-      - gamification
-      summary: 미션/레벨 진행 상태 조회
-      description: 유저의 레벨/경험치/칭호와 미션 진행 상태를 조회합니다.
-      operationId: gamification_getMissions
-      responses:
-        '200':
-          description: OK
-          content:
-            application/json:
-              schema:
-                type: object
-                description: 미션 진행 상태 응답
-                required:
-                - level
-                - exp
-                - missions
-                properties:
-                  level:
-                    type: integer
-                    description: 현재 레벨
-                    example: 3
-                  exp:
-                    type: integer
-                    description: 현재 누적 경험치
-                    example: 120
-                  title:
-                    type: string
-                    nullable: true
-                    description: 현재 칭호(없으면 null)
-                    example: 탐색왕
-                  expToNextLevel:
-                    type: integer
-                    nullable: true
-                    description: 다음 레벨까지 남은 경험치(표시용)
-                    example: 80
-                  missions:
-                    type: array
-                    description: 미션 목록
-                    items:
-                      type: object
-                      description: 미션 단건
-                      required:
-                      - missionId
-                      - name
-                      - category
-                      - progress
-                      - target
-                      - completed
-                      properties:
-                        missionId:
-                          type: string
-                          description: 미션 식별자
-                          example: msn_view_10
-                        name:
-                          type: string
-                          description: 미션 이름
-                          example: 공고 10회 조회
-                        category:
-                          type: string
-                          description: 미션 분류
-                          enum:
-                          - ATTENDANCE
-                          - ONBOARDING
-                          - USAGE
-                          - TODO
-                          - COMMUNITY
-                          example: USAGE
-                        progress:
-                          type: integer
-                          description: 현재 진행 수치
-                          example: 4
-                        target:
-                          type: integer
-                          description: 목표 수치
-                          example: 10
-                        completed:
-                          type: boolean
-                          description: 완료 여부
-                          example: false
-                        rewardExp:
-                          type: integer
-                          nullable: true
-                          description: 완료 시 지급 경험치(표시용)
-                          example: 30
-                        lastUpdatedAt:
-                          type: string
-                          format: date-time
-                          nullable: true
-                          description: 진행도 갱신 시각
-                          example: '2025-12-29T08:55:00+09:00'
-              examples:
-                mock1:
-                  summary: Scenario 1
-                  value:
-                    level: 7
-                    exp: 7
-                    missions:
-                    - missionId: '800001'
-                      name: Mock name 1
-                      category: ATTENDANCE
-                      progress: 7
-                      target: 7
-                      completed: false
-                    - missionId: '800001'
-                      name: Mock name 1
-                      category: ATTENDANCE
-                      progress: 7
-                      target: 7
-                      completed: false
-                    title: Mock title 1
-                    expToNextLevel: 7
-                mock2:
-                  summary: Scenario 2
-                  value:
-                    level: 14
-                    exp: 14
-                    missions:
-                    - missionId: msn_view_10
-                      name: Mock name 2
-                      category: ONBOARDING
-                      progress: 14
-                      target: 14
-                      completed: true
-                    - missionId: msn_view_10
-                      name: Mock name 2
-                      category: ONBOARDING
-                      progress: 14
-                      target: 14
-                      completed: true
-                    title: Mock title 2
-                    expToNextLevel: 14
-                mock3:
-                  summary: Scenario 3
-                  value:
-                    level: 21
-                    exp: 21
-                    missions:
-                    - missionId: msn_view_10
-                      name: Mock name 3
-                      category: USAGE
-                      progress: 21
-                      target: 21
-                      completed: false
-                    - missionId: msn_view_10
-                      name: Mock name 3
-                      category: USAGE
-                      progress: 21
-                      target: 21
-                      completed: false
-                    title: Mock title 3
-                    expToNextLevel: 21
-                mock4:
-                  summary: Scenario 4
-                  value:
-                    level: 28
-                    exp: 28
-                    missions:
-                    - missionId: msn_view_10
-                      name: Mock name 4
-                      category: TODO
-                      progress: 28
-                      target: 28
-                      completed: true
-                    - missionId: msn_view_10
-                      name: Mock name 4
-                      category: TODO
-                      progress: 28
-                      target: 28
-                      completed: true
-                    title: Mock title 4
-                    expToNextLevel: 28
-                mock5:
-                  summary: Scenario 5
-                  value:
-                    level: 35
-                    exp: 35
-                    missions:
-                    - missionId: msn_view_10
-                      name: Mock name 5
-                      category: COMMUNITY
-                      progress: 35
-                      target: 35
-                      completed: false
-                      rewardExp: null
-                      lastUpdatedAt: null
-                    - missionId: msn_view_10
-                      name: Mock name 5
-                      category: COMMUNITY
-                      progress: 35
-                      target: 35
-                      completed: false
-                      rewardExp: null
-                      lastUpdatedAt: null
-                    title: null
-                    expToNextLevel: null
-        '401':
-          description: Unauthorized
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/ErrorResponse'
-        '500':
-          description: Internal Server Error
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/ErrorResponse'
-  /api/gamification/badges:
-    get:
-      tags:
-      - gamification
-      summary: 배지 목록/장착 상태 조회
-      description: 유저가 획득한 배지와 현재 장착 배지를 조회합니다.
-      operationId: gamification_listBadges
-      responses:
-        '200':
-          description: OK
-          content:
-            application/json:
-              schema:
-                type: object
-                description: 배지 목록 응답
-                required:
-                - items
-                - equippedBadgeId
-                properties:
-                  equippedBadgeId:
-                    type: string
-                    nullable: true
-                    description: 현재 장착된 배지 ID(없으면 null)
-                    example: bdg_explorer
-                  items:
-                    type: array
-                    description: 배지 목록
-                    items:
-                      type: object
-                      description: 배지 단건
-                      required:
-                      - badgeId
-                      - name
-                      - owned
-                      properties:
-                        badgeId:
-                          type: string
-                          description: 배지 ID
-                          example: bdg_explorer
-                        name:
-                          type: string
-                          description: 배지 이름
-                          example: 탐색왕 배지
-                        iconUrl:
-                          type: string
-                          format: uri
-                          nullable: true
-                          description: 배지 아이콘 URL(없으면 null)
-                          example: https://cdn.example.com/badges/explorer.png
-                        owned:
-                          type: boolean
-                          description: 보유 여부
-                          example: true
-                        acquiredAt:
-                          type: string
-                          format: date-time
-                          nullable: true
-                          description: 획득 시각(보유 시 의미 있음)
-                          example: '2025-12-20T13:00:00+09:00'
-              examples:
-                mock1:
-                  summary: Scenario 1
-                  value:
-                    items:
-                    - badgeId: '730001'
-                      name: Mock name 1
-                      owned: false
-                    - badgeId: '730001'
-                      name: Mock name 1
-                      owned: false
-                    equippedBadgeId: '800001'
-                mock2:
-                  summary: Scenario 2
-                  value:
-                    items:
-                    - badgeId: bdg_explorer
-                      name: Mock name 2
-                      owned: true
-                    - badgeId: bdg_explorer
-                      name: Mock name 2
-                      owned: true
-                    equippedBadgeId: bdg_explorer
-                mock3:
-                  summary: Scenario 3
-                  value:
-                    items:
-                    - badgeId: bdg_explorer
-                      name: Mock name 3
-                      owned: false
-                    - badgeId: bdg_explorer
-                      name: Mock name 3
-                      owned: false
-                    equippedBadgeId: bdg_explorer
-                mock4:
-                  summary: Scenario 4
-                  value:
-                    items:
-                    - badgeId: bdg_explorer
-                      name: Mock name 4
-                      owned: true
-                    - badgeId: bdg_explorer
-                      name: Mock name 4
-                      owned: true
-                    equippedBadgeId: bdg_explorer
-                mock5:
-                  summary: Scenario 5
-                  value:
-                    items:
-                    - badgeId: bdg_explorer
-                      name: Mock name 5
-                      owned: false
-                      iconUrl: null
-                      acquiredAt: null
-                    - badgeId: bdg_explorer
-                      name: Mock name 5
-                      owned: false
-                      iconUrl: null
-                      acquiredAt: null
-                    equippedBadgeId: bdg_explorer
-        '401':
-          description: Unauthorized
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/ErrorResponse'
-        '500':
-          description: Internal Server Error
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/ErrorResponse'
-  /api/patch/gamification/badges/equip:
-    patch:
-      tags:
-      - gamification
-      summary: 배지 장착 변경
-      description: badgeId가 null이면 장착 해제합니다.
-      operationId: patch_gamification_equipBadge
-      requestBody:
-        required: true
-        content:
-          application/json:
-            schema:
-              type: object
-              description: 배지 장착 변경 요청
-              required:
-              - badgeId
-              properties:
-                badgeId:
-                  type: string
-                  nullable: true
-                  description: 장착할 배지 ID(null이면 해제)
-                  example: bdg_explorer
-      responses:
-        '200':
-          description: OK
-          content:
-            application/json:
-              schema:
-                type: object
-                description: 배지 장착 변경 응답
-                required:
-                - equippedBadgeId
-                properties:
-                  equippedBadgeId:
-                    type: string
-                    nullable: true
-                    description: 현재 장착된 배지 ID(없으면 null)
-                    example: bdg_explorer
-              examples:
-                mock1:
-                  summary: Scenario 1
-                  value:
-                    equippedBadgeId: '800001'
-                mock2:
-                  summary: Scenario 2
-                  value:
-                    equippedBadgeId: bdg_explorer
-                mock3:
-                  summary: Scenario 3
-                  value:
-                    equippedBadgeId: bdg_explorer
-                mock4:
-                  summary: Scenario 4
-                  value:
-                    equippedBadgeId: bdg_explorer
-                mock5:
-                  summary: Scenario 5
-                  value:
-                    equippedBadgeId: bdg_explorer
-        '409':
-          description: Conflict
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/ErrorResponse'
-        '401':
-          description: Unauthorized
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/ErrorResponse'
-        '500':
-          description: Internal Server Error
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/ErrorResponse'
-  /api/policies/personalized:
-    get:
-      tags:
-      - policies
-      summary: 맞춤 정책 목록 조회
-      description: '로그인 + 온보딩(프로필) 완료 사용자를 대상으로, 유저 프로필(지역/소득/상황태그 등) 기반으로 맞춤 정책 목록을
-        반환합니다. 인증은 HttpOnly 쿠키(JWT)로 처리됩니다.
-
-        '
-      operationId: policies_getPersonalizedPolicies
-      parameters:
-      - name: page
-        in: query
-        required: false
-        schema:
-          type: integer
-          minimum: 0
-          default: 0
-        description: 0부터 시작하는 페이지 번호
-      - name: size
-        in: query
-        required: false
-        schema:
-          type: integer
-          minimum: 1
-          maximum: 100
-          default: 20
-        description: 페이지 크기
-      responses:
-        '200':
-          description: OK
-          content:
-            application/json:
-              schema:
-                type: object
-                required:
-                - data
-                - meta
-                properties:
-                  data:
-                    type: array
-                    description: 맞춤 정책 목록
-                    items:
-                      type: object
-                      required:
-                      - policyId
-                      - title
-                      - updatedAt
-                      properties:
-                        policyId:
-                          type: integer
-                          format: int64
-                          description: 정책 상세 PK
-                          example: 8800123
-                        title:
-                          type: string
-                          description: 정책명
-                          example: 청년 월세 지원 사업
-                        updatedAt:
-                          type: string
-                          format: date-time
-                          description: 최종 수정일(ISO-8601)
-                          example: '2025-12-29T00:10:15+09:00'
-                        applicationStartDate:
-                          type: string
-                          format: date
-                          nullable: true
-                          description: 신청 시작일(없으면 null)
-                          example: '2026-01-01'
-                        applicationEndDate:
-                          type: string
-                          format: date
-                          nullable: true
-                          description: 신청 마감일(없으면 null)
-                          example: '2026-01-31'
-                  meta:
-                    type: object
-                    required:
-                    - page
-                    - size
-                    - totalElements
-                    - totalPages
-                    properties:
-                      page:
-                        type: integer
-                        minimum: 0
-                        description: 현재 페이지 번호(0부터)
-                        example: 0
-                      size:
-                        type: integer
-                        minimum: 1
-                        maximum: 100
-                        description: 페이지 크기
-                        example: 20
-                      totalElements:
-                        type: integer
-                        minimum: 0
-                        description: 전체 항목 수
-                        example: 134
-                      totalPages:
-                        type: integer
-                        minimum: 0
-                        description: 전체 페이지 수
-                        example: 7
-              examples:
-                mock1:
-                  summary: Scenario 1
-                  value:
-                    data:
-                    - policyId: 910001
-                      title: Mock title 1
-                      updatedAt: '2025-12-31T10:07:00+09:00'
-                    - policyId: 910001
-                      title: Mock title 1
-                      updatedAt: '2025-12-31T10:07:00+09:00'
-                    meta:
-                      page: 7
-                      size: 8
-                      totalElements: 7
-                      totalPages: 7
-                mock2:
-                  summary: Scenario 2
-                  value:
-                    data:
-                    - policyId: 910002
-                      title: Mock title 2
-                      updatedAt: '2025-12-31T11:14:00+09:00'
-                    - policyId: 910002
-                      title: Mock title 2
-                      updatedAt: '2025-12-31T11:14:00+09:00'
-                    meta:
-                      page: 14
-                      size: 15
-                      totalElements: 14
-                      totalPages: 14
-                mock3:
-                  summary: Scenario 3
-                  value:
-                    data:
-                    - policyId: 910003
-                      title: Mock title 3
-                      updatedAt: '2025-12-31T12:21:00+09:00'
-                    - policyId: 910003
-                      title: Mock title 3
-                      updatedAt: '2025-12-31T12:21:00+09:00'
-                    meta:
-                      page: 21
-                      size: 22
-                      totalElements: 21
-                      totalPages: 21
-                mock4:
-                  summary: Scenario 4
-                  value:
-                    data:
-                    - policyId: 910004
-                      title: Mock title 4
-                      updatedAt: '2025-12-31T13:28:00+09:00'
-                    - policyId: 910004
-                      title: Mock title 4
-                      updatedAt: '2025-12-31T13:28:00+09:00'
-                    meta:
-                      page: 28
-                      size: 29
-                      totalElements: 28
-                      totalPages: 28
-                mock5:
-                  summary: Scenario 5
-                  value:
-                    data:
-                    - policyId: 910005
-                      title: Mock title 5
-                      updatedAt: '2025-12-31T14:35:00+09:00'
-                      applicationStartDate: null
-                      applicationEndDate: null
-                    - policyId: 910005
-                      title: Mock title 5
-                      updatedAt: '2025-12-31T14:35:00+09:00'
-                      applicationStartDate: null
-                      applicationEndDate: null
-                    meta:
-                      page: 35
-                      size: 36
-                      totalElements: 35
-                      totalPages: 35
-        '401':
-          description: Unauthorized (로그인 필요)
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/ErrorResponse'
-        '403':
-          description: Forbidden (온보딩/프로필 미완료 등으로 맞춤 제공 불가)
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/ErrorResponse'
-        '500':
-          description: Internal Server Error
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/ErrorResponse'
-
-  /api/announcements/{announcementId}/policies:
-    get:
-      tags:
-      - policies
-      summary: 공고 기준 정책 목록 조회
-      description: '특정 공고(announcementId)와 연관된 정책 목록을 반환합니다. 인증은 HttpOnly 쿠키(JWT)로
-        처리됩니다. (공고 상세에서 함께 노출되는 ''관련 정책'' 섹션 등에 사용)
-
-        '
-      operationId: policies_listByAnnouncementId
-      parameters:
-      - name: announcementId
-        in: path
-        required: true
-        schema:
-          type: integer
-          format: int64
-        description: 공고 PK
-        example: 12345
-      - name: page
-        in: query
-        required: false
-        schema:
-          type: integer
-          minimum: 0
-          default: 0
-        description: 0부터 시작하는 페이지 번호
-      - name: size
-        in: query
-        required: false
-        schema:
-          type: integer
-          minimum: 1
-          maximum: 100
-          default: 20
-        description: 페이지 크기
-      responses:
-        '200':
-          description: OK
-          content:
-            application/json:
-              schema:
-                type: object
-                required:
-                - data
-                - meta
-                properties:
-                  data:
-                    type: array
-                    description: 공고 연관 정책 목록
-                    items:
-                      type: object
-                      required:
-                      - policyId
-                      - title
-                      - updatedAt
-                      properties:
-                        policyId:
-                          type: integer
-                          format: int64
-                          description: 정책 상세 PK
-                          example: 8800123
-                        title:
-                          type: string
-                          description: 정책명
-                          example: 청년 월세 지원 사업
-                        updatedAt:
-                          type: string
-                          format: date-time
-                          description: 최종 수정일(ISO-8601)
-                          example: '2025-12-29T00:10:15+09:00'
-                        applicationStartDate:
-                          type: string
-                          format: date
-                          nullable: true
-                          description: 신청 시작일(없으면 null)
-                          example: '2026-01-01'
-                        applicationEndDate:
-                          type: string
-                          format: date
-                          nullable: true
-                          description: 신청 마감일(없으면 null)
-                          example: '2026-01-31'
-                  meta:
-                    type: object
-                    required:
-                    - page
-                    - size
-                    - totalElements
-                    - totalPages
-                    properties:
-                      page:
-                        type: integer
-                        minimum: 0
-                        description: 현재 페이지 번호(0부터)
-                        example: 0
-                      size:
-                        type: integer
-                        minimum: 1
-                        maximum: 100
-                        description: 페이지 크기
-                        example: 20
-                      totalElements:
-                        type: integer
-                        minimum: 0
-                        description: 전체 항목 수
-                        example: 12
-                      totalPages:
-                        type: integer
-                        minimum: 0
-                        description: 전체 페이지 수
-                        example: 1
-              examples:
-                mock1:
-                  summary: Scenario 1
-                  value:
-                    data:
-                    - policyId: 910001
-                      title: Mock title 1
-                      updatedAt: '2025-12-31T10:07:00+09:00'
-                    - policyId: 910001
-                      title: Mock title 1
-                      updatedAt: '2025-12-31T10:07:00+09:00'
-                    meta:
-                      page: 7
-                      size: 8
-                      totalElements: 7
-                      totalPages: 7
-                mock2:
-                  summary: Scenario 2
-                  value:
-                    data:
-                    - policyId: 910002
-                      title: Mock title 2
-                      updatedAt: '2025-12-31T11:14:00+09:00'
-                    - policyId: 910002
-                      title: Mock title 2
-                      updatedAt: '2025-12-31T11:14:00+09:00'
-                    meta:
-                      page: 14
-                      size: 15
-                      totalElements: 14
-                      totalPages: 14
-                mock3:
-                  summary: Scenario 3
-                  value:
-                    data:
-                    - policyId: 910003
-                      title: Mock title 3
-                      updatedAt: '2025-12-31T12:21:00+09:00'
-                    - policyId: 910003
-                      title: Mock title 3
-                      updatedAt: '2025-12-31T12:21:00+09:00'
-                    meta:
-                      page: 21
-                      size: 22
-                      totalElements: 21
-                      totalPages: 21
-                mock4:
-                  summary: Scenario 4
-                  value:
-                    data:
-                    - policyId: 910004
-                      title: Mock title 4
-                      updatedAt: '2025-12-31T13:28:00+09:00'
-                    - policyId: 910004
-                      title: Mock title 4
-                      updatedAt: '2025-12-31T13:28:00+09:00'
-                    meta:
-                      page: 28
-                      size: 29
-                      totalElements: 28
-                      totalPages: 28
-                mock5:
-                  summary: Scenario 5
-                  value:
-                    data:
-                    - policyId: 910005
-                      title: Mock title 5
-                      updatedAt: '2025-12-31T14:35:00+09:00'
-                      applicationStartDate: null
-                      applicationEndDate: null
-                    - policyId: 910005
-                      title: Mock title 5
-                      updatedAt: '2025-12-31T14:35:00+09:00'
-                      applicationStartDate: null
-                      applicationEndDate: null
-                    meta:
-                      page: 35
-                      size: 36
-                      totalElements: 35
-                      totalPages: 35
-        '401':
-          description: Unauthorized
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/ErrorResponse'
-        '404':
-          description: Not Found (공고 없음 또는 연관 정책 없음 - 운영 정책에 따름)
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/ErrorResponse'
-        '500':
-          description: Internal Server Error
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/ErrorResponse'
-  /api/policies/{policyId}:
-    get:
-      tags:
-      - policies
-      summary: 정책 상세 조회
-      description: '정책 상세 정보를 반환합니다. 인증은 HttpOnly 쿠키(JWT)로 처리됩니다.
-
-        '
-      operationId: policies_getPolicyDetail
-      parameters:
-      - name: policyId
-        in: path
-        required: true
-        schema:
-          type: integer
-          format: int64
-        description: 정책 상세 PK
-        example: 8800123
-      responses:
-        '200':
-          description: OK
-          content:
-            application/json:
-              schema:
-                type: object
-                required:
-                - policyId
-                - title
-                - updatedAt
-                - status
-                - descriptionText
-                properties:
-                  status:
-                    type: object
-                    description: 상태/필터 정보(화면 상단 배지/필터 표시용)
-                    required:
-                    - periodStatus
-                    properties:
-                      periodStatus:
-                        type: string
-                        description: 기간 상태
-                        enum:
-                        - OPEN
-                        - UPCOMING
-                        - CLOSED
-                        - ALWAYS
-                        example: OPEN
-                      regionFilter:
-                        type: string
-                        nullable: true
-                        description: 지역 필터 요약(있으면 표시)
-                        example: 서울특별시
-                      category:
-                        type: string
-                        nullable: true
-                        description: 정책 분야(있으면 표시)
-                        example: 주거
-                  policyId:
-                    type: integer
-                    format: int64
-                    description: 정책 상세 PK
-                    example: 8800123
-                  title:
-                    type: string
-                    description: 정책명
-                    example: 청년 월세 지원 사업
-                  policyNo:
-                    type: string
-                    nullable: true
-                    description: 정책번호(원천에서 제공되는 식별자, 없으면 null)
-                    example: P-2026-001122
-                  updatedAt:
-                    type: string
-                    format: date-time
-                    description: 최종 수정일(ISO-8601)
-                    example: '2025-12-29T00:10:15+09:00'
-                  viewCount:
-                    type: integer
-                    format: int64
-                    nullable: true
-                    description: 조회수(선택, 없으면 null)
-                    example: 12034
-                  scrapCount:
-                    type: integer
-                    format: int64
-                    nullable: true
-                    description: 스크랩 수(선택, 없으면 null)
-                    example: 532
-                  descriptionText:
-                    type: string
-                    description: 정책 설명(본문 텍스트)
-                    example: 본 사업은 청년의 주거비 부담을 완화하기 위해 월세를 지원합니다...
-                  summary:
-                    type: object
-                    nullable: true
-                    description: 정책 요약(있으면 표시)
-                    properties:
-                      field:
-                        type: string
-                        nullable: true
-                        description: 정책분야
-                        example: 주거
-                      benefit:
-                        type: string
-                        nullable: true
-                        description: 지원내용
-                        example: 월 최대 20만원 지원
-                      operatingPeriod:
-                        type: string
-                        nullable: true
-                        description: 사업 운영 기간
-                        example: 2026-01-01 ~ 2026-12-31
-                      applicationPeriod:
-                        type: string
-                        nullable: true
-                        description: 사업 신청 기간
-                        example: 2026-01-01 ~ 2026-01-31
-                      scale:
-                        type: string
-                        nullable: true
-                        description: 지원 규모(명 등)
-                        example: 총 5,000명
-                  eligibility:
-                    type: object
-                    nullable: true
-                    description: 신청자격(항목별 텍스트)
-                    properties:
-                      age:
-                        type: string
-                        nullable: true
-                        example: 만 19~34세
-                      region:
-                        type: string
-                        nullable: true
-                        example: 서울 거주
-                      income:
-                        type: string
-                        nullable: true
-                        example: 중위소득 150% 이하
-                      education:
-                        type: string
-                        nullable: true
-                        example: 무관
-                      major:
-                        type: string
-                        nullable: true
-                        example: 무관
-                      employmentStatus:
-                        type: string
-                        nullable: true
-                        example: 재직/미취업 모두 가능
-                      specializedField:
-                        type: string
-                        nullable: true
-                        example: 무관
-                      additionalNotes:
-                        type: string
-                        nullable: true
-                        example: 임대차계약서 필수
-                      restricted:
-                        type: string
-                        nullable: true
-                        example: 기타 동일/유사 사업 중복 수혜자
-                  application:
-                    type: object
-                    nullable: true
-                    description: 신청방법(절차/제출서류/사이트)
-                    properties:
-                      procedure:
-                        type: string
-                        nullable: true
-                        example: 온라인 신청 → 서류 심사 → 발표
-                      screeningAndResult:
-                        type: string
-                        nullable: true
-                        example: 서류 심사 후 개별 통보
-                      siteUrl:
-                        type: string
-                        format: uri
-                        nullable: true
-                        description: 신청 사이트 URL(있으면 제공)
-                        example: https://example.gov/apply
-                      documents:
-                        type: string
-                        nullable: true
-                        example: 주민등록등본, 임대차계약서, 소득증빙
-                  etc:
-                    type: object
-                    nullable: true
-                    description: 기타 정보
-                    properties:
-                      notes:
-                        type: string
-                        nullable: true
-                        example: 예산 소진 시 조기 마감 가능
-                      hostAgency:
-                        type: string
-                        nullable: true
-                        example: OO시 청년정책과
-              examples:
-                mock1:
-                  summary: Scenario 1
-                  value:
-                    policyId: 910001
-                    title: Mock title 1
-                    updatedAt: '2025-12-31T10:07:00+09:00'
-                    status:
-                      periodStatus: OPEN
-                      regionFilter: 서울특별시
-                      category: 주거
-                    descriptionText: 본 사업은 청년의 주거비 부담을 완화하기 위해 월세를 지원합니다...
-                    policyNo: P-2026-001122
-                    viewCount: 7
-                    scrapCount: 7
-                    summary:
-                      field: 주거
-                      benefit: 월 최대 20만원 지원
-                      operatingPeriod: 2026-01-01 ~ 2026-12-31
-                      applicationPeriod: 2026-01-01 ~ 2026-01-31
-                      scale: 총 5,000명
-                    eligibility:
-                      age: 만 19~34세
-                      region: 서울 거주
-                      income: 중위소득 150% 이하
-                      education: 무관
-                      major: 무관
-                      employmentStatus: 재직/미취업 모두 가능
-                    application:
-                      procedure: 온라인 신청 → 서류 심사 → 발표
-                      screeningAndResult: 서류 심사 후 개별 통보
-                      siteUrl: https://example.com/1
-                      documents: 주민등록등본, 임대차계약서, 소득증빙
-                    etc:
-                      notes: 예산 소진 시 조기 마감 가능
-                      hostAgency: OO시 청년정책과
-                mock2:
-                  summary: Scenario 2
-                  value:
-                    policyId: 910002
-                    title: Mock title 2
-                    updatedAt: '2025-12-31T11:14:00+09:00'
-                    status:
-                      periodStatus: UPCOMING
-                      regionFilter: 서울특별시
-                      category: 주거
-                    descriptionText: 본 사업은 청년의 주거비 부담을 완화하기 위해 월세를 지원합니다...
-                    policyNo: P-2026-001122
-                    viewCount: 14
-                    scrapCount: 14
-                    summary:
-                      field: 주거
-                      benefit: 월 최대 20만원 지원
-                      operatingPeriod: 2026-01-01 ~ 2026-12-31
-                      applicationPeriod: 2026-01-01 ~ 2026-01-31
-                      scale: 총 5,000명
-                    eligibility:
-                      age: 만 19~34세
-                      region: 서울 거주
-                      income: 중위소득 150% 이하
-                      education: 무관
-                      major: 무관
-                      employmentStatus: 재직/미취업 모두 가능
-                    application:
-                      procedure: 온라인 신청 → 서류 심사 → 발표
-                      screeningAndResult: 서류 심사 후 개별 통보
-                      siteUrl: https://example.com/2
-                      documents: 주민등록등본, 임대차계약서, 소득증빙
-                    etc:
-                      notes: 예산 소진 시 조기 마감 가능
-                      hostAgency: OO시 청년정책과
-                mock3:
-                  summary: Scenario 3
-                  value:
-                    policyId: 910003
-                    title: Mock title 3
-                    updatedAt: '2025-12-31T12:21:00+09:00'
-                    status:
-                      periodStatus: CLOSED
-                      regionFilter: 서울특별시
-                      category: 주거
-                    descriptionText: 본 사업은 청년의 주거비 부담을 완화하기 위해 월세를 지원합니다...
-                    policyNo: P-2026-001122
-                    viewCount: 21
-                    scrapCount: 21
-                    summary:
-                      field: 주거
-                      benefit: 월 최대 20만원 지원
-                      operatingPeriod: 2026-01-01 ~ 2026-12-31
-                      applicationPeriod: 2026-01-01 ~ 2026-01-31
-                      scale: 총 5,000명
-                    eligibility:
-                      age: 만 19~34세
-                      region: 서울 거주
-                      income: 중위소득 150% 이하
-                      education: 무관
-                      major: 무관
-                      employmentStatus: 재직/미취업 모두 가능
-                    application:
-                      procedure: 온라인 신청 → 서류 심사 → 발표
-                      screeningAndResult: 서류 심사 후 개별 통보
-                      siteUrl: https://example.com/3
-                      documents: 주민등록등본, 임대차계약서, 소득증빙
-                    etc:
-                      notes: 예산 소진 시 조기 마감 가능
-                      hostAgency: OO시 청년정책과
-                mock4:
-                  summary: Scenario 4
-                  value:
-                    policyId: 910004
-                    title: Mock title 4
-                    updatedAt: '2025-12-31T13:28:00+09:00'
-                    status:
-                      periodStatus: ALWAYS
-                      regionFilter: 서울특별시
-                      category: 주거
-                    descriptionText: 본 사업은 청년의 주거비 부담을 완화하기 위해 월세를 지원합니다...
-                    policyNo: P-2026-001122
-                    viewCount: 28
-                    scrapCount: 28
-                    summary:
-                      field: 주거
-                      benefit: 월 최대 20만원 지원
-                      operatingPeriod: 2026-01-01 ~ 2026-12-31
-                      applicationPeriod: 2026-01-01 ~ 2026-01-31
-                      scale: 총 5,000명
-                    eligibility:
-                      age: 만 19~34세
-                      region: 서울 거주
-                      income: 중위소득 150% 이하
-                      education: 무관
-                      major: 무관
-                      employmentStatus: 재직/미취업 모두 가능
-                    application:
-                      procedure: 온라인 신청 → 서류 심사 → 발표
-                      screeningAndResult: 서류 심사 후 개별 통보
-                      siteUrl: https://example.com/4
-                      documents: 주민등록등본, 임대차계약서, 소득증빙
-                    etc:
-                      notes: 예산 소진 시 조기 마감 가능
-                      hostAgency: OO시 청년정책과
-                mock5:
-                  summary: Scenario 5
-                  value:
-                    policyId: 910005
-                    title: Mock title 5
-                    updatedAt: '2025-12-31T14:35:00+09:00'
-                    status:
-                      periodStatus: OPEN
-                      regionFilter: null
-                      category: null
-                    descriptionText: 본 사업은 청년의 주거비 부담을 완화하기 위해 월세를 지원합니다...
-                    policyNo: null
-                    viewCount: null
-                    scrapCount: null
-                    summary: null
-                    eligibility: null
-                    application: null
-                    etc: null
-        '401':
-          description: Unauthorized
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/ErrorResponse'
-        '404':
-          description: Not Found
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/ErrorResponse'
-        '500':
-          description: Internal Server Error
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/ErrorResponse'
-  /api/todos:
-    get:
-      tags:
-      - todo
-      summary: 나의 Todo 목록 조회
-      description: 유저가 생성/보유한 Todo 목록을 페이지 기반으로 조회합니다.
-      operationId: todo_listTodos
-      parameters:
-      - name: status
-        in: query
-        required: false
-        description: Todo 상태 필터(ACTIVE/COMPLETED)
-        schema:
-          type: string
-          enum:
-          - ACTIVE
-          - COMPLETED
-          default: ACTIVE
-          example: ACTIVE
-      - name: announcementId
-        in: query
-        required: false
-        description: 특정 공고의 Todo만 조회할 때 사용하는 공고 ID
-        schema:
-          type: string
-          example: ann_LH_20251229_000123
-      - name: page
-        in: query
-        required: false
-        description: 0부터 시작하는 페이지 번호
-        schema:
-          type: integer
-          default: 0
-          minimum: 0
-          example: 0
-      - name: size
-        in: query
-        required: false
-        description: 페이지 크기
-        schema:
-          type: integer
-          default: 20
-          minimum: 1
-          maximum: 50
-          example: 20
-      responses:
-        '200':
-          description: OK
-          content:
-            application/json:
-              schema:
-                type: object
-                description: Todo 목록 응답
-                required:
-                - items
-                - meta
-                properties:
-                  items:
-                    type: array
-                    description: Todo 목록
-                    items:
-                      type: object
-                      description: Todo 단건
-                      required:
-                      - id
-                      - title
-                      - completed
-                      - createdAt
-                      - updatedAt
-                      properties:
-                        id:
-                          type: integer
-                          format: int64
-                          description: Todo PK
-                          example: 501
-                        announcementId:
-                          type: string
-                          nullable: true
-                          description: 연결된 공고 ID(없으면 null)
-                          example: ann_LH_20251229_000123
-                        title:
-                          type: string
-                          description: Todo 제목/단계명
-                          example: 서류접수
-                        completed:
-                          type: boolean
-                          description: 완료 여부
-                          example: false
-                        dueDate:
-                          type: string
-                          format: date
-                          nullable: true
-                          description: 마감일(없으면 null)
-                          example: '2026-01-03'
-                        order:
-                          type: integer
-                          nullable: true
-                          description: 정렬 순서(단계 정렬용)
-                          example: 3
-                        createdAt:
-                          type: string
-                          format: date-time
-                          description: 생성 시각
-                          example: '2025-12-29T09:00:00+09:00'
-                        updatedAt:
-                          type: string
-                          format: date-time
-                          nullable: true
-                          description: 수정 시각(없으면 null)
-                          example: '2025-12-29T09:10:00+09:00'
-                  meta:
-                    $ref: '#/components/schemas/PageMeta'
-              examples:
-                mock1:
-                  summary: Scenario 1
-                  value:
-                    items:
-                    - id: 800001
-                      title: Mock title 1
-                      completed: false
-                      createdAt: '2025-12-31T10:07:00+09:00'
-                      updatedAt: '2025-12-31T10:07:00+09:00'
-                    - id: 800001
-                      title: Mock title 1
-                      completed: false
-                      createdAt: '2025-12-31T10:07:00+09:00'
-                      updatedAt: '2025-12-31T10:07:00+09:00'
-                    meta:
-                      page: 0
-                      size: 20
-                      totalElements: 2
-                      totalPages: 1
-                      hasNext: false
-                      hasPrev: false
-                mock2:
-                  summary: Scenario 2
-                  value:
-                    items:
-                    - id: 800002
-                      title: Mock title 2
-                      completed: true
-                      createdAt: '2025-12-31T11:14:00+09:00'
-                      updatedAt: '2025-12-31T11:14:00+09:00'
-                    - id: 800002
-                      title: Mock title 2
-                      completed: true
-                      createdAt: '2025-12-31T11:14:00+09:00'
-                      updatedAt: '2025-12-31T11:14:00+09:00'
-                    meta:
-                      page: 0
-                      size: 20
-                      totalElements: 2
-                      totalPages: 1
-                      hasNext: false
-                      hasPrev: false
-                mock3:
-                  summary: Scenario 3
-                  value:
-                    items:
-                    - id: 800003
-                      title: Mock title 3
-                      completed: false
-                      createdAt: '2025-12-31T12:21:00+09:00'
-                      updatedAt: '2025-12-31T12:21:00+09:00'
-                    - id: 800003
-                      title: Mock title 3
-                      completed: false
-                      createdAt: '2025-12-31T12:21:00+09:00'
-                      updatedAt: '2025-12-31T12:21:00+09:00'
-                    meta:
-                      page: 0
-                      size: 20
-                      totalElements: 2
-                      totalPages: 1
-                      hasNext: false
-                      hasPrev: false
-                mock4:
-                  summary: Scenario 4
-                  value:
-                    items:
-                    - id: 800004
-                      title: Mock title 4
-                      completed: true
-                      createdAt: '2025-12-31T13:28:00+09:00'
-                      updatedAt: '2025-12-31T13:28:00+09:00'
-                    - id: 800004
-                      title: Mock title 4
-                      completed: true
-                      createdAt: '2025-12-31T13:28:00+09:00'
-                      updatedAt: '2025-12-31T13:28:00+09:00'
-                    meta:
-                      page: 0
-                      size: 20
-                      totalElements: 2
-                      totalPages: 1
-                      hasNext: false
-                      hasPrev: false
-                mock5:
-                  summary: Scenario 5
-                  value:
-                    items:
-                    - id: 800005
-                      title: Mock title 5
-                      completed: false
-                      createdAt: '2025-12-31T14:35:00+09:00'
-                      updatedAt: '2025-12-31T14:35:00+09:00'
-                      announcementId: 900005
-                      dueDate: null
-                      order: null
-                    - id: 800005
-                      title: Mock title 5
-                      completed: false
-                      createdAt: '2025-12-31T14:35:00+09:00'
-                      updatedAt: '2025-12-31T14:35:00+09:00'
-                      announcementId: 900005
-                      dueDate: null
-                      order: null
-                    meta:
-                      page: 0
-                      size: 20
-                      totalElements: 2
-                      totalPages: 1
-                      hasNext: false
-                      hasPrev: false
-        '401':
-          description: Unauthorized
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/ErrorResponse'
-        '500':
-          description: Internal Server Error
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/ErrorResponse'
-    post:
-      tags:
-      - todo
-      summary: Todo 생성
-      description: 유저가 직접 Todo를 생성합니다.
-      operationId: todo_createTodo
-      requestBody:
-        required: true
-        content:
-          application/json:
-            schema:
-              type: object
-              description: Todo 생성 요청
-              required:
-              - title
-              properties:
-                announcementId:
-                  type: string
-                  nullable: true
-                  description: 연결할 공고 ID(없으면 null)
-                  example: ann_LH_20251229_000123
-                title:
-                  type: string
-                  description: Todo 제목
-                  example: 자격자가진단
-                dueDate:
-                  type: string
-                  format: date
-                  nullable: true
-                  description: 마감일(없으면 null)
-                  example: '2026-01-02'
-      responses:
-        '201':
-          description: Created
-          content:
-            application/json:
-              schema:
-                type: object
-                description: Todo 생성 응답
-                required:
-                - id
-                - createdAt
-                - updatedAt
-                properties:
-                  id:
-                    type: integer
-                    format: int64
-                    description: 생성된 Todo PK
-                    example: 601
-                  createdAt:
-                    type: string
-                    format: date-time
-                    description: 생성 시각
-                    example: '2025-12-29T09:00:00+09:00'
-                  updatedAt:
-                    type: string
-                    format: date-time
-                    description: 수정시각
-                    example: '2025-12-29T09:00:00+09:00'
-              examples:
-                mock1:
-                  summary: Scenario 1
-                  value:
-                    id: 800001
-                    createdAt: '2025-12-31T10:07:00+09:00'
-                    updatedAt: '2025-12-31T10:07:00+09:00'
-                mock2:
-                  summary: Scenario 2
-                  value:
-                    id: 800002
-                    createdAt: '2025-12-31T11:14:00+09:00'
-                    updatedAt: '2025-12-31T11:14:00+09:00'
-                mock3:
-                  summary: Scenario 3
-                  value:
-                    id: 800003
-                    createdAt: '2025-12-31T12:21:00+09:00'
-                    updatedAt: '2025-12-31T12:21:00+09:00'
-                mock4:
-                  summary: Scenario 4
-                  value:
-                    id: 800004
-                    createdAt: '2025-12-31T13:28:00+09:00'
-                    updatedAt: '2025-12-31T13:28:00+09:00'
-                mock5:
-                  summary: Scenario 5
-                  value:
-                    id: 800005
-                    createdAt: '2025-12-31T14:35:00+09:00'
-                    updatedAt: '2025-12-31T14:35:00+09:00'
-        '400':
-          description: Bad Request
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/ErrorResponse'
-        '401':
-          description: Unauthorized
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/ErrorResponse'
-        '500':
-          description: Internal Server Error
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/ErrorResponse'
-  /api/todos/date/{date}:
-    get:
-      tags:
-      - todo
-      summary: 날짜로 Todo 조회
-      description: 특정 날짜(dueDate=YYYY-MM-DD)에 해당하는 Todo 목록을 페이지 기반으로 조회합니다.
-      operationId: todo_listTodosByDate
-      parameters:
-      - name: date
-        in: path
-        required: true
-        description: 조회할 날짜(YYYY-MM-DD)
-        schema:
-          type: string
-          format: date
-          example: '2026-01-03'
-      - name: page
-        in: query
-        required: false
-        description: 0부터 시작하는 페이지 번호
-        schema:
-          type: integer
-          default: 0
-          minimum: 0
-          example: 0
-      - name: size
-        in: query
-        required: false
-        description: 페이지 크기
-        schema:
-          type: integer
-          default: 20
-          minimum: 1
-          maximum: 50
-          example: 20
-      responses:
-        '200':
-          description: OK
-          content:
-            application/json:
-              schema:
-                type: object
-                description: Todo 날짜 조회 응답
-                required:
-                - items
-                - meta
-                properties:
-                  items:
-                    type: array
-                    description: 해당 날짜의 Todo 목록
-                    items:
-                      type: object
-                      description: Todo 단건
-                      required:
-                      - id
-                      - title
-                      - completed
-                      - dueDate
-                      - createdAt
-                      - updatedAt
-                      properties:
-                        id:
-                          type: integer
-                          format: int64
-                          description: Todo PK
-                          example: 701
-                        announcementId:
-                          type: string
-                          nullable: true
-                          description: 연결된 공고 ID(없으면 null)
-                          example: ann_LH_20251229_000123
-                        title:
-                          type: string
-                          description: Todo 제목
-                          example: 서류접수
-                        completed:
-                          type: boolean
-                          description: 완료 여부
-                          example: false
-                        dueDate:
-                          type: string
-                          format: date
-                          description: 마감일
-                          example: '2026-01-03'
-                        createdAt:
-                          type: string
-                          format: date-time
-                          description: 생성 시각
-                          example: '2025-12-29T09:00:00+09:00'
-                        updatedAt:
-                          type: string
-                          format: date-time
-                          nullable: true
-                          description: 수정 시각(없으면 null)
-                          example: '2025-12-29T09:10:00+09:00'
-                  meta:
-                    $ref: '#/components/schemas/PageMeta'
-              examples:
-                mock1:
-                  summary: Scenario 1
-                  value:
-                    items:
-                    - id: 800001
-                      title: Mock title 1
-                      completed: false
-                      dueDate: '2026-01-01'
-                      createdAt: '2025-12-31T10:07:00+09:00'
-                      updatedAt: '2025-12-31T10:07:00+09:00'
-                    - id: 800001
-                      title: Mock title 1
-                      completed: false
-                      dueDate: '2026-01-01'
-                      createdAt: '2025-12-31T10:07:00+09:00'
-                      updatedAt: '2025-12-31T10:07:00+09:00'
-                    meta:
-                      page: 0
-                      size: 20
-                      totalElements: 2
-                      totalPages: 1
-                      hasNext: false
-                      hasPrev: false
-                mock2:
-                  summary: Scenario 2
-                  value:
-                    items:
-                    - id: 800002
-                      title: Mock title 2
-                      completed: true
-                      dueDate: '2026-01-02'
-                      createdAt: '2025-12-31T11:14:00+09:00'
-                      updatedAt: '2025-12-31T11:14:00+09:00'
-                    - id: 800002
-                      title: Mock title 2
-                      completed: true
-                      dueDate: '2026-01-02'
-                      createdAt: '2025-12-31T11:14:00+09:00'
-                      updatedAt: '2025-12-31T11:14:00+09:00'
-                    meta:
-                      page: 0
-                      size: 20
-                      totalElements: 2
-                      totalPages: 1
-                      hasNext: false
-                      hasPrev: false
-                mock3:
-                  summary: Scenario 3
-                  value:
-                    items:
-                    - id: 800003
-                      title: Mock title 3
-                      completed: false
-                      dueDate: '2026-01-03'
-                      createdAt: '2025-12-31T12:21:00+09:00'
-                      updatedAt: '2025-12-31T12:21:00+09:00'
-                    - id: 800003
-                      title: Mock title 3
-                      completed: false
-                      dueDate: '2026-01-03'
-                      createdAt: '2025-12-31T12:21:00+09:00'
-                      updatedAt: '2025-12-31T12:21:00+09:00'
-                    meta:
-                      page: 0
-                      size: 20
-                      totalElements: 2
-                      totalPages: 1
-                      hasNext: false
-                      hasPrev: false
-                mock4:
-                  summary: Scenario 4
-                  value:
-                    items:
-                    - id: 800004
-                      title: Mock title 4
-                      completed: true
-                      dueDate: '2026-01-04'
-                      createdAt: '2025-12-31T13:28:00+09:00'
-                      updatedAt: '2025-12-31T13:28:00+09:00'
-                    - id: 800004
-                      title: Mock title 4
-                      completed: true
-                      dueDate: '2026-01-04'
-                      createdAt: '2025-12-31T13:28:00+09:00'
-                      updatedAt: '2025-12-31T13:28:00+09:00'
-                    meta:
-                      page: 0
-                      size: 20
-                      totalElements: 2
-                      totalPages: 1
-                      hasNext: false
-                      hasPrev: false
-                mock5:
-                  summary: Scenario 5
-                  value:
-                    items:
-                    - id: 800005
-                      title: Mock title 5
-                      completed: false
-                      dueDate: '2026-01-05'
-                      createdAt: '2025-12-31T14:35:00+09:00'
-                      updatedAt: '2025-12-31T14:35:00+09:00'
-                      announcementId: 900005
-                    - id: 800005
-                      title: Mock title 5
-                      completed: false
-                      dueDate: '2026-01-05'
-                      createdAt: '2025-12-31T14:35:00+09:00'
-                      updatedAt: '2025-12-31T14:35:00+09:00'
-                      announcementId: 900005
-                    meta:
-                      page: 0
-                      size: 20
-                      totalElements: 2
-                      totalPages: 1
-                      hasNext: false
-                      hasPrev: false
-        '401':
-          description: Unauthorized
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/ErrorResponse'
-        '500':
-          description: Internal Server Error
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/ErrorResponse'
-  /api/todos/{todoPk}:
-    patch:
-      tags:
-      - todo
-      summary: Todo 수정
-      description: Todo의 제목/마감일/정렬 순서를 수정합니다.
-      operationId: todo_updateTodo
-      parameters:
-      - name: todoPk
-        in: path
-        required: true
-        description: 수정할 Todo PK
-        schema:
-          type: integer
-          format: int64
-          example: 601
-      requestBody:
-        required: true
-        content:
-          application/json:
-            schema:
-              type: object
-              description: Todo 수정 요청
-              properties:
-                title:
-                  type: string
-                  nullable: true
-                  description: 변경할 제목(미전달 시 유지)
-                  example: 서류접수
-                dueDate:
-                  type: string
-                  format: date
-                  nullable: true
-                  description: 변경할 마감일(null이면 제거)
-                  example: '2026-01-03'
-                order:
-                  type: integer
-                  nullable: true
-                  description: 변경할 정렬 순서
-                  example: 2
-      responses:
-        '200':
-          description: OK
-          content:
-            application/json:
-              schema:
-                type: object
-                description: Todo 수정 응답
-                required:
-                - id
-                - createdAt
-                - updatedAt
-                properties:
-                  id:
-                    type: integer
-                    format: int64
-                    description: Todo PK
-                    example: 601
-                  createdAt:
-                    type: string
-                    format: date-time
-                    description: 생성 시각
-                    example: '2025-12-29T09:00:00+09:00'
-                  updatedAt:
-                    type: string
-                    format: date-time
-                    description: 수정 시각
-                    example: '2025-12-29T09:15:00+09:00'
-              examples:
-                mock1:
-                  summary: Scenario 1
-                  value:
-                    id: 800001
-                    createdAt: '2025-12-31T10:07:00+09:00'
-                    updatedAt: '2025-12-31T10:07:00+09:00'
-                mock2:
-                  summary: Scenario 2
-                  value:
-                    id: 800002
-                    createdAt: '2025-12-31T11:14:00+09:00'
-                    updatedAt: '2025-12-31T11:14:00+09:00'
-                mock3:
-                  summary: Scenario 3
-                  value:
-                    id: 800003
-                    createdAt: '2025-12-31T12:21:00+09:00'
-                    updatedAt: '2025-12-31T12:21:00+09:00'
-                mock4:
-                  summary: Scenario 4
-                  value:
-                    id: 800004
-                    createdAt: '2025-12-31T13:28:00+09:00'
-                    updatedAt: '2025-12-31T13:28:00+09:00'
-                mock5:
-                  summary: Scenario 5
-                  value:
-                    id: 800005
-                    createdAt: '2025-12-31T14:35:00+09:00'
-                    updatedAt: '2025-12-31T14:35:00+09:00'
-        '401':
-          description: Unauthorized
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/ErrorResponse'
-        '404':
-          description: Not Found
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/ErrorResponse'
-        '500':
-          description: Internal Server Error
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/ErrorResponse'
-    delete:
-      tags:
-      - todo
-      summary: Todo 삭제
-      description: Todo를 삭제합니다.
-      operationId: todo_deleteTodo
-      parameters:
-      - name: todoPk
-        in: path
-        required: true
-        description: 삭제할 Todo PK
-        schema:
-          type: integer
-          format: int64
-          example: 601
-      responses:
-        '204':
-          description: No Content
-        '401':
-          description: Unauthorized
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/ErrorResponse'
-        '404':
-          description: Not Found
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/ErrorResponse'
-        '500':
-          description: Internal Server Error
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/ErrorResponse'
-  /api/todos/{todoPk}/complete:
-    post:
-      tags:
-      - todo
-      summary: Todo 완료 처리
-      description: Todo를 완료 상태로 변경합니다.
-      operationId: todo_completeTodo
-      parameters:
-      - name: todoPk
-        in: path
-        required: true
-        description: 완료 처리할 Todo PK
-        schema:
-          type: integer
-          format: int64
-          example: 601
-      responses:
-        '200':
-          description: OK
-          content:
-            application/json:
-              schema:
-                type: object
-                description: Todo 완료 처리 응답
-                required:
-                - id
-                - completed
-                - createdAt
-                - updatedAt
-                properties:
-                  id:
-                    type: integer
-                    format: int64
-                    description: Todo PK
-                    example: 601
-                  completed:
-                    type: boolean
-                    description: 완료 여부
-                    example: true
-                  createdAt:
-                    type: string
-                    format: date-time
-                    description: 생성 시각
-                    example: '2025-12-29T09:00:00+09:00'
-                  updatedAt:
-                    type: string
-                    format: date-time
-                    description: 완료 처리 시각
-                    example: '2025-12-29T09:16:00+09:00'
-              examples:
-                mock1:
-                  summary: Scenario 1
-                  value:
-                    id: 800001
-                    completed: false
-                    createdAt: '2025-12-31T10:07:00+09:00'
-                    updatedAt: '2025-12-31T10:07:00+09:00'
-                mock2:
-                  summary: Scenario 2
-                  value:
-                    id: 800002
-                    completed: true
-                    createdAt: '2025-12-31T11:14:00+09:00'
-                    updatedAt: '2025-12-31T11:14:00+09:00'
-                mock3:
-                  summary: Scenario 3
-                  value:
-                    id: 800003
-                    completed: false
-                    createdAt: '2025-12-31T12:21:00+09:00'
-                    updatedAt: '2025-12-31T12:21:00+09:00'
-                mock4:
-                  summary: Scenario 4
-                  value:
-                    id: 800004
-                    completed: true
-                    createdAt: '2025-12-31T13:28:00+09:00'
-                    updatedAt: '2025-12-31T13:28:00+09:00'
-                mock5:
-                  summary: Scenario 5
-                  value:
-                    id: 800005
-                    completed: false
-                    createdAt: '2025-12-31T14:35:00+09:00'
-                    updatedAt: '2025-12-31T14:35:00+09:00'
-        '401':
-          description: Unauthorized
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/ErrorResponse'
-        '404':
-          description: Not Found
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/ErrorResponse'
-        '500':
-          description: Internal Server Error
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/ErrorResponse'
-  /api/todos/{todoPk}/uncomplete:
-    post:
-      tags:
-      - todo
-      summary: Todo 완료 취소
-      description: Todo 완료 상태를 취소합니다.
-      operationId: todo_uncompleteTodo
-      parameters:
-      - name: todoPk
-        in: path
-        required: true
-        description: 완료 취소할 Todo PK
-        schema:
-          type: integer
-          format: int64
-          example: 601
-      responses:
-        '200':
-          description: OK
-          content:
-            application/json:
-              schema:
-                type: object
-                description: Todo 완료 취소 응답
-                required:
-                - id
-                - completed
-                - createdAt
-                - updatedAt
-                properties:
-                  id:
-                    type: integer
-                    format: int64
-                    description: Todo PK
-                    example: 601
-                  completed:
-                    type: boolean
-                    description: 완료 여부
-                    example: false
-                  createdAt:
-                    type: string
-                    format: date-time
-                    description: 생성 시각
-                    example: '2025-12-29T09:00:00+09:00'
-                  updatedAt:
-                    type: string
-                    format: date-time
-                    description: 완료 취소 처리 시각
-                    example: '2025-12-29T09:18:00+09:00'
-              examples:
-                mock1:
-                  summary: Scenario 1
-                  value:
-                    id: 800001
-                    completed: false
-                    createdAt: '2025-12-31T10:07:00+09:00'
-                    updatedAt: '2025-12-31T10:07:00+09:00'
-                mock2:
-                  summary: Scenario 2
-                  value:
-                    id: 800002
-                    completed: true
-                    createdAt: '2025-12-31T11:14:00+09:00'
-                    updatedAt: '2025-12-31T11:14:00+09:00'
-                mock3:
-                  summary: Scenario 3
-                  value:
-                    id: 800003
-                    completed: false
-                    createdAt: '2025-12-31T12:21:00+09:00'
-                    updatedAt: '2025-12-31T12:21:00+09:00'
-                mock4:
-                  summary: Scenario 4
-                  value:
-                    id: 800004
-                    completed: true
-                    createdAt: '2025-12-31T13:28:00+09:00'
-                    updatedAt: '2025-12-31T13:28:00+09:00'
-                mock5:
-                  summary: Scenario 5
-                  value:
-                    id: 800005
-                    completed: false
-                    createdAt: '2025-12-31T14:35:00+09:00'
-                    updatedAt: '2025-12-31T14:35:00+09:00'
-        '401':
-          description: Unauthorized
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/ErrorResponse'
-        '404':
-          description: Not Found
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/ErrorResponse'
-        '500':
-          description: Internal Server Error
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/ErrorResponse'
+ 
 
   /api/admin/inboxes:
     get:
@@ -7058,145 +4860,7 @@ paths:
           content:
             application/json:
               schema: { $ref: "#/components/schemas/ErrorResponse" }
-    post:
-      tags: [admin, announcements]
-      summary: (어드민) 공고 필수 입력 확정 저장
-      description: >
-        맞춤 공고 검색에 사용되는 필수 입력 항목들을 어드민이 수기로 확정 저장합니다.
-        NULL -> 상관 없음
-
-      operationId: admin_submitAnnouncementRequiredFields
-      parameters:
-        - name: announcementId
-          in: path
-          required: true
-          schema: { type: integer, format: int64 }
-          description: 공고 PK
-          example: 12345
-
-      requestBody:
-        required: true
-        content:
-          application/json:
-            schema:
-              type: object
-              additionalProperties: false
-              required:
-                - documentPublishedAt
-                - isHomeless
-                - isMarried
-                - incomeDecile
-                - residence
-                - priorityCategory
-              properties:
-                documentPublishedAt:
-                  type: string
-                  format: date
-                  description: 서류 발표 날짜
-                  example: "2026-02-01"
-
-                isHomeless:
-                  type: boolean
-                  description: 무주택 여부
-                  example: true
-
-                isMarried:
-                  type: boolean
-                  description: 혼인 여부
-                  example: false
-
-                incomeDecile:
-                  type: integer
-                  minimum: 1
-                  maximum: 10
-                  description: 소득 분위(1~10)
-                  example: 4
-
-                residence:
-                  type: object
-                  additionalProperties: false
-                  required: [regionName]
-                  description: 주거지(사용자 기준)
-                  properties:
-                    regionCode:
-                      type: string
-                      nullable: true
-                      description: 지역 코드(가능하면 사용)
-                      example: "11680"
-                    regionName:
-                      type: string
-                      description: 지역명(시군구)
-                      example: "서울특별시 강남구"
-
-                priorityCategory:
-                  type: string
-                  description: >
-                    순위 우선(가점/우선공급/자격 우선순위 판단에 사용).
-                    공고/기관별로 세부 정책이 달라질 수 있어, enum은 공통 범주 기준이며
-                    매칭 불가 시 OTHER를 사용합니다.
-                  enum:
-                    - GENERAL
-                    - MULTI_CHILD
-                    - NEWLY_MARRIED
-                    - FIRST_TIME_HOME_BUYER
-                    - SINGLE_PARENT
-                    - BASIC_LIVELIHOOD
-                    - NEAR_POOR
-                    - DISABLED
-                    - NATIONAL_MERIT
-                    - ELDERLY
-                    - YOUTH
-                    - OTHER
-                  example: SINGLE_PARENT
-
-            examples:
-              required_fields_mock:
-                summary: 필수 입력 저장
-                value:
-                  documentPublishedAt: "2026-02-01"
-                  isHomeless: true
-                  isMarried: false
-                  incomeDecile: 4
-                  residence:
-                    regionCode: "11680"
-                    regionName: "서울특별시 강남구"
-                  priorityCategory: SINGLE_PARENT
-
-      responses:
-        "204":
-          description: No Content (저장 완료)
-
-        "400":
-          description: Validation Error
-          content:
-            application/json:
-              schema: { $ref: "#/components/schemas/ErrorResponse" }
-
-        "401":
-          description: Unauthorized
-          content:
-            application/json:
-              schema: { $ref: "#/components/schemas/ErrorResponse" }
-
-        "404":
-          description: Not Found
-          content:
-            application/json:
-              schema: { $ref: "#/components/schemas/ErrorResponse" }
-
-        "409":
-          description: Conflict (상태 충돌 등)
-          content:
-            application/json:
-              schema: { $ref: "#/components/schemas/ErrorResponse" }
-
-        "500":
-          description: Internal Server Error
-          content:
-            application/json:
-              schema: { $ref: "#/components/schemas/ErrorResponse" }
-
-
+ 
 
   /api/admin/announcements/{announcementId}/sh:
     put:
@@ -7204,7 +4868,7 @@ paths:
       summary: (어드민) SH 공고 전용 - 공고 핵심 필드 수기 확정 저장
       description: >
         SH 공고에 대해서만 어드민이 공고의 일부 핵심 필드를 수기로 확정 저장합니다.
-        주택/공급/지역/일정/URL/금액(최소) 정보를 저장합니다.
+        주택/공급/지역/URL/금액(최소) 정보를 저장합니다.
       operationId: admin_upsertShAnnouncementManualFields
       parameters:
         - name: announcementId
@@ -7248,31 +4912,6 @@ paths:
                   nullable: true
                   description: 시군구명
                   example: "서울특별시 마포구"
-
-                startDate:
-                  type: string
-                  format: date
-                  nullable: true
-                  description: 모집 시작일
-                  example: "2026-01-15"
-                endDate:
-                  type: string
-                  format: date
-                  nullable: true
-                  description: 모집 종료일
-                  example: "2026-01-22"
-                documentPublishedAt:
-                  type: string
-                  format: date
-                  nullable: true
-                  description: 서류발표날짜
-                  example: "2026-02-01"
-                finalPublishedAt:
-                  type: string
-                  format: date
-                  nullable: true
-                  description: 최종 발표일(당첨자 발표일)
-                  example: "2026-02-15"
 
                 applyUrl:
                   type: string
@@ -7327,10 +4966,6 @@ paths:
                   supplyType: "공공임대"
                   regionCode: "11440"
                   regionName: "서울특별시 마포구"
-                  startDate: "2026-01-15"
-                  endDate: "2026-01-22"
-                  documentPublishedAt: "2026-02-01"
-                  finalPublishedAt: "2026-02-15"
                   applyUrl: "https://www.i-sh.co.kr/apply/notice/12345"
                   rentGtn: 10000000
                   enty: 1000000
@@ -7372,26 +5007,181 @@ paths:
             application/json:
               schema: { $ref: "#/components/schemas/ErrorResponse" }
 
-
-  /api/admin/announcements/{announcementId}/eligibility/profiles:
-    post:
-      tags: [admin]
-      summary: 지원자격 입력(추가 온보딩 프로필 PK 리스트 제출)
+    get:
+      tags: [admin, announcements]
+      summary: (어드민) SH 공고 전용 - 공고 핵심 필드 수기 확정 값 조회
       description: >
-        특정 공고(announcementId)에 대해 자격 진단/매칭에 필요한
-        추가 온보딩 프로필(PK)들을 한 번에 제출합니다.
+        SH 공고 전용 수기 확정 필드 값을 조회합니다.
 
-        각 PK에 대한 값은 서버가 후속 단계에서 별도 조회/요청하거나, 이미 저장된 답변을 참조합니다.
+        제약(조건은 PUT과 동일)
+        - SH 공고가 아닌 경우 409(Conflict)로 응답합니다.
+        - 대상 공고가 없으면 404(Not Found)로 응답합니다.
+
         인증은 HttpOnly 쿠키(JWT)로 처리됩니다.
-      operationId: announcements_submitEligibilityProfileIds
+      operationId: admin_getShAnnouncementManualFields
       parameters:
         - name: announcementId
           in: path
           required: true
-          schema:
-            type: integer
-            format: int64
-          description: 공고 PK
+          schema: { type: integer, format: int64 }
+          example: 12345
+
+      responses:
+        "200":
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: object
+                additionalProperties: false
+                required: [publisher, housingType, supplyType, regionCode, regionName, applyUrl, rentGtn, enty, prtpay, surlus, mtRntchrg]
+                properties:
+                  publisher:
+                    type: string
+                    enum: [SH]
+                    description: SH 고정
+                    example: SH
+
+                  housingType:
+                    type: string
+                    nullable: true
+                    description: 주택 유형
+                    example: "아파트"
+                  supplyType:
+                    type: string
+                    nullable: true
+                    description: 공급유형
+                    example: "공공임대"
+                  regionCode:
+                    type: string
+                    nullable: true
+                    description: 지역 코드
+                    example: "11440"
+                  regionName:
+                    type: string
+                    nullable: true
+                    description: 시군구명
+                    example: "서울특별시 마포구"
+
+                  applyUrl:
+                    type: string
+                    format: uri
+                    nullable: true
+                    maxLength: 1000
+                    description: 공고 URL
+                    example: "https://www.i-sh.co.kr/apply/notice/12345"
+
+                  rentGtn:
+                    type: integer
+                    format: int64
+                    nullable: true
+                    minimum: 0
+                    description: 임대보증금(최소)
+                    example: 10000000
+                  enty:
+                    type: integer
+                    format: int64
+                    nullable: true
+                    minimum: 0
+                    description: 계약금(최소)
+                    example: 1000000
+                  prtpay:
+                    type: integer
+                    format: int64
+                    nullable: true
+                    minimum: 0
+                    description: 중도금(최소)
+                    example: 3000000
+                  surlus:
+                    type: integer
+                    format: int64
+                    nullable: true
+                    minimum: 0
+                    description: 잔금(최소)
+                    example: 6000000
+                  mtRntchrg:
+                    type: integer
+                    format: int64
+                    nullable: true
+                    minimum: 0
+                    description: 월임대료(최소)
+                    example: 250000
+
+              examples:
+                manual_fields:
+                  summary: 핵심 필드 조회
+                  value:
+                    publisher: SH
+                    housingType: "아파트"
+                    supplyType: "공공임대"
+                    regionCode: "11440"
+                    regionName: "서울특별시 마포구"
+                    applyUrl: "https://www.i-sh.co.kr/apply/notice/12345"
+                    rentGtn: 10000000
+                    enty: 1000000
+                    prtpay: 3000000
+                    surlus: 6000000
+                    mtRntchrg: 250000
+
+        "400":
+          description: Validation Error
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/ErrorResponse" }
+
+        "401":
+          description: Unauthorized
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/ErrorResponse" }
+
+        "404":
+          description: Not Found
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/ErrorResponse" }
+
+        "409":
+          description: Conflict (SH 공고가 아님 / 상태 충돌 등)
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/ErrorResponse" }
+
+        "500":
+          description: Internal Server Error
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/ErrorResponse" }
+
+    patch:
+      tags: [admin, announcements]
+      summary: (어드민) SH 공고 전용 - 공고 핵심 필드 수기 확정 값 수정(변경 감지용)
+      description: >
+        SH 공고 전용 수기 확정 필드를 수정합니다.
+
+        목적
+        - 서버는 "부분 업데이트"를 하지 않습니다.
+        - 클라이언트가 현재 화면의 전체 값을 보내면,
+          서버는 기존 저장 값과 비교하여 **변경 여부만 감지**한 뒤 저장합니다.
+
+        계약(중요)
+        - PATCH 요청 바디는 PUT과 **동일한 형태(동일 필드 집합)** 를 보냅니다.
+        - 즉, 필드를 생략하지 않습니다(누락 금지).
+        - 변경하지 않는 값도 그대로 포함해서 보냅니다.
+        - publisher는 SH 고정이며 반드시 포함합니다.
+
+        제약
+        - SH 공고가 아닌 경우 409(Conflict)
+        - 상태 충돌(예: 최종 확정 이후 수정 불가) 등은 409(Conflict)
+        - 대상 공고가 없으면 404(Not Found)
+
+        인증은 HttpOnly 쿠키(JWT)로 처리됩니다.
+      operationId: admin_patchShAnnouncementManualFields
+      parameters:
+        - name: announcementId
+          in: path
+          required: true
+          schema: { type: integer, format: int64 }
           example: 12345
 
       requestBody:
@@ -7401,25 +5191,1104 @@ paths:
             schema:
               type: object
               additionalProperties: false
-              required: [onboardingProfileIds]
+              required: [publisher]
               properties:
-                onboardingProfileIds:
-                  type: array
-                  minItems: 1
-                  description: 추가 온보딩 프로필 PK 리스트
-                  items:
-                    type: integer
-                    format: int64
-                  example: [101, 203, 305]
+                publisher:
+                  type: string
+                  enum: [SH]
+                  description: SH 고정
+                  example: SH
+
+                housingType:
+                  type: string
+                  nullable: true
+                supplyType:
+                  type: string
+                  nullable: true
+                regionCode:
+                  type: string
+                  nullable: true
+                regionName:
+                  type: string
+                  nullable: true
+
+                applyUrl:
+                  type: string
+                  format: uri
+                  nullable: true
+                  maxLength: 1000
+
+                rentGtn:
+                  type: integer
+                  format: int64
+                  nullable: true
+                  minimum: 0
+                enty:
+                  type: integer
+                  format: int64
+                  nullable: true
+                  minimum: 0
+                prtpay:
+                  type: integer
+                  format: int64
+                  nullable: true
+                  minimum: 0
+                surlus:
+                  type: integer
+                  format: int64
+                  nullable: true
+                  minimum: 0
+                mtRntchrg:
+                  type: integer
+                  format: int64
+                  nullable: true
+                  minimum: 0
+
             examples:
-              mock1:
-                summary: 예시
+              patch_full_body:
+                summary: PATCH (전체 바디 전송, 서버는 변경 감지 후 저장)
                 value:
-                  onboardingProfileIds: [101, 203, 305]
+                  publisher: SH
+                  housingType: "아파트"
+                  supplyType: "공공임대"
+                  regionCode: "11440"
+                  regionName: "서울특별시 마포구"
+                  applyUrl: "https://www.i-sh.co.kr/apply/notice/12345"
+                  rentGtn: 10000000
+                  enty: 1000000
+                  prtpay: 3000000
+                  surlus: 6000000
+                  mtRntchrg: 250000
 
       responses:
         "204":
-          description: No Content
+          description: No Content (변경 감지 후 저장 완료)
+
+        "400":
+          description: Validation Error
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/ErrorResponse" }
+
+        "401":
+          description: Unauthorized
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/ErrorResponse" }
+
+        "404":
+          description: Not Found
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/ErrorResponse" }
+
+        "409":
+          description: Conflict (SH 공고가 아님 / 상태 충돌 등)
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/ErrorResponse" }
+
+        "500":
+          description: Internal Server Error
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/ErrorResponse" }
+
+
+  /api/admin/announcements/{announcementId}/eligibility:
+    post:
+      tags: [admin]
+      summary: (어드민) 지원자격 입력(최초 등록)
+      description: >
+        특정 공고(announcementId)에 대해 자격 진단/매칭에 필요한 온보딩 답변들을 **한 번에 최초 등록**합니다.
+
+        파싱 편의 규칙(중요)
+        - 요청 바디에는 **옵셔널 필드를 포함한 모든 필드가 항상 포함**됩니다.
+        - `type`이 SELECT_* 계열이 **아닌 경우** `options`는 **반드시 null**로 전송합니다.
+        - `type`이 SELECT_* 계열인 경우 `options`는 **반드시 배열**로 전송합니다(빈 배열 금지).
+
+        값 규칙
+        - `unknown=true`이면 `value`는 null 허용(미응답/모름)
+        - `unknown=false`이면 `value`는 type에 맞는 형태여야 합니다.
+          - BOOLEAN -> boolean
+          - TEXT_INPUT / SELECT_SINGLE -> string
+          - NUMBER_INPUT -> number
+          - SELECT_MULTI -> string[] (배열 원소는 문자열)
+
+        GET은 이 POST가 **1회 이상 성공한 뒤에만** 사용할 수 있습니다.
+        인증은 HttpOnly 쿠키(JWT)로 처리됩니다.
+      operationId: announcements_submitEligibilityProfiles
+      parameters:
+        - name: announcementId
+          in: path
+          required: true
+          schema:
+            type: integer
+            format: int64
+          description: 공고 PK
+          example: 12345
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              additionalProperties: false
+              required: [answers]
+              properties:
+                answers:
+                  type: array
+                  minItems: 1
+                  items:
+                    type: object
+                    additionalProperties: false
+                    required: [additionalOnboardingId, type, unknown, value, options]
+                    properties:
+                      additionalOnboardingId:
+                        type: integer
+                        format: int64
+                        description: 추가 온보딩 질문 PK
+                        example: 10
+
+                      type:
+                        type: string
+                        description: UI 블록 타입
+                        enum: [BOOLEAN, TEXT_INPUT, NUMBER_INPUT, SELECT_SINGLE, SELECT_MULTI]
+                        example: SELECT_SINGLE
+
+                      unknown:
+                        type: boolean
+                        description: 모름/미응답 여부 (true면 value는 null 허용)
+                        example: false
+
+                      value:
+                        description: >
+                          답변 값. unknown=true이면 null 허용.
+
+                          type별 기대 타입:
+                          - BOOLEAN: boolean
+                          - TEXT_INPUT/SELECT_SINGLE: string
+                          - NUMBER_INPUT: number
+                          - SELECT_MULTI: string[]
+                        nullable: true
+                        oneOf:
+                          - type: boolean
+                          - type: string
+                          - type: number
+                          - type: array
+                            items:
+                              type: string
+                          - type: object
+                        example: "신혼부부"
+
+                      options:
+                        description: >
+                          선택지 배열.
+
+                          파싱 규칙:
+                          - type이 SELECT_SINGLE/SELECT_MULTI인 경우: 배열 필수(빈 배열 금지)
+                          - 그 외 type인 경우: 반드시 null
+                        nullable: true
+                        oneOf:
+                          - type: array
+                            minItems: 1
+                            items:
+                              type: string
+                            example: ["신혼부부", "생애최초", "청년"]
+                          - type: object
+                        example: ["신혼부부", "생애최초", "청년"]
+            examples:
+              sample:
+                summary: 예시(SELECT_SINGLE은 options 배열, BOOLEAN은 options=null)
+                value:
+                  answers:
+                    - additionalOnboardingId: 101
+                      type: SELECT_SINGLE
+                      unknown: false
+                      value: "신혼부부"
+                      options: ["신혼부부", "생애최초", "청년"]
+                    - additionalOnboardingId: 102
+                      type: BOOLEAN
+                      unknown: false
+                      value: true
+                      options: null
+                    - additionalOnboardingId: 103
+                      type: NUMBER_INPUT
+                      unknown: true
+                      value: null
+                      options: null
+                    - additionalOnboardingId: 104
+                      type: SELECT_MULTI
+                      unknown: false
+                      value: ["서울", "경기"]
+                      options: ["서울", "경기", "인천"]
+      responses:
+        "204":
+          description: No Content (등록 완료)
+        "400":
+          description: Bad Request (요청 검증 실패)
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+        "401":
+          description: Unauthorized
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+        "403":
+          description: Forbidden
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+        "404":
+          description: Not Found (공고 없음)
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+        "409":
+          description: Conflict (이미 등록됨)
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+
+    get:
+      tags: [admin]
+      summary: (어드민) 지원자격 입력 조회
+      description: >
+        특정 공고(announcementId)에 대해 입력된 자격 진단/매칭용 온보딩 답변들을 조회합니다.
+
+        제약
+        - 이 API는 **POST가 1회 이상 성공한 이후에만** 사용 가능합니다.
+          (미등록 상태면 404로 응답)
+        인증은 HttpOnly 쿠키(JWT)로 처리됩니다.
+      operationId: announcements_getEligibilityProfiles
+      parameters:
+        - name: announcementId
+          in: path
+          required: true
+          schema:
+            type: integer
+            format: int64
+          description: 공고 PK
+          example: 12345
+      responses:
+        "200":
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: object
+                additionalProperties: false
+                required: [announcementId, answers]
+                properties:
+                  announcementId:
+                    type: integer
+                    format: int64
+                    example: 12345
+                  answers:
+                    type: array
+                    items:
+                      type: object
+                      additionalProperties: false
+                      required: [additionalOnboardingId, type, unknown, value, options]
+                      properties:
+                        additionalOnboardingId:
+                          type: integer
+                          format: int64
+                        type:
+                          type: string
+                          enum: [BOOLEAN, TEXT_INPUT, NUMBER_INPUT, SELECT_SINGLE, SELECT_MULTI]
+                        unknown:
+                          type: boolean
+                        value:
+                          nullable: true
+                          oneOf:
+                            - type: boolean
+                            - type: string
+                            - type: number
+                            - type: array
+                              items:
+                                type: string
+                            - type: object
+                        options:
+                          nullable: true
+                          oneOf:
+                            - type: array
+                              items:
+                                type: string
+                            - type: object
+              examples:
+                ok:
+                  summary: 조회 예시
+                  value:
+                    announcementId: 12345
+                    answers:
+                      - additionalOnboardingId: 101
+                        type: SELECT_SINGLE
+                        unknown: false
+                        value: "신혼부부"
+                        options: ["신혼부부", "생애최초", "청년"]
+                      - additionalOnboardingId: 102
+                        type: BOOLEAN
+                        unknown: false
+                        value: true
+                        options: null
+        "401":
+          description: Unauthorized
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+        "403":
+          description: Forbidden
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+        "404":
+          description: Not Found (공고 없음 또는 미등록)
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+
+    patch:
+      tags: [admin]
+      summary: (어드민) 지원자격 입력 수정(최종 확정 전만)
+      description: >
+        특정 공고(announcementId)에 대해 입력된 자격 진단/매칭용 온보딩 답변들을 수정합니다.
+
+        제약
+        - 이 API는 **최종 확정 이후에는 수정할 수 없습니다.**
+          (최종 확정 상태에서 호출 시 409(Conflict) 또는 403(Forbidden)으로 응답)
+        - POST가 1회 이상 성공한 리소스에 대해서만 수정 가능합니다(미등록이면 404).
+
+        파싱 편의 규칙(POST와 동일)
+        - `options` 필드는 항상 포함.
+        - SELECT_*가 아니면 options=null, SELECT_*면 options는 배열.
+
+        인증은 HttpOnly 쿠키(JWT)로 처리됩니다.
+      operationId: announcements_patchEligibilityProfiles
+      parameters:
+        - name: announcementId
+          in: path
+          required: true
+          schema:
+            type: integer
+            format: int64
+          description: 공고 PK
+          example: 12345
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              additionalProperties: false
+              required: [answers]
+              properties:
+                answers:
+                  type: array
+                  minItems: 1
+                  items:
+                    type: object
+                    additionalProperties: false
+                    required: [additionalOnboardingId, type, unknown, value, options]
+                    properties:
+                      additionalOnboardingId:
+                        type: integer
+                        format: int64
+                      type:
+                        type: string
+                        enum: [BOOLEAN, TEXT_INPUT, NUMBER_INPUT, SELECT_SINGLE, SELECT_MULTI]
+                      unknown:
+                        type: boolean
+                      value:
+                        nullable: true
+                        oneOf:
+                          - type: boolean
+                          - type: string
+                          - type: number
+                          - type: array
+                            items:
+                              type: string
+                          - type: object
+                      options:
+                        nullable: true
+                        oneOf:
+                          - type: array
+                            minItems: 1
+                            items:
+                              type: string
+                          - type: object
+            examples:
+              patch:
+                summary: 수정 예시
+                value:
+                  answers:
+                    - additionalOnboardingId: 101
+                      type: SELECT_SINGLE
+                      unknown: false
+                      value: "청년"
+                      options: ["신혼부부", "생애최초", "청년"]
+                    - additionalOnboardingId: 102
+                      type: BOOLEAN
+                      unknown: false
+                      value: false
+                      options: null
+      responses:
+        "204":
+          description: No Content (수정 완료)
+        "400":
+          description: Bad Request (요청 검증 실패)
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+        "401":
+          description: Unauthorized
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+        "403":
+          description: Forbidden (권한 없음 또는 최종 확정으로 수정 불가)
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+        "404":
+          description: Not Found (공고 없음 또는 미등록)
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+        "409":
+          description: Conflict (최종 확정으로 수정 불가)
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+
+
+
+  /api/admin/announcements/{announcementId}/submission:
+    get:
+      tags: [admin]
+      summary: (어드민) 공고 제출서류/주요 일정 조회
+      description: >
+        특정 공고(announcementId)에 대해 입력된 제출서류(documents)와 주요 일정(dates)을 조회합니다.
+        최소 1회 작성 이후 사용할 수 있습니다.
+
+
+        날짜 규칙
+        - SH 공고: dates 4개 값이 채워져 있을 수 있습니다.
+        - LH 공고: dates는 documentPublishedAt만 값이 있고,
+          applyStartDate/applyEndDate/finalPublishedAt은 null일 수 있습니다.
+
+        인증은 HttpOnly 쿠키(JWT)로 처리됩니다.
+      operationId: admin_getAnnouncementSubmissionDocuments
+      parameters:
+        - name: announcementId
+          in: path
+          required: true
+          schema:
+            type: integer
+            format: int64
+          description: 공고 PK
+          example: 1234567890
+
+      responses:
+        "200":
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: object
+                additionalProperties: false
+                required: [announcementId, dates, documents]
+                properties:
+                  announcementId:
+                    type: integer
+                    format: int64
+                    example: 1234567890
+
+                  dates:
+                    type: object
+                    additionalProperties: false
+                    required: [applyStartDate, applyEndDate, documentPublishedAt, finalPublishedAt]
+                    properties:
+                      applyStartDate:
+                        type: string
+                        format: date
+                        nullable: true
+                        description: 신청 시작일 (LH는 null 가능)
+                        example: "2026-01-13"
+                      applyEndDate:
+                        type: string
+                        format: date
+                        nullable: true
+                        description: 신청 마감일 (LH는 null 가능)
+                        example: "2026-01-13"
+                      documentPublishedAt:
+                        type: string
+                        format: date
+                        nullable: true
+                        description: 서류 발표일 (LH/SH 공통, LH는 이것만 채움)
+                        example: "2026-01-13"
+                      finalPublishedAt:
+                        type: string
+                        format: date
+                        nullable: true
+                        description: 최종 발표일 (LH는 null 가능)
+                        example: "2026-01-13"
+
+                  documents:
+                    type: array
+                    minItems: 0
+                    description: 제출서류 목록
+                    items:
+                      type: object
+                      additionalProperties: false
+                      required: [name, type]
+                      properties:
+                        name:
+                          type: string
+                          minLength: 1
+                          description: 서류명
+                          example: "소득금액증명원"
+                        type:
+                          type: string
+                          enum: [COMMON, TARGET_ONLY]
+                          description: 서류 타입 (상수 COMMON | TARGET_ONLY)
+                          example: "COMMON"
+
+              examples:
+                shExample:
+                  summary: SH 예시 (날짜 4개 + 서류)
+                  value:
+                    announcementId: 1234567890
+                    dates:
+                      applyStartDate: "2026-01-13"
+                      applyEndDate: "2026-01-13"
+                      documentPublishedAt: "2026-01-13"
+                      finalPublishedAt: "2026-01-13"
+                    documents:
+                      - name: "주민등록등본"
+                        type: "COMMON"
+                      - name: "가족관계증명서"
+                        type: "COMMON"
+                      - name: "개인정보수집·이용 및 제3자 제공 동의서"
+                        type: "COMMON"
+                      - name: "청약통장 가입증명서"
+                        type: "TARGET_ONLY"
+
+                lhExample:
+                  summary: LH 예시 (documentPublishedAt만 있고 나머지 null + 서류)
+                  value:
+                    announcementId: 1234567890
+                    dates:
+                      applyStartDate: null
+                      applyEndDate: null
+                      documentPublishedAt: "2026-01-13"
+                      finalPublishedAt: null
+                    documents:
+                      - name: "소득금액증명원"
+                        type: "COMMON"
+                      - name: "청약통장 가입증명서"
+                        type: "TARGET_ONLY"
+
+        "401":
+          description: Unauthorized
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+        "403":
+          description: Forbidden
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+        "404":
+          description: Not Found (공고 없음)
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+
+    post:
+      tags: [admin]
+      summary: (어드민) 공고 제출서류/주요 일정 최초 등록
+      description: >
+        특정 공고(announcementId)에 대해 제출서류(documents)와 주요 일정(dates)을 최초로 등록합니다.
+
+        날짜 입력 규칙 (시나리오 2가지)
+        - SH 공고: dates 4개를 모두 입력합니다.
+        - LH 공고: documentPublishedAt만 입력하고
+          applyStartDate/applyEndDate/finalPublishedAt은 반드시 null로 전송합니다.
+
+        제출서류 입력 규칙
+        - documents는 LH/SH 모두 필수입니다.
+        - 각 문서는 { name, type } 형태로 제출합니다.
+        - type 상수: COMMON, TARGET_ONLY
+
+        인증은 HttpOnly 쿠키(JWT)로 처리됩니다.
+      operationId: admin_createAnnouncementSubmissionDocuments
+      parameters:
+        - name: announcementId
+          in: path
+          required: true
+          schema:
+            type: integer
+            format: int64
+          description: 공고 PK
+          example: 1234567890
+
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              oneOf:
+                - title: ShAnnouncementSubmissionDocumentsCreateRequest
+                  type: object
+                  additionalProperties: false
+                  required: [announcementId, dates, documents]
+                  properties:
+                    announcementId:
+                      type: integer
+                      format: int64
+                      description: 공고 PK (path와 동일)
+                      example: 1234567890
+
+                    dates:
+                      type: object
+                      additionalProperties: false
+                      required: [applyStartDate, applyEndDate, documentPublishedAt, finalPublishedAt]
+                      properties:
+                        applyStartDate:
+                          type: string
+                          format: date
+                          description: 신청 시작일 (SH 필수)
+                          example: "2026-01-13"
+                        applyEndDate:
+                          type: string
+                          format: date
+                          description: 신청 마감일 (SH 필수)
+                          example: "2026-01-13"
+                        documentPublishedAt:
+                          type: string
+                          format: date
+                          description: 서류 발표일 (SH 필수)
+                          example: "2026-01-13"
+                        finalPublishedAt:
+                          type: string
+                          format: date
+                          description: 최종 발표일 (SH 필수)
+                          example: "2026-01-13"
+
+                    documents:
+                      type: array
+                      minItems: 1
+                      description: 제출서류 목록 (LH/SH 공통 필수)
+                      items:
+                        type: object
+                        additionalProperties: false
+                        required: [name, type]
+                        properties:
+                          name:
+                            type: string
+                            minLength: 1
+                            description: 서류명
+                            example: "소득금액증명원"
+                          type:
+                            type: string
+                            enum: [COMMON, TARGET_ONLY]
+                            description: 서류 타입 (상수 COMMON | TARGET_ONLY)
+                            example: "COMMON"
+
+                - title: LhAnnouncementSubmissionDocumentsCreateRequest
+                  type: object
+                  additionalProperties: false
+                  required: [announcementId, dates, documents]
+                  properties:
+                    announcementId:
+                      type: integer
+                      format: int64
+                      description: 공고 PK (path와 동일)
+                      example: 1234567890
+
+                    dates:
+                      type: object
+                      additionalProperties: false
+                      required: [applyStartDate, applyEndDate, documentPublishedAt, finalPublishedAt]
+                      properties:
+                        applyStartDate:
+                          type: string
+                          format: date
+                          nullable: true
+                          description: 신청 시작일 (LH에서는 반드시 null)
+                          example: null
+                        applyEndDate:
+                          type: string
+                          format: date
+                          nullable: true
+                          description: 신청 마감일 (LH에서는 반드시 null)
+                          example: null
+                        documentPublishedAt:
+                          type: string
+                          format: date
+                          description: 서류 발표일 (LH에서 유일하게 입력)
+                          example: "2026-01-13"
+                        finalPublishedAt:
+                          type: string
+                          format: date
+                          nullable: true
+                          description: 최종 발표일 (LH에서는 반드시 null)
+                          example: null
+
+                    documents:
+                      type: array
+                      minItems: 1
+                      description: 제출서류 목록 (LH/SH 공통 필수)
+                      items:
+                        type: object
+                        additionalProperties: false
+                        required: [name, type]
+                        properties:
+                          name:
+                            type: string
+                            minLength: 1
+                            description: 서류명
+                          type:
+                            type: string
+                            enum: [COMMON, TARGET_ONLY]
+                            description: 서류 타입 (상수 COMMON | TARGET_ONLY)
+
+            examples:
+              shCreate:
+                summary: SH 등록
+                value:
+                  announcementId: 1234567890
+                  dates:
+                    applyStartDate: "2026-01-13"
+                    applyEndDate: "2026-01-13"
+                    documentPublishedAt: "2026-01-13"
+                    finalPublishedAt: "2026-01-13"
+                  documents:
+                    - name: "주민등록등본"
+                      type: "COMMON"
+                    - name: "청약통장 가입증명서"
+                      type: "TARGET_ONLY"
+
+              lhCreate:
+                summary: LH 등록 (documentPublishedAt만 입력)
+                value:
+                  announcementId: 1234567890
+                  dates:
+                    applyStartDate: null
+                    applyEndDate: null
+                    documentPublishedAt: "2026-01-13"
+                    finalPublishedAt: null
+                  documents:
+                    - name: "소득금액증명원"
+                      type: "COMMON"
+                    - name: "청약통장 가입증명서"
+                      type: "TARGET_ONLY"
+
+      responses:
+        "201":
+          description: Created
+          content:
+            application/json:
+              schema:
+                type: object
+                additionalProperties: false
+                required: [announcementId]
+                properties:
+                  announcementId:
+                    type: integer
+                    format: int64
+                    example: 1234567890
+
+        "400":
+          description: Bad Request (요청 검증 실패)
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+        "401":
+          description: Unauthorized
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+        "403":
+          description: Forbidden
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+        "404":
+          description: Not Found (공고 없음)
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+        "409":
+          description: Conflict (이미 등록됨)
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+
+    patch:
+      tags: [admin]
+      summary: (어드민) 공고 제출서류/주요 일정 수정(변경 감지용)
+      description: >
+        특정 공고(announcementId)에 대해 제출서류(documents)와 주요 일정(dates)을 수정합니다.
+        최종 확정 이후 수정이 불가능합니다.
+
+        목적
+        - 서버는 "부분 업데이트"를 하지 않습니다.
+        - 클라이언트가 **전체 스냅샷(현재 화면 값 전체)** 을 전송하면,
+          서버는 기존 저장 값과 비교하여 **변경 여부만 감지**한 뒤 저장합니다.
+
+        계약(중요) - 서버가 400으로 검증합니다
+        - PATCH 요청 바디는 **POST/GET과 동일한 전체 구조**를 사용합니다.
+          (announcementId + dates + documents)
+        - dates는 4개 필드를 **항상 전부 포함**해야 합니다(누락 금지).
+        - documents는 배열 전체를 전송합니다(부분 전송 금지, 아이템은 name/type 필수).
+        - LH/SH 날짜 규칙 위반, 문서 타입 위반 등은 400으로 검증 실패 처리합니다.
+
+        날짜 규칙(LH/SH)
+        - LH: documentPublishedAt만 값, 나머지 날짜는 반드시 null
+        - SH: 4개 날짜 모두 값
+
+        문서 규칙
+        - documents.type 상수: COMMON, TARGET_ONLY
+
+        인증은 HttpOnly 쿠키(JWT)로 처리됩니다.
+      operationId: admin_updateAnnouncementSubmissionDocuments
+      parameters:
+        - name: announcementId
+          in: path
+          required: true
+          schema:
+            type: integer
+            format: int64
+          description: 공고 PK
+          example: 1234567890
+
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              additionalProperties: false
+              required: [announcementId, dates, documents]
+              properties:
+                announcementId:
+                  type: integer
+                  format: int64
+                  description: 공고 PK (path와 동일해야 함)
+                  example: 1234567890
+
+                dates:
+                  type: object
+                  additionalProperties: false
+                  required: [applyStartDate, applyEndDate, documentPublishedAt, finalPublishedAt]
+                  properties:
+                    applyStartDate:
+                      type: string
+                      format: date
+                      nullable: true
+                      description: 신청 시작일 (LH는 null 강제)
+                      example: "2026-01-13"
+                    applyEndDate:
+                      type: string
+                      format: date
+                      nullable: true
+                      description: 신청 마감일 (LH는 null 강제)
+                      example: "2026-01-13"
+                    documentPublishedAt:
+                      type: string
+                      format: date
+                      nullable: true
+                      description: 서류 발표일 (LH/SH 공통, LH는 이것만 값)
+                      example: "2026-01-13"
+                    finalPublishedAt:
+                      type: string
+                      format: date
+                      nullable: true
+                      description: 최종 발표일 (LH는 null 강제)
+                      example: "2026-01-13"
+
+                documents:
+                  type: array
+                  minItems: 1
+                  description: 제출서류 목록(전체 스냅샷)
+                  items:
+                    type: object
+                    additionalProperties: false
+                    required: [name, type]
+                    properties:
+                      name:
+                        type: string
+                        minLength: 1
+                        description: 서류명
+                        example: "주민등록등본"
+                      type:
+                        type: string
+                        enum: [COMMON, TARGET_ONLY]
+                        description: 서류 타입 (상수 COMMON | TARGET_ONLY)
+                        example: "COMMON"
+
+            examples:
+              shPatchSnapshot:
+                summary: SH - 전체 스냅샷 PATCH (변경 감지용)
+                value:
+                  announcementId: 1234567890
+                  dates:
+                    applyStartDate: "2026-01-13"
+                    applyEndDate: "2026-01-13"
+                    documentPublishedAt: "2026-01-13"
+                    finalPublishedAt: "2026-01-13"
+                  documents:
+                    - name: "주민등록등본"
+                      type: "COMMON"
+                    - name: "가족관계증명서"
+                      type: "COMMON"
+                    - name: "개인정보수집·이용 및 제3자 제공 동의서"
+                      type: "COMMON"
+                    - name: "청약통장 가입증명서"
+                      type: "TARGET_ONLY"
+
+              lhPatchSnapshot:
+                summary: LH - 전체 스냅샷 PATCH (documentPublishedAt만 값)
+                value:
+                  announcementId: 1234567890
+                  dates:
+                    applyStartDate: null
+                    applyEndDate: null
+                    documentPublishedAt: "2026-01-13"
+                    finalPublishedAt: null
+                  documents:
+                    - name: "주민등록등본"
+                      type: "COMMON"
+                    - name: "청약통장 가입증명서"
+                      type: "TARGET_ONLY"
+
+      responses:
+        "204":
+          description: No Content (변경 감지 후 저장 완료)
+
+        "400":
+          description: Bad Request (요청 검증 실패 - 계약 위반 포함)
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+        "401":
+          description: Unauthorized
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+        "403":
+          description: Forbidden (최종 확정 이후 수정 불가 등)
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+        "404":
+          description: Not Found (공고 없음)
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+
+  /api/admin/announcements/{announcementId}/complete:
+    post:
+      tags: [admin, announcements]
+      summary: (어드민) 공고 입력 최종 완료(확정) 처리
+      description: >
+        어드민이 분리된 저장 API들로 입력한 내용을 기준으로,
+        서버가 완료 기준(요약/지원자격/필수 공고 입력값 등)을 최종 검증하고
+        완료 상태로 전환합니다.
+
+        완료 기준이 충족되지 않으면 409로 누락 항목을 반환합니다.
+      operationId: admin_completeAnnouncement
+
+      parameters:
+        - name: announcementId
+          in: path
+          required: true
+          schema: { type: integer, format: int64 }
+          description: 공고 PK
+          example: 12345
+
+      responses:
+        "204":
+          description: No Content (완료 처리 성공)
+
+        "409":
+          description: Conflict (완료 기준 미충족 - 누락 항목 존재)
+          content:
+            application/json:
+              schema:
+                type: object
+                additionalProperties: false
+                required: [code, message, missing]
+                properties:
+                  code:
+                    type: string
+                    example: "ANNOUNCEMENT_NOT_COMPLETED"
+                  message:
+                    type: string
+                    example: "완료 기준을 충족하지 못했습니다."
+                  missing:
+                    type: array
+                    minItems: 1
+                    description: 누락/미충족 항목 목록
+                    items:
+                      type: object
+                      additionalProperties: false
+                      required: [code, message]
+                      properties:
+                        code:
+                          type: string
+                          enum:
+                            - SH_REQUIRED_INPUT_MISSING
+                            - REQUIRED_ONBOARDING_MISSING
+                            - OVERVIEW_SUMMARY_MISSING
+                          description: 누락 항목 코드
+                          example: "SH_REQUIRED_INPUT_MISSING"
+                        message:
+                          type: string
+                          description: 누락 사유(프론트 표시용)
+                          example: "SH 공고 필수 입력값이 누락되었습니다."
+              examples:
+                mock1:
+                  summary: 완료 기준 누락(3가지 케이스)
+                  value:
+                    code: "ANNOUNCEMENT_NOT_COMPLETED"
+                    message: "완료 기준을 충족하지 못했습니다."
+                    missing:
+                      - code: "SH_REQUIRED_INPUT_MISSING"
+                        message: "SH 공고 필수 입력값이 누락되었습니다."
+                      - code: "REQUIRED_ONBOARDING_MISSING"
+                        message: "필수 온보딩이 누락되었습니다."
+                      - code: "OVERVIEW_SUMMARY_MISSING"
+                        message: "개요 및 요약이 누락되었습니다."
+                    
 
         "400":
           description: Validation Error
@@ -7445,14 +6314,13 @@ paths:
             application/json:
               schema: { $ref: "#/components/schemas/ErrorResponse" }
 
-
+              
   /api/admin/additional-onboardings:
     get:
       tags: [admin]
       summary: (어드민) 추가 온보딩 질문 목록 조회
       description: >
         어드민이 등록된 추가 온보딩 질문 목록을 조회합니다.
-        select 타입(select_single/select_multi)인 경우 options(선택지 목록)을 함께 반환합니다.
         인증은 HttpOnly 쿠키(JWT)로 처리됩니다.
       operationId: admin_listAdditionalOnboardings
       responses:
@@ -7472,7 +6340,7 @@ paths:
                       oneOf:
                         - type: object
                           additionalProperties: false
-                          required: [additionalOnboardingId, title, description, question, type]
+                          required: [additionalOnboardingId, title, description, question, type, required]
                           properties:
                             additionalOnboardingId:
                               type: integer
@@ -7496,10 +6364,14 @@ paths:
                               enum: [boolean]
                               description: 입력 타입
                               example: "boolean"
+                            required:
+                              type: boolean
+                              description: 필수 입력 여부
+                              example: true
 
                         - type: object
                           additionalProperties: false
-                          required: [additionalOnboardingId, title, description, question, type]
+                          required: [additionalOnboardingId, title, description, question, type, required]
                           properties:
                             additionalOnboardingId:
                               type: integer
@@ -7523,10 +6395,14 @@ paths:
                               enum: [text_input]
                               description: 입력 타입
                               example: "text_input"
+                            required:
+                              type: boolean
+                              description: 필수 입력 여부
+                              example: false
 
                         - type: object
                           additionalProperties: false
-                          required: [additionalOnboardingId, title, description, question, type]
+                          required: [additionalOnboardingId, title, description, question, type, required]
                           properties:
                             additionalOnboardingId:
                               type: integer
@@ -7550,10 +6426,14 @@ paths:
                               enum: [number_input]
                               description: 입력 타입
                               example: "number_input"
+                            required:
+                              type: boolean
+                              description: 필수 입력 여부
+                              example: false
 
                         - type: object
                           additionalProperties: false
-                          required: [additionalOnboardingId, title, description, question, type, options]
+                          required: [additionalOnboardingId, title, description, question, type, required]
                           properties:
                             additionalOnboardingId:
                               type: integer
@@ -7577,15 +6457,14 @@ paths:
                               enum: [select_single]
                               description: 입력 타입
                               example: "select_single"
-                            options:
-                              type: array
-                              minItems: 1
-                              items: { type: string }
-                              description: 선택 가능한 옵션 목록
+                            required:
+                              type: boolean
+                              description: 필수 입력 여부
+                              example: true
 
                         - type: object
                           additionalProperties: false
-                          required: [additionalOnboardingId, title, description, question, type, options]
+                          required: [additionalOnboardingId, title, description, question, type, required]
                           properties:
                             additionalOnboardingId:
                               type: integer
@@ -7609,11 +6488,10 @@ paths:
                               enum: [select_multi]
                               description: 입력 타입
                               example: "select_multi"
-                            options:
-                              type: array
-                              minItems: 1
-                              items: { type: string }
-                              description: 선택 가능한 옵션 목록
+                            required:
+                              type: boolean
+                              description: 필수 입력 여부
+                              example: true
 
               examples:
                 mock1:
@@ -7625,32 +6503,35 @@ paths:
                         description: "청약통장은 어띠어띠해요"
                         question: "청약통장이 있으신가요?"
                         type: "boolean"
+                        required: true
 
                       - additionalOnboardingId: 900002
                         title: "온보딩 타이틀"
                         description: "온보딩 카테고리에 대한 설명이 들어가요"
                         question: "단일 선택 질문"
                         type: "select_single"
-                        options: ["옵션A", "옵션B", "옵션C"]
+                        required: true
 
                       - additionalOnboardingId: 900003
                         title: "온보딩 타이틀"
                         description: "온보딩 카테고리에 대한 설명이 들어가요"
                         question: "복수 선택 질문"
                         type: "select_multi"
-                        options: ["옵션A", "옵션B", "옵션C"]
+                        required: false
 
                       - additionalOnboardingId: 900004
                         title: "온보딩 타이틀"
                         description: "온보딩 카테고리에 대한 설명이 들어가요"
                         question: "텍스트를 입력해주세요"
                         type: "text_input"
+                        required: false
 
                       - additionalOnboardingId: 900005
                         title: "온보딩 타이틀"
                         description: "온보딩 카테고리에 대한 설명이 들어가요"
                         question: "숫자를 입력해주세요"
                         type: "number_input"
+                        required: false
 
         "401":
           description: Unauthorized
@@ -7663,7 +6544,6 @@ paths:
           content:
             application/json:
               schema: { $ref: "#/components/schemas/ErrorResponse" }
-
     post:
       tags: [admin]
       summary: (어드민) 추가 온보딩 질문 생성
@@ -7888,229 +6768,8 @@ paths:
           content:
             application/json:
               schema: { $ref: "#/components/schemas/ErrorResponse" }
- 
-
-  /api/admin/announcements/{announcementId}/overview-summary:
-    post:
-      tags: [admin, announcements]
-      summary: (어드민) 공고 개요/요약 수기 저장(업서트)
-      description: >
-        어드민이 공고의 개요(overview)와 요약(summary)을 수기로 저장합니다.
-        overview는 스태틱 필드(content/target/regions/applyMethod)로 저장되며,
-        summary는 단일 문장(문자열)입니다.
-        인증은 HttpOnly 쿠키(JWT)로 처리됩니다.
-      operationId: admin_upsertAnnouncementOverviewAndSummary
-      parameters:
-        - name: announcementId
-          in: path
-          required: true
-          schema: { type: integer, format: int64 }
-          description: 공고 PK
-          example: 12345
-
-      requestBody:
-        required: true
-        content:
-          application/json:
-            schema:
-              type: object
-              additionalProperties: false
-              required: [overview, summary]
-              properties:
-                overview:
-                  type: object
-                  additionalProperties: false
-                  required: [content, target, regions, applyMethod]
-                  properties:
-                    content:
-                      type: string
-                      description: 공고 내용(개요)
-                      example: "공고 내용"
-                    target:
-                      type: string
-                      description: 대상
-                      example: "만 19~34세 청년"
-                    regions:
-                      type: array
-                      description: 지역(시/구 등)
-                      items: { type: string }
-                      example: ["강남구", "마포구"]
-                    applyMethod:
-                      type: string
-                      description: 접수 방법
-                      example: "LH 청약플러스 온라인 접수"
-
-                summary:
-                  type: string
-                  nullable: true
-                  description: >
-                    공고 요약 단일 문장(어드민 수기). 요약이 없으면 null 저장 가능.
-                  example: "서울 강남/마포 대상 청년 임대주택 모집, LH 청약플러스 온라인 접수."
-
-            examples:
-              upsert_mock:
-                summary: 개요/요약 저장
-                value:
-                  overview:
-                    content: "공고 내용"
-                    target: "만 19~34세 청년"
-                    regions: ["강남구", "무슨구"]
-                    applyMethod: "LH 청약플러스 온라인 접수"
-                  summary: "서울 강남/무슨구 청년 대상, LH 청약플러스 온라인 접수."
-
-      responses:
-        "204":
-          description: No Content (저장 완료)
-
-        "400":
-          description: Validation Error
-          content:
-            application/json:
-              schema: { $ref: "#/components/schemas/ErrorResponse" }
-
-        "401":
-          description: Unauthorized
-          content:
-            application/json:
-              schema: { $ref: "#/components/schemas/ErrorResponse" }
-
-        "404":
-          description: Not Found
-          content:
-            application/json:
-              schema: { $ref: "#/components/schemas/ErrorResponse" }
-
-        "500":
-          description: Internal Server Error
-          content:
-            application/json:
-              schema: { $ref: "#/components/schemas/ErrorResponse" }
 
 
-  /api/admin/announcements/{announcementId}/eligibility/complete:
-    post:
-      tags: [admin, announcements]
-      summary: (어드민) 공고 입력 최종 완료(확정) 처리
-      description: >
-        어드민이 분리된 저장 API들로 입력한 내용을 기준으로,
-        서버가 완료 기준(요약/지원자격/필수 공고 입력값 등)을 최종 검증하고
-        완료 상태로 전환합니다.
-
-        완료 기준이 충족되지 않으면 409로 누락 항목을 반환합니다.
-      operationId: admin_completeAnnouncement
-
-      parameters:
-        - name: announcementId
-          in: path
-          required: true
-          schema: { type: integer, format: int64 }
-          description: 공고 PK
-          example: 12345
-
-      responses:
-        "204":
-          description: No Content (완료 처리 성공)
-
-        "409":
-          description: Conflict (완료 기준 미충족 - 누락 항목 존재)
-          content:
-            application/json:
-              schema:
-                type: object
-                additionalProperties: false
-                required: [code, message, missing]
-                properties:
-                  code:
-                    type: string
-                    example: "ANNOUNCEMENT_NOT_COMPLETED"
-                  message:
-                    type: string
-                    example: "완료 기준을 충족하지 못했습니다."
-                  missing:
-                    type: object
-                    additionalProperties: false
-                    required: [checks]
-                    properties:
-                      checks:
-                        type: array
-                        minItems: 1
-                        description: >
-                          완료 기준 체크리스트. 각 항목은 code로 식별하며,
-                          passed=false인 항목이 누락/미충족입니다.
-                        items:
-                          type: object
-                          additionalProperties: false
-                          required: [code, passed]
-                          properties:
-                            code:
-                              type: string
-                              enum:
-                                - SUMMARY_KV_DIGEST_WRITTEN
-                                - ELIGIBILITY_NORMALIZED_WRITTEN
-                                - REQUIRED_FIELDS_WRITTEN
-                                - ORIGINAL_URL_SET
-                                - SH_REQUIRED_FIELDS_WRITTEN
-                                - SH_INCOME_WRITTEN
-                              description: 완료 기준 항목 코드
-                              example: "SUMMARY_KV_DIGEST_WRITTEN"
-                            passed:
-                              type: boolean
-                              description: 충족 여부
-                              example: false
-                            message:
-                              type: string
-                              nullable: true
-                              description: 프론트 표시용 설명(선택)
-                              example: "요약(kvDigest)이 작성되지 않았습니다."
-                            routeHint:
-                              type: string
-                              nullable: true
-                              description: 프론트 라우팅/탭 이동 힌트(선택)
-                              example: "/admin/announcements/12345/summary"
-              examples:
-                missing_case:
-                  summary: 누락 케이스 예시
-                  value:
-                    code: "ANNOUNCEMENT_NOT_COMPLETED"
-                    message: "완료 기준을 충족하지 못했습니다."
-                    missing:
-                      checks:
-                        - code: "SUMMARY_KV_DIGEST_WRITTEN"
-                          passed: false
-                          message: "요약(kvDigest)이 작성되지 않았습니다."
-                          routeHint: "/admin/announcements/12345/summary"
-                        - code: "ELIGIBILITY_NORMALIZED_WRITTEN"
-                          passed: true
-                        - code: "REQUIRED_FIELDS_WRITTEN"
-                          passed: false
-                          message: "필수 공고 입력값이 누락되었습니다."
-                          routeHint: "/admin/announcements/12345/required-fields"
-
-        "400":
-          description: Validation Error
-          content:
-            application/json:
-              schema: { $ref: "#/components/schemas/ErrorResponse" }
-
-        "401":
-          description: Unauthorized
-          content:
-            application/json:
-              schema: { $ref: "#/components/schemas/ErrorResponse" }
-
-        "404":
-          description: Not Found
-          content:
-            application/json:
-              schema: { $ref: "#/components/schemas/ErrorResponse" }
-
-        "500":
-          description: Internal Server Error
-          content:
-            application/json:
-              schema: { $ref: "#/components/schemas/ErrorResponse" }
-
-              
   /api/regions/cities:
     get:
       tags:
