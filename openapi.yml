@@ -4724,6 +4724,87 @@ paths:
               schema:
                 $ref: '#/components/schemas/ErrorResponse'
                 
+ 
+  /api/admin/pending:
+    get:
+      tags: [admin, announcements]
+      summary: (어드민) 수정 중/확정 전 공고 목록 조회
+      description: >
+        현재 어드민에서 수정 중이거나 최종 확정 전 상태인 공고들의 ID 리스트를 조회합니다.
+
+        - 결과는 생성일(createdAt) 기준 최신순으로 반환합니다.
+        - 인증은 HttpOnly 쿠키(JWT)로 처리됩니다.
+      operationId: admin_listAnnouncementsPendingConfirmation
+      responses:
+        "200":
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: object
+                additionalProperties: false
+                required: [data]
+                properties:
+                  data:
+                    type: array
+                    items:
+                      type: object
+                      additionalProperties: false
+                      required: [announcementId, publisher, createdAt, title]
+                      properties:
+                        announcementId:
+                          type: integer
+                          format: int64
+                          description: 공고 PK
+                          example: 900001
+                        publisher:
+                          type: string
+                          description: 공고 제공처
+                          enum: [LH, SH]
+                          example: LH
+                        createdAt:
+                          type: string
+                          format: date-time
+                          description: 공고 생성 시각(ISO-8601, KST 포함 가능)
+                          example: "2025-12-31T10:07:00+09:00"
+                        title:
+                          type: string
+                          description: 공고 제목
+                          example: "Mock title 1"
+              examples:
+                sample:
+                  summary: 확정 전 공고 목록 예시
+                  value:
+                    data:
+                      - announcementId: 900001
+                        publisher: "LH"
+                        createdAt: "2025-12-31T10:07:00+09:00"
+                        title: "Mock title 1"
+                      - announcementId: 900002
+                        publisher: "SH"
+                        createdAt: "2025-12-30T09:10:00+09:00"
+                        title: "Mock title 2"
+
+        "401":
+          description: Unauthorized
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+        "403":
+          description: Forbidden
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+        "500":
+          description: Internal Server Error
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+ 
+ 
   /api/admin/announcements/{announcementId}:
     get:
       tags: [admin, announcements]
