@@ -163,7 +163,7 @@ paths:
                           type: integer
                           format: int64
                           description: 공고 PK
-                          example: 12345
+                          example: 900001
                         title:
                           type: string
                           description: 공고명
@@ -251,7 +251,7 @@ paths:
                   summary: Scenario 2
                   value:
                     data:
-                    - announcementId: 900002
+                    - announcementId: 900001
                       title: Mock title 2
                       housingType: 안심주택
                       startDate: '2026-01-02'
@@ -259,7 +259,7 @@ paths:
                       publishedAt: '2026-01-02'
                       publisher: LH 한국토지주택공사
                       status: DUE_SOON
-                    - announcementId: 900002
+                    - announcementId: 900001
                       title: Mock title 2
                       housingType: 안심주택
                       startDate: '2026-01-02'
@@ -275,7 +275,7 @@ paths:
                   summary: Scenario 3
                   value:
                     data:
-                    - announcementId: 900003
+                    - announcementId: 900001
                       title: Mock title 3
                       housingType: 장기전세
                       startDate: '2026-01-03'
@@ -283,7 +283,7 @@ paths:
                       publishedAt: '2026-01-03'
                       publisher: LH 한국토지주택공사
                       status: UPCOMING
-                    - announcementId: 900003
+                    - announcementId: 900001
                       title: Mock title 3
                       housingType: 장기전세
                       startDate: '2026-01-03'
@@ -299,7 +299,7 @@ paths:
                   summary: Scenario 4
                   value:
                     data:
-                    - announcementId: 900004
+                    - announcementId: 900001
                       title: Mock title 4
                       housingType: 행복주택
                       startDate: '2026-01-04'
@@ -307,7 +307,7 @@ paths:
                       publishedAt: '2026-01-04'
                       publisher: LH 한국토지주택공사
                       status: CLOSED
-                    - announcementId: 900004
+                    - announcementId: 900001
                       title: Mock title 4
                       housingType: 행복주택
                       startDate: '2026-01-04'
@@ -323,7 +323,7 @@ paths:
                   summary: Scenario 5
                   value:
                     data:
-                    - announcementId: 900005
+                    - announcementId: 900001
                       title: Mock title 5
                       housingType: 안심주택
                       startDate: '2026-01-05'
@@ -331,7 +331,7 @@ paths:
                       publishedAt: '2026-01-05'
                       publisher: LH 한국토지주택공사
                       status: OPEN
-                    - announcementId: 900005
+                    - announcementId: 900001
                       title: Mock title 5
                       housingType: 안심주택
                       startDate: '2026-01-05'
@@ -434,7 +434,7 @@ paths:
                           type: integer
                           format: int64
                           description: 공고 PK
-                          example: 12345
+                          example: 900001
                         title:
                           type: string
                           description: 공고명
@@ -498,7 +498,7 @@ paths:
                   summary: Scenario 3
                   value:
                     data:
-                    - announcementId: 900003
+                    - announcementId: 900001
                       title: Mock title 3
                       housingType: 장기전세
                       startDate: '2026-01-03'
@@ -506,7 +506,7 @@ paths:
                       publishedAt: '2026-01-03'
                       publisher: LH 한국토지주택공사
                       status: UPCOMING
-                    - announcementId: 900003
+                    - announcementId: 900001
                       title: Mock title 3
                       housingType: 장기전세
                       startDate: '2026-01-03'
@@ -597,7 +597,7 @@ paths:
                           type: integer
                           format: int64
                           description: 공고 PK
-                          example: 12345
+                          example: 900001
                         title:
                           type: string
                           description: 공고명
@@ -685,7 +685,7 @@ paths:
                   summary: Scenario 2
                   value:
                     data:
-                    - announcementId: 900002
+                    - announcementId: 900001
                       title: Mock title 2
                       housingType: 안심주택
                       startDate: '2026-01-02'
@@ -693,7 +693,7 @@ paths:
                       publishedAt: '2026-01-02'
                       publisher: LH 한국토지주택공사
                       status: DUE_SOON
-                    - announcementId: 900002
+                    - announcementId: 900001
                       title: Mock title 2
                       housingType: 안심주택
                       startDate: '2026-01-02'
@@ -784,7 +784,7 @@ paths:
                           type: integer
                           format: int64
                           description: 공고 PK
-                          example: 12345
+                          example: 900001
                         title:
                           type: string
                           description: 공고명
@@ -848,7 +848,7 @@ paths:
                   summary: Scenario 5
                   value:
                     data:
-                    - announcementId: 900005
+                    - announcementId: 900001
                       title: Mock title 5
                       housingType: 안심주택
                       startDate: '2026-01-05'
@@ -856,7 +856,7 @@ paths:
                       publishedAt: '2026-01-05'
                       publisher: LH 한국토지주택공사
                       status: CLOSED
-                    - announcementId: 900005
+                    - announcementId: 900001
                       title: Mock title 5
                       housingType: 안심주택
                       startDate: '2026-01-05'
@@ -947,7 +947,7 @@ paths:
                           type: integer
                           format: int64
                           description: 공고 PK
-                          example: 12345
+                          example: 900001
                         title:
                           type: string
                           description: 공고명
@@ -1011,7 +1011,7 @@ paths:
                   summary: Scenario 4
                   value:
                     data:
-                    - announcementId: 900004
+                    - announcementId: 900001
                       title: Mock title 4
                       housingType: 행복주택
                       startDate: '2026-01-04'
@@ -1019,7 +1019,7 @@ paths:
                       publishedAt: '2026-01-04'
                       publisher: LH 한국토지주택공사
                       status: CLOSED
-                    - announcementId: 900004
+                    - announcementId: 900001
                       title: Mock title 4
                       housingType: 행복주택
                       startDate: '2026-01-04'
@@ -1118,7 +1118,7 @@ paths:
                           type: integer
                           format: int64
                           description: 공고 PK
-                          example: 12345
+                          example: 900001
                         title:
                           type: string
                           description: 공고명
@@ -1206,7 +1206,7 @@ paths:
                   summary: Scenario 2
                   value:
                     data:
-                    - announcementId: 900002
+                    - announcementId: 900001
                       title: Mock title 2
                       housingType: 안심주택
                       startDate: '2026-01-02'
@@ -1214,7 +1214,7 @@ paths:
                       publishedAt: '2026-01-02'
                       publisher: LH 한국토지주택공사
                       status: DUE_SOON
-                    - announcementId: 900002
+                    - announcementId: 900001
                       title: Mock title 2
                       housingType: 안심주택
                       startDate: '2026-01-02'
@@ -1230,7 +1230,7 @@ paths:
                   summary: Scenario 3
                   value:
                     data:
-                    - announcementId: 900003
+                    - announcementId: 900001
                       title: Mock title 3
                       housingType: 장기전세
                       startDate: '2026-01-03'
@@ -1238,7 +1238,7 @@ paths:
                       publishedAt: '2026-01-03'
                       publisher: LH 한국토지주택공사
                       status: UPCOMING
-                    - announcementId: 900003
+                    - announcementId: 900001
                       title: Mock title 3
                       housingType: 장기전세
                       startDate: '2026-01-03'
@@ -1254,7 +1254,7 @@ paths:
                   summary: Scenario 4
                   value:
                     data:
-                    - announcementId: 900004
+                    - announcementId: 900001
                       title: Mock title 4
                       housingType: 행복주택
                       startDate: '2026-01-04'
@@ -1262,7 +1262,7 @@ paths:
                       publishedAt: '2026-01-04'
                       publisher: LH 한국토지주택공사
                       status: CLOSED
-                    - announcementId: 900004
+                    - announcementId: 900001
                       title: Mock title 4
                       housingType: 행복주택
                       startDate: '2026-01-04'
@@ -1278,7 +1278,7 @@ paths:
                   summary: Scenario 5
                   value:
                     data:
-                    - announcementId: 900005
+                    - announcementId: 900001
                       title: Mock title 5
                       housingType: 안심주택
                       startDate: '2026-01-05'
@@ -1286,7 +1286,7 @@ paths:
                       publishedAt: '2026-01-05'
                       publisher: LH 한국토지주택공사
                       status: OPEN
-                    - announcementId: 900005
+                    - announcementId: 900001
                       title: Mock title 5
                       housingType: 안심주택
                       startDate: '2026-01-05'
@@ -1397,7 +1397,7 @@ paths:
                           type: integer
                           format: int64
                           description: 공고 PK
-                          example: 12345
+                          example: 900001
                         title:
                           type: string
                           description: 공고명
@@ -1555,7 +1555,7 @@ paths:
                           type: integer
                           format: int64
                           description: 공고 PK
-                          example: 12345
+                          example: 900001
                         title:
                           type: string
                           description: 공고명
@@ -1658,7 +1658,7 @@ paths:
                       type: integer
                       format: int64
                       description: 공고 PK
-                      example: 12345
+                      example: 900001
                     title:
                       type: string
                       description: 공고명
@@ -1672,30 +1672,35 @@ paths:
                     summary: Scenario 1
                     value:
                       announcementId: 900001
+
                       title: Mock title 1
                       reasonTag: 이사예정
                   mock2:
                     summary: Scenario 2
                     value:
-                      announcementId: 900002
+                      announcementId: 900001
+
                       title: Mock title 2
                       reasonTag: 이사예정
                   mock3:
                     summary: Scenario 3
                     value:
-                      announcementId: 900003
+                      announcementId: 900001
+
                       title: Mock title 3
                       reasonTag: 이사예정
                   mock4:
                     summary: Scenario 4
                     value:
-                      announcementId: 900004
+                      announcementId: 900001
+
                       title: Mock title 4
                       reasonTag: 이사예정
                   mock5:
                     summary: Scenario 5
                     value:
-                      announcementId: 900005
+                      announcementId: 900001
+
                       title: Mock title 5
                       reasonTag: 이사예정
                       
@@ -1717,7 +1722,7 @@ paths:
             type: integer
             format: int64
           description: 공고 PK
-          example: 12345
+          example: 900001
       responses:
         '200':
           description: OK
@@ -1739,7 +1744,7 @@ paths:
                     type: integer
                     format: int64
                     description: 공고 PK
-                    example: 12345
+                    example: 900001
 
                   publisher:
                     type: string
@@ -1797,33 +1802,39 @@ paths:
                     type: integer
                     nullable: true
                     description: 마감까지 남은 일수(endDate - today). OPEN/DUE_SOON에서 의미가 있습니다.
-                    example: 3
+                    example: 900001
+
 
                   rentGtn:
                     type: number
                     nullable: true
                     description: 최소임대보증금
-                    example: 5000000
+                    example: 900001
+
                   enty:
                     type: number
                     nullable: true
                     description: 최소_계약금
-                    example: 500000
+                    example: 900001
+
                   prtpay:
                     type: number
                     nullable: true
                     description: 최소_중도금
-                    example: 1000000
+                    example: 900001
+
                   surlus:
                     type: number
                     nullable: true
                     description: 최소_잔금
-                    example: 3500000
+                    example: 900001
+
                   mtRntchrg:
                     type: number
                     nullable: true
                     description: 최소월임대료
-                    example: 250000
+                    example: 900001
+
 
                   fullAdres:
                     type: string
@@ -1855,6 +1866,7 @@ paths:
                   summary: 예시
                   value:
                     announcementId: 900001
+
                     publisher: LH 한국토지주택공사
                     title: Mock title 1
                     housingType: 행복주택
@@ -1892,7 +1904,7 @@ paths:
             type: integer
             format: int64
           description: 공고 PK
-          example: 12345
+          example: 900001
 
       responses:
         "200":
@@ -1908,7 +1920,7 @@ paths:
                     type: integer
                     format: int64
                     description: 공고 PK
-                    example: 12345
+                    example: 900001
 
                   content:
                     type: string
@@ -1936,7 +1948,8 @@ paths:
                 overview_mock:
                   summary: 공고 개요 예시
                   value:
-                    announcementId: 12345
+                    announcementId: 900001
+
                     content: "공고 내용"
                     target: "만 19~34세 청년"
                     regions: ["강남구", "무슨구"]
@@ -1977,7 +1990,7 @@ paths:
             type: integer
             format: int64
           description: 공고 PK
-          example: 12345
+          example: 900001
 
       responses:
         "200":
@@ -1993,7 +2006,7 @@ paths:
                     type: integer
                     format: int64
                     description: 공고 PK
-                    example: 12345
+                    example: 900001
                   summary:
                     type: string
                     nullable: true
@@ -2006,13 +2019,15 @@ paths:
                 mock1:
                   summary: 요약 존재
                   value:
-                    announcementId: 12345
+                    announcementId: 900001
+
                     summary: "서울 강남/마포 대상 청년 임대주택 모집, LH 청약플러스 온라인 접수."
 
                 mock2:
                   summary: 요약 없음(null)
                   value:
-                    announcementId: 12345
+                    announcementId: 900001
+
                     summary: null
 
         "401":
@@ -2033,6 +2048,75 @@ paths:
             application/json:
               schema: { $ref: "#/components/schemas/ErrorResponse" }
 
+
+  /api/announcements/{announcementId}/outbounds:
+    post:
+      tags:
+        - announcements
+      summary: 공고 열람/외부이동(outbound) 기록
+      description: >
+        유저가 공고 상세를 열람했거나(또는 '신청하러가기' 등으로 외부 이동을 트리거한 경우 포함)
+        해당 공고에 대한 outbound(최근 열람 기록)를 기록합니다.
+        같은 공고를 여러 번 기록해도 서버는 최근 시각 기준으로 갱신(upsert)할 수 있습니다.
+        JWT는 HttpOnly 쿠키로 인증됩니다.
+      operationId: announcements_createOutbound
+      parameters:
+        - name: announcementId
+          in: path
+          required: true
+          description: 공고 PK
+          schema:
+            type: integer
+            format: int64
+            minimum: 1
+          example: 900001
+        - name: type
+          in: query
+          required: false
+          description: outbound 유형(미지정 시 VIEW)
+          schema:
+            type: string
+            enum: [VIEW, EXTERNAL_REDIRECT]
+            default: VIEW
+          example: VIEW
+      responses:
+        "204":
+          description: No Content
+        "400":
+          description: Validation Error
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+              examples:
+                invalidAnnouncementId:
+                  summary: invalidAnnouncementId
+                  value:
+                    code: VALIDATION_ERROR
+                    message: 요청 값이 올바르지 않습니다.
+                    status: 400
+                    details:
+                      field: announcementId
+                      reason: announcementId 값이 올바르지 않습니다.
+        "401":
+          description: Unauthorized
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+        "404":
+          description: Not Found
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+        "500":
+          description: Internal Server Error
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+
   /api/announcements/{announcementId}/detail/eligibility/check:
     put:
       tags:
@@ -2050,7 +2134,7 @@ paths:
             type: integer
             format: int64
           description: 공고 PK
-          example: 12345
+          example: 900001
 
       responses:
         "200":
@@ -2083,12 +2167,14 @@ paths:
                         type: integer
                         enum: [1, 2, 3]
                         description: 예상 순위 (지원 가능/진단 보류일 때 제공)
-                        example: 1
+                        example: 900001
+
                       predictedBonusPoints:
                         type: integer
                         minimum: 0
                         description: 예상 가산점 (지원 가능/진단 보류일 때 제공)
-                        example: 3
+                        example: 900001
+
                       trace:
                         type: array
                         description: >
@@ -2184,12 +2270,14 @@ paths:
                         type: integer
                         enum: [1, 2, 3]
                         description: 예상 순위 (지원 가능/진단 보류일 때 제공)
-                        example: 2
+                        example: 900001
+
                       predictedBonusPoints:
                         type: integer
                         minimum: 0
                         description: 예상 가산점 (지원 가능/진단 보류일 때 제공)
-                        example: 1
+                        example: 900001
+
                       needsAdditionalOnboarding:
                         type: boolean
                         enum: [true]
@@ -2384,7 +2472,8 @@ paths:
                         announcementId:
                           type: integer
                           format: int64
-                          example: 2005
+                          example: 900001
+
                         title:
                           type: string
                           example: "제1차 서울특별시 장기안심주택 입주자 모집"
@@ -2439,7 +2528,7 @@ paths:
                       documentWaitingCount: 5
                       finalWaitingCount: 2
                     data:
-                      - announcementId: 2005
+                      - announcementId: 900001
                         title: "제1차 서울특별시 장기안심주택 입주자 모집"
                         dDay: 1
                         publisher: "SH 서울주택도시공사"
@@ -2535,7 +2624,8 @@ paths:
                         announcementId:
                           type: integer
                           format: int64
-                          example: 1005
+                          example: 900001
+
                         title:
                           type: string
                           example: "2026년 상반기 청년 매입임대주택 예비입주자 모집"
@@ -2586,7 +2676,7 @@ paths:
                       documentWaitingCount: 5
                       finalWaitingCount: 2
                     data:
-                      - announcementId: 1005
+                      - announcementId: 900001
                         title: "2026년 상반기 청년 매입임대주택 예비입주자 모집"
                         dDay: 3
                         publisher: "LH 한국토지주택공사"
@@ -2682,7 +2772,8 @@ paths:
                         announcementId:
                           type: integer
                           format: int64
-                          example: 3005
+                          example: 900001
+
                         title:
                           type: string
                           example: "서울시 마포구 상암동 행복주택 최종 입주자 모집"
@@ -2733,7 +2824,7 @@ paths:
                       documentWaitingCount: 5
                       finalWaitingCount: 2
                     data:
-                      - announcementId: 3005
+                      - announcementId: 900001
                         title: "서울시 마포구 상암동 행복주택 최종 입주자 모집"
                         dDay: 2
                         publisher: "SH 서울주택도시공사"
@@ -2829,7 +2920,8 @@ paths:
                         announcementId:
                           type: integer
                           format: int64
-                          example: 4005
+                          example: 900001
+
                         title:
                           type: string
                           example: "2025년 하반기 청년 매입임대주택 모집 (서울)"
@@ -2880,7 +2972,7 @@ paths:
                       documentWaitingCount: 5
                       finalWaitingCount: 2
                     data:
-                      - announcementId: 4005
+                      - announcementId: 900001
                         title: "2025년 하반기 청년 매입임대주택 모집 (서울)"
                         dDay: 0
                         publisher: "LH 한국토지주택공사"
@@ -2921,7 +3013,8 @@ paths:
             type: integer
             format: int64
           description: 공고 PK
-          example: 2005
+          example: 900001
+
       responses:
         "200":
           description: OK
@@ -2936,7 +3029,8 @@ paths:
                     type: integer
                     format: int64
                     description: 공고 PK
-                    example: 2005
+                    example: 900001
+
 
                   applyUrl:
                     type: string
@@ -2967,7 +3061,8 @@ paths:
                               type: integer
                               format: int64
                               description: 문서 식별자
-                              example: 101
+                              example: 900001
+
                             name:
                               type: string
                               description: 서류명
@@ -3001,7 +3096,8 @@ paths:
                               type: integer
                               format: int64
                               description: 문서 식별자
-                              example: 301
+                              example: 900001
+
                             name:
                               type: string
                               description: 서류명
@@ -3033,18 +3129,19 @@ paths:
                 ok:
                   summary: 준비 화면 조회 예시
                   value:
-                    announcementId: 2005
+                    announcementId: 900001
+
                     applyUrl: "https://example.com/apply/notice/2005"
                     apply:
                       date: "2026-01-15"
                       documents:
-                        - id: 101
+                        - id: 900001
                           name: "주민등록등본"
                           scope: "COMMON"
                     docResult:
                       date: "2026-02-01"
                       documents:
-                        - id: 301
+                        - id: 900001
                           name: "청약저축 순위확인서"
                           scope: "TARGET_ONLY"
                     finalResult:
@@ -3068,6 +3165,10 @@ paths:
             application/json:
               schema:
                 $ref: "#/components/schemas/ErrorResponse"
+
+
+  
+
 
   /api/additional-onboardings:
     get:
@@ -3177,24 +3278,24 @@ paths:
                         description: "청약통장은 어띠어띠해요"
                         question: "청약통장이 있으신가요?"
                         type: "boolean"
-                      - additionalOnboardingId: 900002
+                      - additionalOnboardingId: 900001
                         title: "온보딩 타이틀"
                         description: "설명"
                         question: "단일 선택 질문"
                         type: "select_single"
                         options: ["옵션A", "옵션B", "옵션C"]
-                      - additionalOnboardingId: 900003
+                      - additionalOnboardingId: 900001
                         title: "온보딩 타이틀"
                         description: "설명"
                         question: "복수 선택 질문"
                         type: "select_multi"
                         options: ["옵션A", "옵션B", "옵션C"]
-                      - additionalOnboardingId: 900004
+                      - additionalOnboardingId: 900001
                         title: "온보딩 타이틀"
                         description: "설명"
                         question: "텍스트를 입력해주세요"
                         type: "text_input"
-                      - additionalOnboardingId: 900005
+                      - additionalOnboardingId: 900001
                         title: "온보딩 타이틀"
                         description: "설명"
                         question: "숫자를 입력해주세요"
@@ -3324,19 +3425,19 @@ paths:
                       type: boolean
                       unknown: false
                       value: true
-                    - additionalOnboardingId: 900002
+                    - additionalOnboardingId: 900001
                       type: select_single
                       unknown: false
                       value: "옵션A"
-                    - additionalOnboardingId: 900003
+                    - additionalOnboardingId: 900001
                       type: select_multi
                       unknown: false
                       value: ["옵션A", "옵션B"]
-                    - additionalOnboardingId: 900004
+                    - additionalOnboardingId: 900001
                       type: text_input
                       unknown: false
                       value: "2020-03-01"
-                    - additionalOnboardingId: 900005
+                    - additionalOnboardingId: 900001
                       type: number_input
                       unknown: false
                       value: 12
@@ -3349,7 +3450,7 @@ paths:
                       type: boolean
                       unknown: true
                       value: null
-                    - additionalOnboardingId: 900003
+                    - additionalOnboardingId: 900001
                       type: select_multi
                       unknown: true
                       value: null
@@ -3805,7 +3906,7 @@ paths:
                         publishedAt: "2026-01-01"
                         publisher: "LH 한국토지주택공사"
                         status: "OPEN"
-                      - announcementId: 900000
+                      - announcementId: 900001
                         title: "Mock title 0"
                         housingType: "청년매입임대"
                         startDate: "2026-01-01"
@@ -3855,6 +3956,7 @@ paths:
                   summary: Scenario 1
                   value:
                     announcementId: 900001
+
         responses:
           '204':
             description: No Content
@@ -3913,6 +4015,7 @@ paths:
                 summary: Scenario 1
                 value:
                   announcementId: 900001
+
       responses:
         '204':
           description: No Content
@@ -4064,7 +4167,7 @@ paths:
                         publishedAt: "2026-01-01"
                         publisher: "LH 한국토지주택공사"
                         status: "OPEN"
-                      - announcementId: 900000
+                      - announcementId: 900001
                         title: "Mock title 0"
                         housingType: "청년매입임대"
                         startDate: "2026-01-01"
@@ -4086,67 +4189,7 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/ErrorResponse'
-    post:
-        tags:
-        - mypage
-        summary: 최근 열람 공고 기록
-        description: >
-          유저가 공고 상세를 열람했음을 기록합니다.
-          같은 공고를 여러 번 열람해도 서버는 최근 열람 시각 기준으로 갱신(upsert)할 수 있습니다.
-          JWT는 HttpOnly 쿠키로 인증됩니다.
-        operationId: mypage_createRecentView
-        requestBody:
-          required: true
-          content:
-            application/json:
-              schema:
-                type: object
-                additionalProperties: false
-                required: [announcementId]
-                properties:
-                  announcementId:
-                    type: integer
-                    format: int64
-                    description: 공고 PK
-                    example: 900001
-              examples:
-                mock1:
-                  summary: Scenario 1
-                  value:
-                    announcementId: 900001
-        responses:
-          '204':
-            description: No Content
-          '400':
-            description: Validation Error
-            content:
-              application/json:
-                schema:
-                  $ref: '#/components/schemas/ErrorResponse'
-                examples:
-                  mock1:
-                    summary: invalidAnnouncementId
-                    value:
-                      code: VALIDATION_ERROR
-                      message: 요청 값이 올바르지 않습니다.
-                      status: 400
-                      details:
-                        field: announcementId
-                        reason: announcementId 값이 올바르지 않습니다.
-          '401':
-            description: Unauthorized
-            content:
-              application/json:
-                schema:
-                  $ref: '#/components/schemas/ErrorResponse'
-          '500':
-            description: Internal Server Error
-            content:
-              application/json:
-                schema:
-                  $ref: '#/components/schemas/ErrorResponse'
- 
-
+   
   /api/mypage/notification-settings/kakao:
       get:
         tags:
@@ -4538,8 +4581,9 @@ paths:
         required: true
         description: 댓글을 조회할 공고 ID
         schema:
-          type: string
-          example: ann_LH_20251229_000123
+          type: integer
+          format: int64
+          example: 900001
       - name: page
         in: query
         required: false
@@ -4606,16 +4650,18 @@ paths:
                           type: integer
                           format: int64
                           description: 댓글 PK
-                          example: 101
+                          example: 900001
                         announcementId:
-                          type: string
+                          type: integer
+                          format: int64
                           description: 공고 ID
-                          example: ann_LH_20251229_000123
+                          example: 900001
                         parentId:
                           type: integer
                           format: int64
                           description: 부모 댓글 PK(없으면 0, 답변이면 질문 댓글 PK)
-                          example: 0
+                          example: 900001
+
                         kind:
                           type: string
                           description: 댓글 유형(질문/답변)
@@ -4689,9 +4735,11 @@ paths:
                   summary: Scenario 1
                   value:
                     items:
-                    - id: 800001
+                    - id: 900001
                       announcementId: 900001
-                      parentId: 800001
+
+                      parentId: 900001
+
                       kind: QUESTION
                       content: Mock content 내용 1
                       contentFilter: NONE
@@ -4702,9 +4750,11 @@ paths:
                       updatedAt: '2025-12-31T10:07:00+09:00'
                       author:
                         userId: '750001'
-                    - id: 800001
+                    - id: 900001
                       announcementId: 900001
-                      parentId: 800001
+
+                      parentId: 900001
+
                       kind: QUESTION
                       content: Mock content 내용 1
                       contentFilter: NONE
@@ -4726,9 +4776,11 @@ paths:
                   summary: Scenario 2
                   value:
                     items:
-                    - id: 800002
-                      announcementId: 900002
-                      parentId: 14
+                    - id: 900001
+                      announcementId: 900001
+
+                      parentId: 900001
+
                       kind: ANSWER
                       content: 'Mock content 내용 2
 
@@ -4754,9 +4806,11 @@ paths:
                       updatedAt: '2025-12-31T11:14:00+09:00'
                       author:
                         userId: 01JH6Z8R8V5K0Q9N7Z2F3M1T8A
-                    - id: 800002
-                      announcementId: 900002
-                      parentId: 14
+                    - id: 900001
+                      announcementId: 900001
+
+                      parentId: 900001
+
                       kind: ANSWER
                       content: 'Mock content 내용 2
 
@@ -4793,9 +4847,11 @@ paths:
                   summary: Scenario 3
                   value:
                     items:
-                    - id: 800003
-                      announcementId: 900003
-                      parentId: 21
+                    - id: 900001
+                      announcementId: 900001
+
+                      parentId: 900001
+
                       kind: QUESTION
                       content: Mock content 내용 3
                       contentFilter: SEXUAL
@@ -4806,9 +4862,11 @@ paths:
                       updatedAt: '2025-12-31T12:21:00+09:00'
                       author:
                         userId: 01JH6Z8R8V5K0Q9N7Z2F3M1T8A
-                    - id: 800003
-                      announcementId: 900003
-                      parentId: 21
+                    - id: 900001
+                      announcementId: 900001
+
+                      parentId: 900001
+
                       kind: QUESTION
                       content: Mock content 내용 3
                       contentFilter: SEXUAL
@@ -4830,9 +4888,11 @@ paths:
                   summary: Scenario 4
                   value:
                     items:
-                    - id: 800004
-                      announcementId: 900004
-                      parentId: 28
+                    - id: 900001
+                      announcementId: 900001
+
+                      parentId: 900001
+
                       kind: ANSWER
                       content: Mock content 내용 4
                       contentFilter: PERSONAL_INFO
@@ -4843,9 +4903,11 @@ paths:
                       updatedAt: '2025-12-31T13:28:00+09:00'
                       author:
                         userId: 01JH6Z8R8V5K0Q9N7Z2F3M1T8A
-                    - id: 800004
-                      announcementId: 900004
-                      parentId: 28
+                    - id: 900001
+                      announcementId: 900001
+
+                      parentId: 900001
+
                       kind: ANSWER
                       content: Mock content 내용 4
                       contentFilter: PERSONAL_INFO
@@ -4867,9 +4929,11 @@ paths:
                   summary: Scenario 5
                   value:
                     items:
-                    - id: 800005
-                      announcementId: 900005
-                      parentId: 35
+                    - id: 900001
+                      announcementId: 900001
+
+                      parentId: 900001
+
                       kind: QUESTION
                       content: Mock content 내용 5
                       contentFilter: SPAM
@@ -4882,9 +4946,11 @@ paths:
                         userId: 01JH6Z8R8V5K0Q9N7Z2F3M1T8A
                         nickname: null
                       deletedAt: null
-                    - id: 800005
-                      announcementId: 900005
-                      parentId: 35
+                    - id: 900001
+                      announcementId: 900001
+
+                      parentId: 900001
+
                       kind: QUESTION
                       content: Mock content 내용 5
                       contentFilter: SPAM
@@ -4929,8 +4995,9 @@ paths:
         required: true
         description: 댓글을 작성할 공고 ID
         schema:
-          type: string
-          example: ann_LH_20251229_000123
+          type: integer
+          format: int64
+          example: 900001
       requestBody:
         required: true
         content:
@@ -4946,7 +5013,8 @@ paths:
                   type: integer
                   format: int64
                   description: 부모 댓글 PK(질문은 0, 답변은 질문 댓글 PK)
-                  example: 0
+                  example: 900001
+
                 content:
                   type: string
                   description: 댓글 내용(서버 정책으로 길이/비속어/개인정보/스팸/성적표현 필터링 적용)
@@ -4966,28 +5034,34 @@ paths:
                     type: integer
                     format: int64
                     description: 생성된 댓글 PK
-                    example: 123
+                    example: 900001
+
               examples:
                 mock1:
                   summary: Scenario 1
                   value:
-                    id: 800001
+                    id: 900001
+
                 mock2:
                   summary: Scenario 2
                   value:
-                    id: 800002
+                    id: 900001
+
                 mock3:
                   summary: Scenario 3
                   value:
-                    id: 800003
+                    id: 900001
+
                 mock4:
                   summary: Scenario 4
                   value:
-                    id: 800004
+                    id: 900001
+
                 mock5:
                   summary: Scenario 5
                   value:
-                    id: 800005
+                    id: 900001
+
         '400':
           description: Bad Request
           content:
@@ -5022,7 +5096,7 @@ paths:
         schema:
           type: integer
           format: int64
-          example: 123
+          example: 900001
       requestBody:
         required: true
         content:
@@ -5053,7 +5127,7 @@ paths:
                     type: integer
                     format: int64
                     description: 댓글 PK
-                    example: 123
+                    example: 900001
                   updatedAt:
                     type: string
                     format: date-time
@@ -5063,27 +5137,32 @@ paths:
                 mock1:
                   summary: Scenario 1
                   value:
-                    id: 800001
+                    id: 900001
+
                     updatedAt: '2025-12-31T10:07:00+09:00'
                 mock2:
                   summary: Scenario 2
                   value:
-                    id: 800002
+                    id: 900001
+
                     updatedAt: '2025-12-31T11:14:00+09:00'
                 mock3:
                   summary: Scenario 3
                   value:
-                    id: 800003
+                    id: 900001
+
                     updatedAt: '2025-12-31T12:21:00+09:00'
                 mock4:
                   summary: Scenario 4
                   value:
-                    id: 800004
+                    id: 900001
+
                     updatedAt: '2025-12-31T13:28:00+09:00'
                 mock5:
                   summary: Scenario 5
                   value:
-                    id: 800005
+                    id: 900001
+
                     updatedAt: '2025-12-31T14:35:00+09:00'
         '403':
           description: Forbidden
@@ -5117,7 +5196,7 @@ paths:
         schema:
           type: integer
           format: int64
-          example: 123
+          example: 900001
       responses:
         '204':
           description: No Content
@@ -5155,7 +5234,7 @@ paths:
         schema:
           type: integer
           format: int64
-          example: 101
+          example: 900001
       responses:
         '204':
           description: No Content
@@ -5197,7 +5276,7 @@ paths:
         schema:
           type: integer
           format: int64
-          example: 101
+          example: 900001
       responses:
         '204':
           description: No Content
@@ -5235,7 +5314,7 @@ paths:
         schema:
           type: integer
           format: int64
-          example: 101
+          example: 900001
       requestBody:
         required: true
         content:
@@ -5279,7 +5358,7 @@ paths:
                     type: integer
                     format: int64
                     description: 신고 처리된 댓글 PK
-                    example: 101
+                    example: 900001
                   action:
                     type: string
                     description: 처리 결과
@@ -5397,7 +5476,7 @@ paths:
                           type: integer
                           format: int64
                           description: 공고 PK
-                          example: 12345
+                          example: 900001
                         publisher:
                           type: string
                           description: 공급 주체
@@ -5429,11 +5508,11 @@ paths:
                   summary: Scenario 2
                   value:
                     data:
-                    - announcementId: 900002
+                    - announcementId: 900001
                       publisher: SH
                       createdAt: '2025-12-31T11:14:00+09:00'
                       title: Mock title 2
-                    - announcementId: 900002
+                    - announcementId: 900001
                       publisher: SH
                       createdAt: '2025-12-31T11:14:00+09:00'
                       title: Mock title 2
@@ -5441,11 +5520,11 @@ paths:
                   summary: Scenario 3
                   value:
                     data:
-                    - announcementId: 900003
+                    - announcementId: 900001
                       publisher: LH
                       createdAt: '2025-12-31T12:21:00+09:00'
                       title: Mock title 3
-                    - announcementId: 900003
+                    - announcementId: 900001
                       publisher: LH
                       createdAt: '2025-12-31T12:21:00+09:00'
                       title: Mock title 3
@@ -5453,11 +5532,11 @@ paths:
                   summary: Scenario 4
                   value:
                     data:
-                    - announcementId: 900004
+                    - announcementId: 900001
                       publisher: SH
                       createdAt: '2025-12-31T13:28:00+09:00'
                       title: Mock title 4
-                    - announcementId: 900004
+                    - announcementId: 900001
                       publisher: SH
                       createdAt: '2025-12-31T13:28:00+09:00'
                       title: Mock title 4
@@ -5465,11 +5544,11 @@ paths:
                   summary: Scenario 5
                   value:
                     data:
-                    - announcementId: 900005
+                    - announcementId: 900001
                       publisher: LH
                       createdAt: '2025-12-31T14:35:00+09:00'
                       title: Mock title 5
-                    - announcementId: 900005
+                    - announcementId: 900001
                       publisher: LH
                       createdAt: '2025-12-31T14:35:00+09:00'
                       title: Mock title 5
@@ -5542,7 +5621,7 @@ paths:
                         publisher: "LH"
                         createdAt: "2025-12-31T10:07:00+09:00"
                         title: "Mock title 1"
-                      - announcementId: 900002
+                      - announcementId: 900001
                         publisher: "SH"
                         createdAt: "2025-12-30T09:10:00+09:00"
                         title: "Mock title 2"
@@ -5578,7 +5657,7 @@ paths:
         ✅ 응답에는 공고 기본정보 + kvDigest(KV 리스트)를 포함합니다.
         kvDigest의 value는 문자열만 허용합니다(중첩 object/배열 금지).
 
-        ⚠️ Publisher가 SH인 경우 **announcementId/publisher/title/url을 제외한 모든 필드가 null**일 수 있습니다. 예제 참고
+        ⚠️ Publisher가 SH인 경우 **announcementId/publisher/title/url/applyUrl을 제외한 모든 필드가 null**일 수 있습니다. 예제 참고
 
         인증은 HttpOnly 쿠키(JWT)로 처리됩니다.
       operationId: admin_getAnnouncementAiDigest
@@ -5588,7 +5667,7 @@ paths:
           required: true
           schema: { type: integer, format: int64 }
           description: 공고 PK
-          example: 12345
+          example: 900001
       responses:
         "200":
           description: OK
@@ -5602,6 +5681,7 @@ paths:
                   - publisher
                   - title
                   - url
+                  - applyUrl
                   - kvDigest
                 properties:
                   announcementId:
@@ -5680,21 +5760,25 @@ paths:
                     nullable: true
                     description: 최소임대보증금
                     example: 5000000
+
                   enty:
                     type: number
                     nullable: true
                     description: 최소_계약금
                     example: 500000
+
                   prtpay:
                     type: number
                     nullable: true
                     description: 최소_중도금
                     example: 1000000
+
                   surlus:
                     type: number
                     nullable: true
                     description: 최소_잔금
                     example: 3500000
+
                   mtRntchrg:
                     type: number
                     nullable: true
@@ -5719,6 +5803,14 @@ paths:
                     nullable: true
                     description: 모집공고 URL
                     example: https://example.com/1
+
+                  # ✅ 추가: 신청하러가기 URL
+                  applyUrl:
+                    type: string
+                    format: uri
+                    nullable: true
+                    description: 신청하러가기 URL
+                    example: https://apply.example.com/1
 
                   isScrapped:
                     type: boolean
@@ -5750,6 +5842,7 @@ paths:
                   summary: Scenario (LH, filled)
                   value:
                     announcementId: 900001
+
                     publisher: LH 한국토지주택공사
                     title: Mock title 1
                     housingType: 행복주택
@@ -5768,6 +5861,7 @@ paths:
                     fullAdres: 서울특별시 강남구 ...
                     refrnLegaldongNm: 역삼동
                     url: https://example.com/1
+                    applyUrl: https://apply.example.com/1
                     isScrapped: false
                     kvDigest:
                       - key: "청약 기간"
@@ -5778,7 +5872,8 @@ paths:
                 mock_nulls_sh:
                   summary: Scenario (SH, mostly null)
                   value:
-                    announcementId: 900002
+                    announcementId: 900001
+
                     publisher: SH 서울주택도시공사
                     title: "Mock title (SH)"
                     housingType: null
@@ -5797,17 +5892,400 @@ paths:
                     fullAdres: null
                     refrnLegaldongNm: null
                     url: https://example.com/1
+                    applyUrl: https://apply.example.com/1
                     isScrapped: null
                     kvDigest:
                       - key: "Mock key 1"
                         value: null
+
+        "401":
+          description: Unauthorized
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/ErrorResponse" }
+
+        "404":
+          description: Not Found (해당 공고의 AI 요약/추출 데이터가 없음)
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/ErrorResponse" }
+
+        "500":
+          description: Internal Server Error
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/ErrorResponse" }
+    
+
+    post:
+      tags: [admin]
+      summary: (어드민) 공고 입력 통합 저장 (지원자격/제출서류·일정/개요·요약 + 신청하러가기 URI)
+      description: >
+        어드민이 공고 입력을 **한 번의 요청으로 통합 저장**합니다.
+
+        - ✅ LH/SH 요청 필드 구조는 완전히 동일합니다.
+          - LH는 applyEntryUrl(신청하러가기 URI)만 입력하고,
+            나머지 최상위 수기 필드들은 **반드시 null**로 전송합니다.
+        - submission.dates 입력 규칙
+          - SH: applyStartDate/applyEndDate/documentPublishedAt/finalPublishedAt 4개 모두 입력
+          - LH: documentPublishedAt만 입력하고 applyStartDate/applyEndDate/finalPublishedAt은 **반드시 null**
+        - eligibility.answers 규칙
+          - 요청 바디에는 **옵셔널 필드를 포함한 모든 필드가 항상 포함**됩니다.
+          - type이 SELECT_* 계열이 아닌 경우 options는 반드시 null
+          - type이 SELECT_* 계열인 경우 options는 반드시 배열(빈 배열 금지)
+
+      operationId: admin_upsertAnnouncementDraft
+      parameters:
+        - name: announcementId
+          in: path
+          required: true
+          schema: { type: integer, format: int64 }
+          description: 공고 PK
+          example: 900001
+
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              additionalProperties: false
+              required:
+                - publisher
+                - housingType
+                - supplyType
+                - regionCode
+                - regionName
+                - applyUrl
+                - applyEntryUrl
+                - rentGtn
+                - enty
+                - prtpay
+                - surlus
+                - mtRntchrg
+                - eligibility
+                - submission
+                - overviewSummary
+              properties:
+                publisher:
+                  type: string
+                  enum: [LH, SH]
+                  description: 공고 기관
+                  example: SH
+
+                housingType:
+                  type: string
+                  nullable: true
+                  description: 주택 유형 (LH는 null)
+                  example: "아파트"
+                supplyType:
+                  type: string
+                  nullable: true
+                  description: 공급유형 (LH는 null)
+                  example: "공공임대"
+                regionCode:
+                  type: string
+                  nullable: true
+                  description: 지역 코드 (LH는 null)
+                  example: "11440"
+                regionName:
+                  type: string
+                  nullable: true
+                  description: 시군구명 (LH는 null)
+                  example: "서울특별시 마포구"
+
+                applyUrl:
+                  type: string
+                  format: uri
+                  nullable: true
+                  maxLength: 1000
+                  description: 공고 원문 URL (LH는 null)
+                  example: "https://www.i-sh.co.kr/apply/notice/12345"
+
+                # ✅ 네가 추가하라고 한 "신청하러가기" URI (최상위)
+                applyEntryUrl:
+                  type: string
+                  format: uri
+                  nullable: true
+                  maxLength: 1000
+                  description: 신청하러가기 URI (LH/SH 공통, LH는 이 값만 입력)
+                  example: "https://apply.lh.or.kr/"
+
+                rentGtn:
+                  type: integer
+                  format: int64
+                  nullable: true
+                  minimum: 0
+                  description: 임대보증금(최소) (LH는 null)
+                  example: 10000000
+                enty:
+                  type: integer
+                  format: int64
+                  nullable: true
+                  minimum: 0
+                  description: 계약금(최소) (LH는 null)
+                  example: 1000000
+                prtpay:
+                  type: integer
+                  format: int64
+                  nullable: true
+                  minimum: 0
+                  description: 중도금(최소) (LH는 null)
+                  example: 3000000
+                surlus:
+                  type: integer
+                  format: int64
+                  nullable: true
+                  minimum: 0
+                  description: 잔금(최소) (LH는 null)
+                  example: 6000000
+                mtRntchrg:
+                  type: integer
+                  format: int64
+                  nullable: true
+                  minimum: 0
+                  description: 월임대료(최소) (LH는 null)
+                  example: 250000
+
+                eligibility:
+                  type: object
+                  additionalProperties: false
+                  required: [answers]
+                  properties:
+                    answers:
+                      type: array
+                      minItems: 1
+                      items:
+                        type: object
+                        additionalProperties: false
+                        required: [additionalOnboardingId, type, unknown, value, options]
+                        properties:
+                          additionalOnboardingId:
+                            type: integer
+                            format: int64
+                            description: 추가 온보딩 질문 PK
+                            example: 900001
+                          type:
+                            type: string
+                            enum: [BOOLEAN, TEXT_INPUT, NUMBER_INPUT, SELECT_SINGLE, SELECT_MULTI]
+                            description: UI 블록 타입
+                            example: SELECT_SINGLE
+                          unknown:
+                            type: boolean
+                            description: 모름/미응답 여부 (true면 value는 null 허용)
+                            example: false
+                          value:
+                            nullable: true
+                            description: >
+                              답변 값. unknown=true이면 null 허용.
+                              type별 기대 타입:
+                              - BOOLEAN: boolean
+                              - TEXT_INPUT/SELECT_SINGLE: string
+                              - NUMBER_INPUT: number
+                              - SELECT_MULTI: string[]
+                            oneOf:
+                              - type: boolean
+                              - type: string
+                              - type: number
+                              - type: array
+                                items: { type: string }
+                            example: "신혼부부"
+                          options:
+                            nullable: true
+                            description: >
+                              선택지 배열(항상 포함).
+                              - type이 SELECT_SINGLE/SELECT_MULTI인 경우: 배열 필수(빈 배열 금지)
+                              - 그 외 type인 경우: 반드시 null
+                            oneOf:
+                              - type: array
+                                minItems: 1
+                                items: { type: string }
+                            example: ["신혼부부", "생애최초", "청년"]
+
+                submission:
+                  type: object
+                  additionalProperties: false
+                  required: [dates, documents]
+                  properties:
+                    dates:
+                      type: object
+                      additionalProperties: false
+                      required: [applyStartDate, applyEndDate, documentPublishedAt, finalPublishedAt]
+                      properties:
+                        applyStartDate:
+                          type: string
+                          format: date
+                          nullable: true
+                          description: 신청 시작일 (SH 입력, LH 반드시 null)
+                          example: "2026-01-13"
+                        applyEndDate:
+                          type: string
+                          format: date
+                          nullable: true
+                          description: 신청 마감일 (SH 입력, LH 반드시 null)
+                          example: "2026-01-15"
+                        documentPublishedAt:
+                          type: string
+                          format: date
+                          nullable: true
+                          description: 서류 발표일 (SH/LH 공통. LH는 이 값만 입력)
+                          example: "2026-02-01"
+                        finalPublishedAt:
+                          type: string
+                          format: date
+                          nullable: true
+                          description: 최종 발표일 (SH 입력, LH 반드시 null)
+                          example: "2026-02-15"
+                    documents:
+                      type: array
+                      minItems: 1
+                      items:
+                        type: object
+                        additionalProperties: false
+                        required: [name, type]
+                        properties:
+                          name:
+                            type: string
+                            minLength: 1
+                            description: 서류명
+                            example: "주민등록등본"
+                          type:
+                            type: string
+                            enum: [COMMON, TARGET_ONLY]
+                            description: 서류 타입
+                            example: "COMMON"
+
+                overviewSummary:
+                  type: object
+                  additionalProperties: false
+                  required: [overview, summary]
+                  properties:
+                    overview:
+                      type: object
+                      additionalProperties: false
+                      required: [content, target, regions, applyMethod]
+                      properties:
+                        content:
+                          type: string
+                          description: 공고 내용(개요)
+                          example: "공고 내용"
+                        target:
+                          type: string
+                          description: 대상
+                          example: "만 19~34세 청년"
+                        regions:
+                          type: array
+                          items: { type: string }
+                          example: ["강남구", "마포구"]
+                        applyMethod:
+                          type: string
+                          description: 접수 방법
+                          example: "온라인 접수"
+                    summary:
+                      type: string
+                      nullable: true
+                      description: 공고 요약 단일 문장(어드민 수기). 요약이 없으면 null 저장 가능.
+                      example: "서울 강남/마포 대상 청년 임대주택 모집, 온라인 접수."
+
+            examples:
+              sh_upsert:
+                summary: SH 통합 저장
+                value:
+                  publisher: SH
+                  housingType: "아파트"
+                  supplyType: "공공임대"
+                  regionCode: "11440"
+                  regionName: "서울특별시 마포구"
+                  applyUrl: "https://www.i-sh.co.kr/apply/notice/12345"
+                  applyEntryUrl: "https://www.i-sh.co.kr/apply/notice/12345"
+                  rentGtn: 10000000
+                  enty: 1000000
+                  prtpay: 3000000
+                  surlus: 6000000
+                  mtRntchrg: 250000
+                  eligibility:
+                    answers:
+                      - additionalOnboardingId: 900001
+                        type: SELECT_SINGLE
+                        unknown: false
+                        value: "신혼부부"
+                        options: ["신혼부부", "생애최초", "청년"]
+                  submission:
+                    dates:
+                      applyStartDate: "2026-01-13"
+                      applyEndDate: "2026-01-15"
+                      documentPublishedAt: "2026-02-01"
+                      finalPublishedAt: "2026-02-15"
+                    documents:
+                      - name: "주민등록등본"
+                        type: "COMMON"
+                  overviewSummary:
+                    overview:
+                      content: "공고 내용"
+                      target: "만 19~34세 청년"
+                      regions: ["마포구", "강남구"]
+                      applyMethod: "SH 온라인 접수"
+                    summary: "서울 강남/마포 대상 청년 임대주택 모집, SH 온라인 접수."
+
+              lh_upsert:
+                summary: LH 통합 저장 (applyEntryUrl만 입력, 나머지는 null)
+                value:
+                  publisher: LH
+                  housingType: null
+                  supplyType: null
+                  regionCode: null
+                  regionName: null
+                  applyUrl: null
+                  applyEntryUrl: "https://apply.lh.or.kr/"
+                  rentGtn: null
+                  enty: null
+                  prtpay: null
+                  surlus: null
+                  mtRntchrg: null
+                  eligibility:
+                    answers:
+                      - additionalOnboardingId: 900001
+                        type: BOOLEAN
+                        unknown: false
+                        value: true
+                        options: null
+                  submission:
+                    dates:
+                      applyStartDate: null
+                      applyEndDate: null
+                      documentPublishedAt: "2026-02-01"
+                      finalPublishedAt: null
+                    documents:
+                      - name: "소득금액증명원"
+                        type: "COMMON"
+                  overviewSummary:
+                    overview:
+                      content: "공고 내용"
+                      target: "만 19~34세 청년"
+                      regions: ["강남구", "마포구"]
+                      applyMethod: "LH 온라인 접수"
+                    summary: "서울 강남/마포 대상 청년 임대주택 모집, LH 온라인 접수."
+
+      responses:
+        "204":
+          description: No Content (저장 완료)
+        "400":
+          description: Validation Error
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/ErrorResponse" }
         "401":
           description: Unauthorized
           content:
             application/json:
               schema: { $ref: "#/components/schemas/ErrorResponse" }
         "404":
-          description: Not Found (해당 공고의 AI 요약/추출 데이터가 없음)
+          description: Not Found
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/ErrorResponse" }
+        "409":
+          description: Conflict (publisher 불일치 / 상태 충돌 / 규칙 위반 등)
           content:
             application/json:
               schema: { $ref: "#/components/schemas/ErrorResponse" }
@@ -5816,10 +6294,6 @@ paths:
           content:
             application/json:
               schema: { $ref: "#/components/schemas/ErrorResponse" }
- 
-  
-
-
 
 
   /api/admin/announcements/{announcementId}/sh:
@@ -5836,7 +6310,7 @@ paths:
           in: path
           required: true
           schema: { type: integer, format: int64 }
-          example: 12345
+          example: 900001
 
       requestBody:
         required: true
@@ -5888,35 +6362,40 @@ paths:
                   nullable: true
                   minimum: 0
                   description: 임대보증금(최소)
-                  example: 10000000
+                  example: 900001
+
                 enty:
                   type: integer
                   format: int64
                   nullable: true
                   minimum: 0
                   description: 계약금(최소)
-                  example: 1000000
+                  example: 900001
+
                 prtpay:
                   type: integer
                   format: int64
                   nullable: true
                   minimum: 0
                   description: 중도금(최소)
-                  example: 3000000
+                  example: 900001
+
                 surlus:
                   type: integer
                   format: int64
                   nullable: true
                   minimum: 0
                   description: 잔금(최소)
-                  example: 6000000
+                  example: 900001
+
                 mtRntchrg:
                   type: integer
                   format: int64
                   nullable: true
                   minimum: 0
                   description: 월임대료(최소)
-                  example: 250000
+                  example: 900001
+
 
             examples:
               manual_fields:
@@ -5969,6 +6448,8 @@ paths:
               schema: { $ref: "#/components/schemas/ErrorResponse" }
 
    
+
+
   /api/admin/announcements/{announcementId}/eligibility:
     post:
       tags: [admin]
@@ -5998,7 +6479,7 @@ paths:
             type: integer
             format: int64
           description: 공고 PK
-          example: 12345
+          example: 900001
       requestBody:
         required: true
         content:
@@ -6020,7 +6501,8 @@ paths:
                         type: integer
                         format: int64
                         description: 추가 온보딩 질문 PK
-                        example: 10
+                        example: 900001
+
 
                       type:
                         type: string
@@ -6074,22 +6556,22 @@ paths:
                 summary: 예시(SELECT_SINGLE은 options 배열, BOOLEAN은 options=null)
                 value:
                   answers:
-                    - additionalOnboardingId: 101
+                    - additionalOnboardingId: 900001
                       type: SELECT_SINGLE
                       unknown: false
                       value: "신혼부부"
                       options: ["신혼부부", "생애최초", "청년"]
-                    - additionalOnboardingId: 102
+                    - additionalOnboardingId: 900001
                       type: BOOLEAN
                       unknown: false
                       value: true
                       options: null
-                    - additionalOnboardingId: 103
+                    - additionalOnboardingId: 900001
                       type: NUMBER_INPUT
                       unknown: true
                       value: null
                       options: null
-                    - additionalOnboardingId: 104
+                    - additionalOnboardingId: 900001
                       type: SELECT_MULTI
                       unknown: false
                       value: ["서울", "경기"]
@@ -6156,7 +6638,7 @@ paths:
             type: integer
             format: int64
           description: 공고 PK
-          example: 1234567890
+          example: 900001
 
       requestBody:
         required: true
@@ -6173,7 +6655,7 @@ paths:
                       type: integer
                       format: int64
                       description: 공고 PK (path와 동일)
-                      example: 1234567890
+                      example: 900001
 
                     dates:
                       type: object
@@ -6230,7 +6712,7 @@ paths:
                       type: integer
                       format: int64
                       description: 공고 PK (path와 동일)
-                      example: 1234567890
+                      example: 900001
 
                     dates:
                       type: object
@@ -6283,7 +6765,8 @@ paths:
               shCreate:
                 summary: SH 등록
                 value:
-                  announcementId: 1234567890
+                  announcementId: 900001
+
                   dates:
                     applyStartDate: "2026-01-13"
                     applyEndDate: "2026-01-13"
@@ -6298,7 +6781,8 @@ paths:
               lhCreate:
                 summary: LH 등록 (documentPublishedAt만 입력)
                 value:
-                  announcementId: 1234567890
+                  announcementId: 900001
+
                   dates:
                     applyStartDate: null
                     applyEndDate: null
@@ -6323,7 +6807,7 @@ paths:
                   announcementId:
                     type: integer
                     format: int64
-                    example: 1234567890
+                    example: 900001
 
         "400":
           description: Bad Request (요청 검증 실패)
@@ -6373,7 +6857,7 @@ paths:
             required: true
             schema: { type: integer, format: int64 }
             description: 공고 PK
-            example: 12345
+            example: 900001
 
         requestBody:
           required: true
@@ -6471,7 +6955,7 @@ paths:
           required: true
           schema: { type: integer, format: int64 }
           description: 공고 PK
-          example: 12345
+          example: 900001
 
       responses:
         "204":
@@ -6615,7 +7099,8 @@ paths:
                               type: integer
                               format: int64
                               description: 추가 온보딩 PK
-                              example: 900004
+                              example: 900001
+
                             title:
                               type: string
                               description: 추가 온보딩 제목
@@ -6646,7 +7131,8 @@ paths:
                               type: integer
                               format: int64
                               description: 추가 온보딩 PK
-                              example: 900005
+                              example: 900001
+
                             title:
                               type: string
                               description: 추가 온보딩 제목
@@ -6677,7 +7163,8 @@ paths:
                               type: integer
                               format: int64
                               description: 추가 온보딩 PK
-                              example: 900002
+                              example: 900001
+
                             title:
                               type: string
                               description: 추가 온보딩 제목
@@ -6708,7 +7195,8 @@ paths:
                               type: integer
                               format: int64
                               description: 추가 온보딩 PK
-                              example: 900003
+                              example: 900001
+
                             title:
                               type: string
                               description: 추가 온보딩 제목
@@ -6743,28 +7231,28 @@ paths:
                         type: "boolean"
                         required: true
 
-                      - additionalOnboardingId: 900002
+                      - additionalOnboardingId: 900001
                         title: "온보딩 타이틀"
                         description: "온보딩 카테고리에 대한 설명이 들어가요"
                         question: "단일 선택 질문"
                         type: "select_single"
                         required: true
 
-                      - additionalOnboardingId: 900003
+                      - additionalOnboardingId: 900001
                         title: "온보딩 타이틀"
                         description: "온보딩 카테고리에 대한 설명이 들어가요"
                         question: "복수 선택 질문"
                         type: "select_multi"
                         required: false
 
-                      - additionalOnboardingId: 900004
+                      - additionalOnboardingId: 900001
                         title: "온보딩 타이틀"
                         description: "온보딩 카테고리에 대한 설명이 들어가요"
                         question: "텍스트를 입력해주세요"
                         type: "text_input"
                         required: false
 
-                      - additionalOnboardingId: 900005
+                      - additionalOnboardingId: 900001
                         title: "온보딩 타이틀"
                         description: "온보딩 카테고리에 대한 설명이 들어가요"
                         question: "숫자를 입력해주세요"
@@ -7066,7 +7554,8 @@ paths:
                       totalElements:
                         type: integer
                         minimum: 0
-                        example: 17
+                        example: 900001
+
                         description: 전체 항목 수
               examples:
                 mock1:
