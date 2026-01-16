@@ -2903,6 +2903,7 @@ paths:
             application/json:
               schema: { $ref: "#/components/schemas/ErrorResponse" }
 
+
   /api/announcements/application-manage/{announcementId}/detail:
     get:
       tags: [announcements-management]
@@ -2910,10 +2911,7 @@ paths:
       description: >
         특정 공고(announcementId)에 대한 신청 관리 "준비" 화면 데이터를 조회합니다.
 
-        - steps는 단계 진행 순서(stepOrder) 기준으로 반환합니다.
-        - isCurrentStep=true 인 step은 최대 1개를 권장합니다(서버 정책).
-        - step별 날짜 필드는 step 종류에 따라 일부만 채워질 수 있습니다.
-        - sections는 "필요 서류/추가 서류/유의 사항" 등 화면 구성을 위한 블록입니다.
+       
       operationId: announcements_getApplicationManagePreparation
       parameters:
         - name: announcementId
@@ -2924,7 +2922,6 @@ paths:
             format: int64
           description: 공고 PK
           example: 2005
-
       responses:
         "200":
           description: OK
@@ -2933,188 +2930,126 @@ paths:
               schema:
                 type: object
                 additionalProperties: false
-                required: [status, data]
+                required: [announcementId, applyUrl, apply, docResult, finalResult]
                 properties:
-                  status:
-                    type: string
-                    enum: [SUCCESS]
-                    example: SUCCESS
+                  announcementId:
+                    type: integer
+                    format: int64
+                    description: 공고 PK
+                    example: 2005
 
-                  data:
+                  applyUrl:
+                    type: string
+                    format: uri
+                    description: 공고 지원하기 링크
+                    example: https://example.com/apply/notice/2005
+
+                  apply:
                     type: object
                     additionalProperties: false
-                    required: [announcementId, title, steps]
+                    required: [date, documents]
                     properties:
-                      announcementId:
-                        type: integer
-                        format: int64
-                        example: 2005
-
-                      title:
+                      date:
                         type: string
-                        description: 공고명(최대 2줄 노출용)
-                        example: "공고명은 두줄까지 공고명은 두줄까지 공고명은 두줄까지"
-
-                      steps:
+                        format: date
+                        nullable: true
+                        description: 공고 접수 마감일
+                        example: "2026-01-15"
+                      documents:
                         type: array
-                        minItems: 1
-                        description: 진행 단계 목록
+                        description: 공고 접수 단계 필요 서류
                         items:
                           type: object
                           additionalProperties: false
-                          required: [stepOrder, stepName, isCurrentStep, sections]
+                          required: [id, name, scope]
                           properties:
-                            stepOrder:
+                            id:
                               type: integer
-                              format: int32
-                              minimum: 1
-                              description: 단계 순서
-                              example: 1
-
-                            stepName:
+                              format: int64
+                              description: 문서 식별자
+                              example: 101
+                            name:
                               type: string
-                              description: 단계명
-                              example: "공고 접수"
-
-                            endDate:
+                              description: 서류명
+                              example: 주민등록등본
+                            scope:
                               type: string
-                              nullable: true
-                              description: 단계 종료일(표시용 문자열)
-                              example: "2000.00.00"
+                              enum: [COMMON, TARGET_ONLY]
+                              description: 서류 범위
+                              example: COMMON
 
-                            documentPublishedAt:
+                  docResult:
+                    type: object
+                    additionalProperties: false
+                    required: [date, documents]
+                    properties:
+                      date:
+                        type: string
+                        format: date
+                        nullable: true
+                        description: 서류대상자 발표일
+                        example: "2026-02-01"
+                      documents:
+                        type: array
+                        description: 서류대상자 발표 단계 필요 서류
+                        items:
+                          type: object
+                          additionalProperties: false
+                          required: [id, name, scope]
+                          properties:
+                            id:
+                              type: integer
+                              format: int64
+                              description: 문서 식별자
+                              example: 301
+                            name:
                               type: string
-                              nullable: true
-                              description: 서류대상자 발표일(표시용 문자열)
-                              example: "2000.00.00"
-
-                            finalPublishedAt:
+                              description: 서류명
+                              example: 청약저축 순위확인서
+                            scope:
                               type: string
-                              nullable: true
-                              description: 당첨자 발표일(표시용 문자열)
-                              example: "2000.00.00"
+                              enum: [COMMON, TARGET_ONLY]
+                              description: 서류 범위
+                              example: TARGET_ONLY
 
-                            dDayText:
-                              type: string
-                              nullable: true
-                              description: D-Day 텍스트(예 D-3, D-0, D+2)
-                              example: "D-0"
-
-                            isCurrentStep:
-                              type: boolean
-                              description: 현재 진행 단계 여부
-                              example: true
-
-                            sections:
-                              type: array
-                              minItems: 1
-                              description: 단계 내 섹션(블록) 목록
-                              items:
-                                type: object
-                                additionalProperties: false
-                                required: [sectionTitle]
-                                properties:
-                                  sectionTitle:
-                                    type: string
-                                    description: 섹션 제목(예 필요 서류/추가 서류/유의 사항)
-                                    example: "필요 서류"
-
-                                  documents:
-                                    type: array
-                                    nullable: true
-                                    description: 서류 목록(섹션이 서류 섹션인 경우)
-                                    items:
-                                      type: object
-                                      additionalProperties: false
-                                      required: [documentId, name, type]
-                                      properties:
-                                        documentId:
-                                          type: integer
-                                          format: int64
-                                          description: 문서 식별자
-                                          example: 101
-                                        name:
-                                          type: string
-                                          description: 서류명
-                                          example: "주민등록등본"
-                                        type:
-                                          type: string
-                                          enum: [COMMON, TARGET_ONLY]
-                                          description: 서류 타입
-                                          example: COMMON
-
-                                  content:
-                                    type: string
-                                    nullable: true
-                                    description: 섹션 본문(마크다운/서식 문자열 가능)
-                                    example: "**만 19~39세 무주택 청년** 대상입니다..."
-
-                            buttonText:
-                              type: string
-                              nullable: true
-                              description: 단계 내 CTA 버튼 텍스트(있는 경우)
-                              example: "서류 제출하기"
+                  finalResult:
+                    type: object
+                    additionalProperties: false
+                    required: [date, summary]
+                    properties:
+                      date:
+                        type: string
+                        format: date
+                        nullable: true
+                        description: 당첨자 발표일
+                        example: "2026-02-15"
+                      summary:
+                        type: string
+                        nullable: true
+                        description: 최종 단계 요약(표시용 한 줄)
+                        example: "서울 강남/마포 대상 청년 임대주택 모집, LH 청약플러스 온라인 접수."
 
               examples:
                 ok:
                   summary: 준비 화면 조회 예시
                   value:
-                    status: "SUCCESS"
-                    data:
-                      announcementId: 2005
-                      title: "공고명은 두줄까지 공고명은 두줄까지 공고명은 두줄까지"
-                      steps:
-                        - stepOrder: 1
-                          stepName: "공고 접수"
-                          endDate: "2000.00.00"
-                          dDayText: "D-0"
-                          isCurrentStep: true
-                          sections:
-                            - sectionTitle: "필요 서류"
-                              documents:
-                                - documentId: 101
-                                  name: "주민등록등본"
-                                  type: "COMMON"
-                                - documentId: 102
-                                  name: "가족관계증명서"
-                                  type: "COMMON"
-                                - documentId: 103
-                                  name: "개인정보수집·이용 및 제3자 제공 동의서"
-                                  type: "COMMON"
-
-                        - stepOrder: 2
-                          stepName: "서류대상자 발표"
-                          documentPublishedAt: "2000.00.00"
-                          isCurrentStep: false
-                          sections:
-                            - sectionTitle: "필요 서류"
-                              documents:
-                                - documentId: 201
-                                  name: "건강보험 자격득실확인서"
-                                  type: "COMMON"
-                                - documentId: 202
-                                  name: "소득금액증명원"
-                                  type: "COMMON"
-                                - documentId: 203
-                                  name: "지방세 세목별 과세증명서"
-                                  type: "COMMON"
-                            - sectionTitle: "추가 서류"
-                              documents:
-                                - documentId: 301
-                                  name: "청약저축 순위확인서"
-                                  type: "TARGET_ONLY"
-                                - documentId: 302
-                                  name: "사회초년생/취업준비생 증빙 서류"
-                                  type: "TARGET_ONLY"
-                          buttonText: "서류 제출하기"
-
-                        - stepOrder: 3
-                          stepName: "당첨자 발표"
-                          finalPublishedAt: "2000.00.00"
-                          isCurrentStep: false
-                          sections:
-                            - sectionTitle: "유의 사항"
-                              content: "**만 19~39세 무주택 청년** 대상입니다. **소득 100% 이하, 자산 2.8억원 이하**면 신청 가능하며..."
+                    announcementId: 2005
+                    applyUrl: "https://example.com/apply/notice/2005"
+                    apply:
+                      date: "2026-01-15"
+                      documents:
+                        - id: 101
+                          name: "주민등록등본"
+                          scope: "COMMON"
+                    docResult:
+                      date: "2026-02-01"
+                      documents:
+                        - id: 301
+                          name: "청약저축 순위확인서"
+                          scope: "TARGET_ONLY"
+                    finalResult:
+                      date: "2026-02-15"
+                      summary: "서울 강남/마포 대상 청년 임대주택 모집, LH 청약플러스 온라인 접수."
         "401":
           description: Unauthorized
           content:
@@ -3133,7 +3068,6 @@ paths:
             application/json:
               schema:
                 $ref: "#/components/schemas/ErrorResponse"
-
 
   /api/additional-onboardings:
     get:
@@ -5072,6 +5006,7 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/ErrorResponse'
+
   /api/community/comments/{commentPk}:
     patch:
       tags:
@@ -5204,6 +5139,7 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/ErrorResponse'
+
   /api/community/comments/{commentPk}/like:
     post:
       tags:
@@ -5283,6 +5219,7 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/ErrorResponse'
+
   /api/community/comments/{commentPk}/report:
     post:
       tags:
@@ -5638,10 +5575,10 @@ paths:
         공고(announcementId)에 대해 AI가 PDF를 읽고 요약한 결과를 조회합니다.
         이 API는 정확성을 보장하지 않으며 참고용입니다.
 
-        응답은 "kvDigest" 형태의 **key/value 쌍 리스트**로 내려갑니다.
-        value는 문자열만 허용합니다(중첩 object/배열 금지).
+        ✅ 응답에는 공고 기본정보 + kvDigest(KV 리스트)를 포함합니다.
+        kvDigest의 value는 문자열만 허용합니다(중첩 object/배열 금지).
 
-        Publisher가 SH 경우 일부 필드가 null일 수 있습니다. 예제 참고
+        ⚠️ Publisher가 SH인 경우 **announcementId/publisher/title/url을 제외한 모든 필드가 null**일 수 있습니다. 예제 참고
 
         인증은 HttpOnly 쿠키(JWT)로 처리됩니다.
       operationId: admin_getAnnouncementAiDigest
@@ -5659,38 +5596,136 @@ paths:
             application/json:
               schema:
                 type: object
-                required: [provider, title, contentText, kvDigest]
+                additionalProperties: false
+                required:
+                  - announcementId
+                  - publisher
+                  - title
+                  - url
+                  - kvDigest
                 properties:
-                  provider:
-                    type: string
-                    enum: [LH, SH]
-                    description: 공고 기관(추출값)
-                    example: LH
-                  title:
-                    type: string
-                    description: 공고명(추출값)
-                    example: 청년매입임대주택 모집 공고
+                  announcementId:
+                    type: integer
+                    format: int64
+                    description: 공고 PK
+                    example: 900001
+
                   publisher:
                     type: string
                     nullable: true
-                    description: 발행처(추출값)
+                    description: 발행처(기관/지자체 등)
                     example: LH 한국토지주택공사
+
+                  title:
+                    type: string
+                    nullable: true
+                    description: 공고명
+                    example: Mock title 1
+
+                  housingType:
+                    type: string
+                    nullable: true
+                    description: 주택 유형(앱 뱃지/필터에 사용)
+                    example: 행복주택
+
+                  supplyType:
+                    type: string
+                    nullable: true
+                    description: 공급유형(예 임대주택 등)
+                    example: 임대주택
+
                   startDate:
                     type: string
                     format: date
                     nullable: true
-                    description: 공고 시작일(추출값, 없을 수 있음)
-                    example: "2025-12-01"
+                    description: 공고 시작일
+                    example: "2026-01-01"
+
                   endDate:
                     type: string
                     format: date
                     nullable: true
-                    description: 공고 마감일(추출값, 없을 수 있음)
+                    description: 공고 마감일
                     example: "2026-01-15"
-                  contentText:
+
+                  documentPublishedAt:
                     type: string
-                    description: 원문/가공 본문(추출값)
-                    example: 본 공고는 ... (중략)
+                    format: date
+                    nullable: true
+                    description: 서류발표일
+                    example: "2026-02-01"
+
+                  finalPublishedAt:
+                    type: string
+                    format: date
+                    nullable: true
+                    description: 최종 발표일(당첨자 발표일)
+                    example: "2026-02-15"
+
+                  status:
+                    type: string
+                    nullable: true
+                    description: 공고 접수 상태. startDate/endDate로 계산됩니다.
+                    enum: [OPEN, DUE_SOON, UPCOMING, CLOSED]
+                    example: OPEN
+
+                  dDay:
+                    type: integer
+                    nullable: true
+                    description: 마감까지 남은 일수(endDate - today). OPEN/DUE_SOON에서 의미가 있습니다.
+                    example: 7
+
+                  rentGtn:
+                    type: number
+                    nullable: true
+                    description: 최소임대보증금
+                    example: 5000000
+                  enty:
+                    type: number
+                    nullable: true
+                    description: 최소_계약금
+                    example: 500000
+                  prtpay:
+                    type: number
+                    nullable: true
+                    description: 최소_중도금
+                    example: 1000000
+                  surlus:
+                    type: number
+                    nullable: true
+                    description: 최소_잔금
+                    example: 3500000
+                  mtRntchrg:
+                    type: number
+                    nullable: true
+                    description: 최소월임대료
+                    example: 250000
+
+                  fullAdres:
+                    type: string
+                    nullable: true
+                    description: 전체주소
+                    example: 서울특별시 강남구 ...
+
+                  refrnLegaldongNm:
+                    type: string
+                    nullable: true
+                    description: 참조_법정동명 (주소가 지번주소일 때 표시)
+                    example: 역삼동
+
+                  url:
+                    type: string
+                    format: uri
+                    nullable: true
+                    description: 모집공고 URL
+                    example: https://example.com/1
+
+                  isScrapped:
+                    type: boolean
+                    nullable: true
+                    description: 로그인 사용자 기준 찜 여부. 비로그인 시 null
+                    example: false
+
                   kvDigest:
                     type: array
                     description: >
@@ -5707,50 +5742,65 @@ paths:
                           example: 청약 기간
                         value:
                           type: string
-                          description: 항목 요약 텍스트
+                          nullable: true
+                          description: 항목 요약 텍스트 (추출 실패 시 null 가능)
                           example: 2년간 꾸준히 납입하면 우선순위
-                    example:
-                      - key: 청약 기간
-                        value: 2년간 꾸준히 납입하면 우선순위
-                      - key: 납입 인정 기준
-                        value: 월 10만원 이상 납입 시 인정
-                      - key: 유의사항
-                        value: 서류 미제출 시 자동 탈락
-                  originalUrl:
-                    type: string
-                    format: uri
-                    nullable: true
-                    description: 원문 링크(추출값)
-                    example: https://example.com/notice/123
               examples:
                 mock1:
-                  summary: Scenario 1
+                  summary: Scenario (LH, filled)
                   value:
-                    provider: LH
-                    title: Mock title 1
+                    announcementId: 900001
                     publisher: LH 한국토지주택공사
-                    startDate: "2025-12-01"
+                    title: Mock title 1
+                    housingType: 행복주택
+                    supplyType: 임대주택
+                    startDate: "2026-01-01"
                     endDate: "2026-01-15"
-                    contentText: "Mock content text 1"
+                    documentPublishedAt: "2026-02-01"
+                    finalPublishedAt: "2026-02-15"
+                    status: OPEN
+                    dDay: 7
+                    rentGtn: 5000000
+                    enty: 500000
+                    prtpay: 1000000
+                    surlus: 3500000
+                    mtRntchrg: 250000
+                    fullAdres: 서울특별시 강남구 ...
+                    refrnLegaldongNm: 역삼동
+                    url: https://example.com/1
+                    isScrapped: false
                     kvDigest:
                       - key: "청약 기간"
                         value: "2년간 꾸준히 납입하면 우선순위"
                       - key: "유의사항"
                         value: "서류 미제출 시 자동 탈락"
-                    originalUrl: "https://example.com/notice/900001"
+
                 mock_nulls_sh:
-                  summary: Scenario (SH, null fields)
+                  summary: Scenario (SH, mostly null)
                   value:
-                    provider: SH
+                    announcementId: 900002
+                    publisher: SH 서울주택도시공사
                     title: "Mock title (SH)"
-                    publisher: null
+                    housingType: null
+                    supplyType: null
                     startDate: null
                     endDate: null
-                    contentText: null
+                    documentPublishedAt: null
+                    finalPublishedAt: null
+                    status: null
+                    dDay: null
+                    rentGtn: null
+                    enty: null
+                    prtpay: null
+                    surlus: null
+                    mtRntchrg: null
+                    fullAdres: null
+                    refrnLegaldongNm: null
+                    url: https://example.com/1
+                    isScrapped: null
                     kvDigest:
                       - key: "Mock key 1"
                         value: null
-                    originalUrl: "https://example.com/notice/900001"
         "401":
           description: Unauthorized
           content:
@@ -5767,6 +5817,10 @@ paths:
             application/json:
               schema: { $ref: "#/components/schemas/ErrorResponse" }
  
+  
+
+
+
 
   /api/admin/announcements/{announcementId}/sh:
     post:
@@ -6305,7 +6359,7 @@ paths:
 
   /api/admin/announcements/{announcementId}/overview-summary:
       post:
-        tags: [admin, announcements]
+        tags: [admin]
         summary: (어드민) 공고 개요/요약 수기 저장
         description: >
           어드민이 공고의 개요(overview)와 요약(summary)을 수기로 저장합니다.
