@@ -716,45 +716,29 @@ paths:
   /api/announcements/search/closed:
     get:
       tags:
-      - announcements
+        - announcements
       summary: 전체 공고 목록 조회 (마감)
-      description: '전체 공고 목록(마감)입니다. 인증은 선택 사항입니다. 인증은 HttpOnly 쿠키(JWT)로 처리됩니다.
-
-        '
+      description: >
+        전체 공고 목록(마감)입니다. 인증은 선택 사항입니다. 인증은 HttpOnly 쿠키(JWT)로 처리됩니다.
+        정렬은 시간순(최신순)으로 고정됩니다.
       operationId: announcements_getAnnouncementsClosed
       parameters:
-      - name: cursor
-        in: query
-        required: false
-        schema:
-          type: string
-          nullable: true
-        description: 다음 페이지 조회를 위한 커서. 최초 조회 시 생략
-      - name: limit
-        in: query
-        required: false
-        schema:
-          type: integer
-          minimum: 1
-          maximum: 100
-          default: 20
-        description: 페이지 크기
-      - name: sort
-        in: query
-        required: false
-        schema:
-          type: string
-          enum:
-          - LATEST
-          - DEADLINE
-          default: DEADLINE
-        description: '정렬 기준
-
-          - LATEST: 최신순
-
-          - DEADLINE: 마감임박순(기본값)
-
-          '
+        - name: cursor
+          in: query
+          required: false
+          schema:
+            type: string
+            nullable: true
+          description: 다음 페이지 조회를 위한 커서. 최초 조회 시 생략
+        - name: limit
+          in: query
+          required: false
+          schema:
+            type: integer
+            minimum: 1
+            maximum: 100
+            default: 20
+          description: 페이지 크기
       responses:
         '200':
           description: OK
@@ -762,23 +746,14 @@ paths:
             application/json:
               schema:
                 type: object
-                required:
-                - data
-                - meta
+                required: [data, meta]
                 properties:
                   data:
                     type: array
-                    description: 공고 목록
+                    description: 공고 목록(시간순 정렬)
                     items:
                       type: object
-                      required:
-                      - announcementId
-                      - title
-                      - startDate
-                      - endDate
-                      - publishedAt
-                      - publisher
-                      - status
+                      required: [announcementId, title, startDate, endDate, publishedAt, publisher, status]
                       properties:
                         announcementId:
                           type: integer
@@ -815,18 +790,11 @@ paths:
                         status:
                           type: string
                           description: 공고 접수 상태(앱 뱃지에 사용)
-                          enum:
-                          - OPEN
-                          - DUE_SOON
-                          - UPCOMING
-                          - CLOSED
+                          enum: [OPEN, DUE_SOON, UPCOMING, CLOSED]
                           example: CLOSED
                   meta:
                     type: object
-                    required:
-                    - limit
-                    - hasNext
-                    - nextCursor
+                    required: [limit, hasNext, nextCursor]
                     properties:
                       limit:
                         type: integer
@@ -843,31 +811,6 @@ paths:
                         nullable: true
                         example: "cursor_abcdef"
                         description: 다음 페이지 조회를 위한 커서(없으면 null)
-              examples:
-                mock5:
-                  summary: Scenario 5
-                  value:
-                    data:
-                    - announcementId: 900001
-                      title: Mock title 5
-                      housingType: 안심주택
-                      startDate: '2026-01-05'
-                      endDate: '2026-01-05'
-                      publishedAt: '2026-01-05'
-                      publisher: LH 한국토지주택공사
-                      status: CLOSED
-                    - announcementId: 900001
-                      title: Mock title 5
-                      housingType: 안심주택
-                      startDate: '2026-01-05'
-                      endDate: '2026-01-05'
-                      publishedAt: '2026-01-05'
-                      publisher: LH 한국토지주택공사
-                      status: CLOSED
-                    meta:
-                      limit: 20
-                      hasNext: true
-                      nextCursor: "cursor_mock5"
         '500':
           description: Internal Server Error
           content:
@@ -879,45 +822,29 @@ paths:
   /api/announcements/search/announcement-pending:
     get:
       tags:
-      - announcements
+        - announcements
       summary: 전체 공고 목록 조회 (발표 대기)
-      description: '전체 공고 목록(발표 대기)입니다. 인증은 선택 사항입니다. 인증은 HttpOnly 쿠키(JWT)로 처리됩니다.
-
-        '
+      description: >
+        전체 공고 목록(발표 대기)입니다. 인증은 선택 사항입니다. 인증은 HttpOnly 쿠키(JWT)로 처리됩니다.
+        정렬은 시간순(최신순)으로 고정됩니다.
       operationId: announcements_getAnnouncementsAnnouncementPending
       parameters:
-      - name: cursor
-        in: query
-        required: false
-        schema:
-          type: string
-          nullable: true
-        description: 다음 페이지 조회를 위한 커서. 최초 조회 시 생략
-      - name: limit
-        in: query
-        required: false
-        schema:
-          type: integer
-          minimum: 1
-          maximum: 100
-          default: 20
-        description: 페이지 크기
-      - name: sort
-        in: query
-        required: false
-        schema:
-          type: string
-          enum:
-          - LATEST
-          - DEADLINE
-          default: DEADLINE
-        description: '정렬 기준
-
-          - LATEST: 최신순
-
-          - DEADLINE: 마감임박순(기본값)
-
-          '
+        - name: cursor
+          in: query
+          required: false
+          schema:
+            type: string
+            nullable: true
+          description: 다음 페이지 조회를 위한 커서. 최초 조회 시 생략
+        - name: limit
+          in: query
+          required: false
+          schema:
+            type: integer
+            minimum: 1
+            maximum: 100
+            default: 20
+          description: 페이지 크기
       responses:
         '200':
           description: OK
@@ -925,23 +852,14 @@ paths:
             application/json:
               schema:
                 type: object
-                required:
-                - data
-                - meta
+                required: [data, meta]
                 properties:
                   data:
                     type: array
-                    description: 공고 목록
+                    description: 공고 목록(시간순 정렬)
                     items:
                       type: object
-                      required:
-                      - announcementId
-                      - title
-                      - startDate
-                      - endDate
-                      - publishedAt
-                      - publisher
-                      - status
+                      required: [announcementId, title, startDate, endDate, publishedAt, publisher, status]
                       properties:
                         announcementId:
                           type: integer
@@ -978,18 +896,11 @@ paths:
                         status:
                           type: string
                           description: 공고 접수 상태(앱 뱃지에 사용)
-                          enum:
-                          - OPEN
-                          - DUE_SOON
-                          - UPCOMING
-                          - CLOSED
+                          enum: [OPEN, DUE_SOON, UPCOMING, CLOSED]
                           example: CLOSED
                   meta:
                     type: object
-                    required:
-                    - limit
-                    - hasNext
-                    - nextCursor
+                    required: [limit, hasNext, nextCursor]
                     properties:
                       limit:
                         type: integer
@@ -1006,31 +917,6 @@ paths:
                         nullable: true
                         example: "cursor_abcdef"
                         description: 다음 페이지 조회를 위한 커서(없으면 null)
-              examples:
-                mock4:
-                  summary: Scenario 4
-                  value:
-                    data:
-                    - announcementId: 900001
-                      title: Mock title 4
-                      housingType: 행복주택
-                      startDate: '2026-01-04'
-                      endDate: '2026-01-04'
-                      publishedAt: '2026-01-04'
-                      publisher: LH 한국토지주택공사
-                      status: CLOSED
-                    - announcementId: 900001
-                      title: Mock title 4
-                      housingType: 행복주택
-                      startDate: '2026-01-04'
-                      endDate: '2026-01-04'
-                      publishedAt: '2026-01-04'
-                      publisher: LH 한국토지주택공사
-                      status: CLOSED
-                    meta:
-                      limit: 20
-                      hasNext: true
-                      nextCursor: "cursor_mock4"
         '500':
           description: Internal Server Error
           content:
@@ -1479,53 +1365,49 @@ paths:
   /api/announcements/search/region:
     get:
       tags:
-      - announcements
+        - announcements
       summary: 공고 지역 검색
-      description: '온보딩 완료 사용자 전용 공고 검색(지역)입니다. 인증은 HttpOnly 쿠키(JWT)로 처리됩니다. userId는
-        ULID를 사용합니다. 비로그인(쿠키 없음/만료)이면 401, 온보딩 미완료면 403을 반환합니다.
-
-        '
+      description: >
+        온보딩 완료 사용자 전용 공고 검색(지역)입니다. 인증은 HttpOnly 쿠키(JWT)로 처리됩니다.
+        userId는 ULID를 사용합니다. 비로그인(쿠키 없음/만료)이면 401, 온보딩 미완료면 403을 반환합니다.
+        regionName은 시군구명(문자열)입니다. (예: "서울특별시 마포구")
       operationId: announcements_searchByRegion
       parameters:
-      - name: regionCode
-        in: query
-        required: true
-        schema:
-          type: string
-        description: 지역 코드(예 시/도 또는 시군구 코드 - 정책에 맞게 사용)
-        example: '11'
-      - name: cursor
-        in: query
-        required: false
-        schema:
-          type: string
-          nullable: true
-        description: 다음 페이지 조회를 위한 커서. 최초 조회 시 생략
-      - name: limit
-        in: query
-        required: false
-        schema:
-          type: integer
-          minimum: 1
-          maximum: 100
-          default: 20
-        description: 페이지 크기
-      - name: sort
-        in: query
-        required: false
-        schema:
-          type: string
-          enum:
-          - LATEST
-          - DEADLINE
-          default: DEADLINE
-        description: '정렬 기준
-
-          - LATEST: 최신순
-
-          - DEADLINE: 마감임박순(기본값)
-
-          '
+        - name: regionName
+          in: query
+          required: true
+          schema:
+            type: string
+            minLength: 1
+          description: 시군구명(문자열)
+          example: "서울특별시 마포구"
+        - name: cursor
+          in: query
+          required: false
+          schema:
+            type: string
+            nullable: true
+          description: 다음 페이지 조회를 위한 커서. 최초 조회 시 생략
+        - name: limit
+          in: query
+          required: false
+          schema:
+            type: integer
+            minimum: 1
+            maximum: 100
+            default: 20
+          description: 페이지 크기
+        - name: sort
+          in: query
+          required: false
+          schema:
+            type: string
+            enum: [LATEST, DEADLINE]
+            default: DEADLINE
+          description: |
+            정렬 기준
+            - LATEST: 최신순
+            - DEADLINE: 마감임박순(기본값)
       responses:
         '200':
           description: OK
@@ -1533,23 +1415,14 @@ paths:
             application/json:
               schema:
                 type: object
-                required:
-                - data
-                - meta
+                required: [data, meta]
                 properties:
                   data:
                     type: array
                     description: 공고 목록
                     items:
                       type: object
-                      required:
-                      - announcementId
-                      - title
-                      - startDate
-                      - endDate
-                      - publishedAt
-                      - publisher
-                      - status
+                      required: [announcementId, title, startDate, endDate, publishedAt, publisher, status]
                       properties:
                         announcementId:
                           type: integer
@@ -1568,17 +1441,17 @@ paths:
                           type: string
                           format: date
                           description: 공고 시작일
-                          example: '2025-12-01'
+                          example: "2025-12-01"
                         endDate:
                           type: string
                           format: date
                           description: 공고 마감일
-                          example: '2026-01-15'
+                          example: "2026-01-15"
                         publishedAt:
                           type: string
                           format: date
                           description: 발표일(게시일)
-                          example: '2025-12-30'
+                          example: "2025-12-30"
                         publisher:
                           type: string
                           description: 발행처(기관/지자체 등)
@@ -1586,18 +1459,11 @@ paths:
                         status:
                           type: string
                           description: 공고 접수 상태(앱 뱃지에 사용)
-                          enum:
-                          - OPEN
-                          - DUE_SOON
-                          - UPCOMING
-                          - CLOSED
+                          enum: [OPEN, DUE_SOON, UPCOMING, CLOSED]
                           example: DUE_SOON
                   meta:
                     type: object
-                    required:
-                    - limit
-                    - hasNext
-                    - nextCursor
+                    required: [limit, hasNext, nextCursor]
                     properties:
                       limit:
                         type: integer
@@ -2116,6 +1982,105 @@ paths:
             application/json:
               schema:
                 $ref: "#/components/schemas/ErrorResponse"
+
+
+  /api/announcements/{announcementId}/scrap:
+    post:
+      tags: [announcements]
+      summary: 공고 찜(스크랩) 추가
+      description: >
+        공고를 찜(스크랩) 목록에 추가합니다.
+        JWT는 HttpOnly 쿠키로 인증됩니다.
+      operationId: announcements_createScrap
+      parameters:
+        - name: announcementId
+          in: path
+          required: true
+          description: 공고 PK
+          schema:
+            type: integer
+            format: int64
+          example: 900001
+      responses:
+        '204':
+          description: No Content
+        '400':
+          description: Validation Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+              examples:
+                mock1:
+                  summary: invalidAnnouncementId
+                  value:
+                    code: VALIDATION_ERROR
+                    message: 요청 값이 올바르지 않습니다.
+                    status: 400
+                    details:
+                      field: announcementId
+                      reason: announcementId 값이 올바르지 않습니다.
+        '401':
+          description: Unauthorized
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '500':
+          description: Internal Server Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+
+    delete:
+      tags: [announcements]
+      summary: 공고 찜(스크랩) 해제
+      description: >
+        공고 찜(스크랩)을 해제합니다.
+        JWT는 HttpOnly 쿠키로 인증됩니다.
+      operationId: announcements_deleteScrap
+      parameters:
+        - name: announcementId
+          in: path
+          required: true
+          description: 공고 PK
+          schema:
+            type: integer
+            format: int64
+          example: 900001
+      responses:
+        '204':
+          description: No Content
+        '400':
+          description: Validation Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+              examples:
+                mock1:
+                  summary: invalidAnnouncementId
+                  value:
+                    code: VALIDATION_ERROR
+                    message: 요청 값이 올바르지 않습니다.
+                    status: 400
+                    details:
+                      field: announcementId
+                      reason: announcementId 값이 올바르지 않습니다.
+        '401':
+          description: Unauthorized
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '500':
+          description: Internal Server Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+
 
   /api/announcements/{announcementId}/detail/eligibility/check:
     put:
@@ -3482,28 +3447,22 @@ paths:
 
   /api/mypage/profile:
     get:
-      tags:
-      - mypage
-      summary: 맞춤 프로필 조회
-      operationId: mypage_getProfile
+      tags: [mypage]
+      summary: 프로필 기본정보 조회
+      description: >
+        사용자 프로필의 기본정보(이름/이메일)만 조회합니다.
+
+        추가 온보딩 -> 이름 정렬
+      operationId: mypage_getProfileBasic
       responses:
-        '200':
+        "200":
           description: OK
           content:
             application/json:
               schema:
                 type: object
-                required:
-                - name
-                - email
-                - gender
-                - birthDate
-                - regionSigungu
-                - isMarried
-                - isHomeless
-                - householdRole
-                - householdSize
-                - householdMonthlyIncome
+                additionalProperties: false
+                required: [name, email]
                 properties:
                   name:
                     type: string
@@ -3514,279 +3473,251 @@ paths:
                     format: email
                     description: 이메일
                     example: gildong@example.com
-                  gender:
-                    type: string
-                    description: 성별
-                    enum: [MALE, FEMALE, OTHER, UNKNOWN]
-                    example: MALE
-                  birthDate:
-                    type: string
-                    format: date
-                    description: 생년월일(YYYY-MM-DD). 연령 조건 판단에 사용됩니다.
-                    example: '1999-01-01'
-                  regionSigungu:
-                    type: string
-                    description: 거주지역(시군구)
-                    example: 서울특별시 마포구
-
-                  isMarried:
-                    type: boolean
-                    description: 결혼 여부(true=기혼, false=미혼)
-                    example: false
-
-                  isHomeless:
-                    type: boolean
-                    description: 무주택 여부(true=무주택, false=유주택)
-                    example: true
-
-                  householdRole:
-                    type: string
-                    description: 세대 내 역할(세대주/세대원)
-                    enum: [HOUSEHOLDER, MEMBER]
-                    example: HOUSEHOLDER
-
-                  householdSize:
-                    type: integer
-                    minimum: 1
-                    maximum: 100
-                    description: 가구원 수(1 이상)
-                    example: 1
-
-                  householdMonthlyIncome:
-                    type: integer
-                    minimum: 0
-                    description: 가구 총 월 수입(원)
-                    example: 4000000
               examples:
                 mock1:
                   summary: Scenario 1
                   value:
                     name: 홍길동
                     email: gildong@example.com
-                    gender: MALE
-                    birthDate: '1999-01-01'
-                    regionSigungu: 서울특별시 마포구
-                    isMarried: false
-                    isHomeless: true
-                    householdRole: HOUSEHOLDER
-                    householdSize: 1
-                    householdMonthlyIncome: 4000000
-        '401':
+        "401":
           description: Unauthorized
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/ErrorResponse'
+                $ref: "#/components/schemas/ErrorResponse"
 
+  /api/mypage/profile/detail:
+    get:
+      tags: [mypage]
+      summary: 맞춤 프로필 상세 조회
+      description: >
+        맞춤 추천/자격 판단에 필요한 프로필 상세정보를 조회합니다.
+
+        - 응답은 "필수 온보딩(requiredOnboardingAnswers)"과 "추가 온보딩(additionalOnboardingAnswers)" 2개 리스트로 구성됩니다.
+        - 두 리스트의 아이템 스키마는 동일합니다: { id, title, type, options, value }
+        - ✅ requiredOnboardingAnswers / additionalOnboardingAnswers 모두 id는 동일하게 additionalOnboardingId(int64) PK를 사용합니다.
+          (백엔드에서 "필수/추가"를 분기하여 각 리스트로 내려줍니다.)
+        - options 규칙
+          - type이 SELECT_SINGLE/SELECT_MULTI인 경우: 배열(빈 배열 금지)
+          - 그 외 type인 경우: 반드시 null
+        - value 타입 규칙
+          - BOOLEAN: boolean
+          - TEXT_INPUT: string
+          - NUMBER_INPUT: number
+          - SELECT_SINGLE: string
+          - SELECT_MULTI: string[]
+          - DATE: string(date)
+      operationId: mypage_getProfileDetail
+      responses:
+        "200":
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: object
+                additionalProperties: false
+                required: [requiredOnboardingAnswers, additionalOnboardingAnswers]
+                properties:
+                  requiredOnboardingAnswers:
+                    type: array
+                    description: 필수 온보딩(프로필 기본 항목) 응답 리스트
+                    items: &OnboardingAnswer
+                      type: object
+                      additionalProperties: false
+                      required: [id, title, type, options, value]
+                      properties:
+                        id:
+                          type: integer
+                          format: int64
+                          description: additionalOnboardingId (필수/추가 공통 PK)
+                          example: 900001
+                        title:
+                          type: string
+                          description: 화면 표시 제목(질문 title)
+                          example: 성별
+                        type:
+                          type: string
+                          description: value 타입
+                          enum: [BOOLEAN, TEXT_INPUT, NUMBER_INPUT, SELECT_SINGLE, SELECT_MULTI, DATE]
+                          example: SELECT_SINGLE
+                        options:
+                          nullable: true
+                          description: >
+                            선택지.
+                            - SELECT_SINGLE/SELECT_MULTI: 배열 필수(빈 배열 금지)
+                            - 그 외: 반드시 null
+                          oneOf:
+                            - type: array
+                              minItems: 1
+                              items: { type: string }
+                          example: ["MALE", "FEMALE", "OTHER", "UNKNOWN"]
+                        value:
+                          nullable: true
+                          description: >
+                            사용자 응답 값.
+                            - BOOLEAN: boolean
+                            - TEXT_INPUT: string
+                            - NUMBER_INPUT: number
+                            - SELECT_SINGLE: string
+                            - SELECT_MULTI: string[]
+                            - DATE: string(date)
+                          oneOf:
+                            - type: boolean
+                            - type: string
+                            - type: number
+                            - type: array
+                              items: { type: string }
+                          example: MALE
+
+                  additionalOnboardingAnswers:
+                    type: array
+                    description: 추가 온보딩(가변 질문) 응답 리스트
+                    items: *OnboardingAnswer
+
+              examples:
+                mock1:
+                  summary: Scenario 1
+                  value:
+                    requiredOnboardingAnswers:
+                      - id: 100001
+                        title: 성별
+                        type: SELECT_SINGLE
+                        options: ["MALE", "FEMALE", "OTHER", "UNKNOWN"]
+                        value: MALE
+
+                      - id: 100002
+                        title: 생년월일
+                        type: DATE
+                        options: null
+                        value: "1999-01-01"
+
+                      - id: 100003
+                        title: 거주지역(시군구)
+                        type: TEXT_INPUT
+                        options: null
+                        value: "서울특별시 마포구"
+
+                      - id: 100004
+                        title: 결혼 여부
+                        type: BOOLEAN
+                        options: null
+                        value: false
+
+                      - id: 100005
+                        title: 무주택 여부
+                        type: BOOLEAN
+                        options: null
+                        value: true
+
+                      - id: 100006
+                        title: 세대 내 역할
+                        type: SELECT_SINGLE
+                        options: ["HOUSEHOLDER", "MEMBER"]
+                        value: HOUSEHOLDER
+
+                      - id: 100007
+                        title: 가구원 수
+                        type: NUMBER_INPUT
+                        options: null
+                        value: 1
+
+                      - id: 100008
+                        title: 가구 총 월 수입(원)
+                        type: NUMBER_INPUT
+                        options: null
+                        value: 4000000
+
+                    additionalOnboardingAnswers:
+                      - id: 900001
+                        title: "청약통장 정보 입력해주세요"
+                        type: BOOLEAN
+                        options: null
+                        value: true
+
+                      - id: 900005
+                        title: "복수 선택 질문"
+                        type: SELECT_MULTI
+                        options: ["옵션A", "옵션B", "옵션C"]
+                        value: ["옵션A", "옵션C"]
+        "401":
+          description: Unauthorized
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+   
     put:
-      tags:
-      - mypage
-      summary: 맞춤 프로필 생성/전체 저장 (초기 온보딩 포함)
-      description: |
-        맞춤 프로필을 생성하거나 전체 필드를 덮어씁니다. 초기 온보딩 입력에도 사용됩니다.
-      operationId: mypage_putProfile
-      requestBody:
-        required: true
-        content:
-          application/json:
-            schema:
-              type: object
-              required:
-              - name
-              - email
-              - gender
-              - birthDate
-              - regionSigungu
-              - isMarried
-              - isHomeless
-              - householdRole
-              - householdSize
-              - householdMonthlyIncome
-              properties:
-                name:
-                  type: string
-                  maxLength: 10
-                  description: 사용자 이름(표시용)
-                  example: 홍길동
+          tags: [mypage]
+          summary: 맞춤 프로필 상세 전체 갱신(Upsert)
+          description: >
+            맞춤 추천/자격 판단에 필요한 프로필 상세정보(필수/추가 온보딩 응답)를 **전체 갱신**합니다.
 
-                email:
-                  type: string
-                  format: email
-                  description: 이메일
-                  example: gildong@example.com
-
-                gender:
-                  type: string
-                  description: 성별
-                  enum: [MALE, FEMALE, OTHER, UNKNOWN]
-                  example: MALE
-
-                birthDate:
-                  type: string
-                  format: date
-                  description: 생년월일(YYYY-MM-DD). 연령 조건 판단에 사용됩니다.
-                  example: '1999-01-01'
-
-                regionSigungu:
-                  type: string
-                  maxLength: 100
-                  description: 거주지역(시군구)
-                  example: 서울특별시 마포구
-
-                isMarried:
-                  type: boolean
-                  description: 결혼 여부(true=기혼, false=미혼)
-                  example: false
-
-                isHomeless:
-                  type: boolean
-                  description: 무주택 여부(true=무주택, false=유주택)
-                  example: true
-
-                householdRole:
-                  type: string
-                  description: 세대 내 역할(세대주/세대원)
-                  enum: [HOUSEHOLDER, MEMBER]
-                  example: HOUSEHOLDER
-
-                householdSize:
-                  type: integer
-                  minimum: 1
-                  maximum: 100
-                  description: 가구원 수(1 이상)
-                  example: 1
-
-                householdMonthlyIncome:
-                  type: integer
-                  minimum: 0
-                  description: 가구 총 월 수입(원)
-                  example: 4000000
-
-      responses:
-        '204':
-          description: No Content (저장 완료)
-
-        '400':
-          description: Validation Error (형식 오류 등)
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/ErrorResponse'
-              examples:
-                mock1:
-                  summary: invalidRegionSigungu
-                  value:
-                    code: VALIDATION_ERROR
-                    message: 요청 값이 올바르지 않습니다.
-                    status: 400
-                    details:
-                      field: regionSigungu
-                      reason: regionSigungu 값이 올바르지 않습니다.
-
-        '401':
-          description: Unauthorized
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/ErrorResponse'
-
-    patch:
-      tags:
-      - mypage
-      summary: 맞춤 프로필 부분 수정
-      description: |
-        전달된 필드만 수정됩니다. 포함되지 않은 필드는 변경되지 않습니다.
-      operationId: mypage_patchProfile
-      requestBody:
-        required: true
-        content:
-          application/json:
-            schema:
-              type: object
-              additionalProperties: false
-              properties:
-                name:
-                  type: string
-                  maxLength: 10
-                  example: 홍길동
-
-                email:
-                  type: string
-                  format: email
-                  example: gildong@example.com
-
-                gender:
-                  type: string
-                  enum: [MALE, FEMALE, OTHER, UNKNOWN]
-                  example: MALE
-
-                birthDate:
-                  type: string
-                  format: date
-                  description: 생년월일(YYYY-MM-DD). 연령 조건 판단에 사용됩니다.
-                  example: '1999-01-01'
-
-                regionSigungu:
-                  type: string
-                  maxLength: 100
-                  description: 거주지역(시군구)
-                  example: 서울특별시 마포구
-
-                isMarried:
-                  type: boolean
-                  description: 결혼 여부(true=기혼, false=미혼)
-                  example: false
-
-                isHomeless:
-                  type: boolean
-                  description: 무주택 여부(true=무주택, false=유주택)
-                  example: true
-
-                householdRole:
-                  type: string
-                  description: 세대 내 역할(세대주/세대원)
-                  enum: [HOUSEHOLDER, MEMBER]
-                  example: HOUSEHOLDER
-
-                householdSize:
-                  type: integer
-                  minimum: 1
-                  maximum: 100
-                  example: 1
-
-                householdMonthlyIncome:
-                  type: integer
-                  minimum: 0
-                  description: 가구 총 월 수입(원)
-                  example: 4000000
-
-      responses:
-        '204':
-          description: No Content (수정 완료)
-
-        '400':
-          description: Validation Error (형식 오류 등)
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/ErrorResponse'
-              examples:
-                mock1:
-                  summary: invalidRegionSigungu
-                  value:
-                    code: VALIDATION_ERROR
-                    message: 요청 값이 올바르지 않습니다.
-                    status: 400
-                    details:
-                      field: regionSigungu
-                      reason: regionSigungu 값이 올바르지 않습니다.
-
-        '401':
-          description: Unauthorized
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/ErrorResponse'
+            - 전달된 answers를 기준으로 사용자 응답을 upsert 합니다.
+            - unknown=true 인 경우 value는 null 허용(미응답/모름 처리)
+            - unknown=false 인 경우 value는 type에 맞는 타입이어야 합니다.
+          operationId: mypage_upsertProfileDetail
+          requestBody:
+            required: true
+            content:
+              application/json:
+                schema:
+                  type: object
+                  additionalProperties: false
+                  required: [answers]
+                  properties:
+                    answers:
+                      type: array
+                      minItems: 1
+                      items:
+                        type: object
+                        additionalProperties: false
+                        required: [additionalOnboardingId, type, unknown, value]
+                        properties:
+                          additionalOnboardingId:
+                            type: integer
+                            format: int64
+                            example: 900001
+                          type:
+                            type: string
+                            enum: [BOOLEAN, TEXT_INPUT, NUMBER_INPUT, SELECT_SINGLE, SELECT_MULTI, DATE]
+                            example: BOOLEAN
+                          unknown:
+                            type: boolean
+                            example: false
+                          value:
+                            nullable: true
+                            oneOf:
+                              - type: boolean
+                              - type: string
+                              - type: number
+                              - type: array
+                                items: { type: string }
+                            example: true
+                examples:
+                  single:
+                    summary: 단일 응답 갱신 예시
+                    value:
+                      answers:
+                        - additionalOnboardingId: 900001
+                          type: BOOLEAN
+                          unknown: false
+                          value: true
+          responses:
+            "204":
+              description: No Content
+            "400":
+              description: Bad Request
+              content:
+                application/json:
+                  schema:
+                    $ref: "#/components/schemas/ErrorResponse"
+            "401":
+              description: Unauthorized
+              content:
+                application/json:
+                  schema:
+                    $ref: "#/components/schemas/ErrorResponse"
+    
 
 
   /api/mypage/scraps:
