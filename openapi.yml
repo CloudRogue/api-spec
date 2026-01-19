@@ -3132,10 +3132,119 @@ paths:
                 $ref: "#/components/schemas/ErrorResponse"
 
 
-  
+  /api/required-onboardings:
+    get:
+      tags: [onboarding]
+      summary: 필수 온보딩 질문 목록 조회
+      description: >
+        필수 온보딩 질문 목록을 조회합니다.
+        필수 온보딩은 전체 목록을 반환합니다.
+        select 타입(select_single/select_multi)인 경우 options(선택지 목록)을 함께 반환합니다.
+        인증은 HttpOnly 쿠키(JWT)로 처리됩니다.
+      operationId: onboarding_getRequiredOnboardingList
+      responses:
+        "200":
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: object
+                additionalProperties: false
+                required: [data]
+                properties:
+                  data:
+                    type: array
+                    description: 필수 온보딩 질문 목록
+                    items:
+                      oneOf:
+                        - type: object
+                          additionalProperties: false
+                          required: [requiredOnboardingId, title, description, question, type]
+                          properties:
+                            requiredOnboardingId: { type: integer, format: int64, example: 100001 }
+                            title: { type: string, example: "필수 온보딩 타이틀" }
+                            description: { type: string, example: "설명" }
+                            question: { type: string, example: "질문" }
+                            type: { type: string, enum: [boolean], example: "boolean" }
+
+                        - type: object
+                          additionalProperties: false
+                          required: [requiredOnboardingId, title, description, question, type]
+                          properties:
+                            requiredOnboardingId: { type: integer, format: int64, example: 100002 }
+                            title: { type: string, example: "필수 온보딩 타이틀" }
+                            description: { type: string, example: "설명" }
+                            question: { type: string, example: "텍스트를 입력해주세요" }
+                            type: { type: string, enum: [text_input], example: "text_input" }
+
+                        - type: object
+                          additionalProperties: false
+                          required: [requiredOnboardingId, title, description, question, type]
+                          properties:
+                            requiredOnboardingId: { type: integer, format: int64, example: 100003 }
+                            title: { type: string, example: "필수 온보딩 타이틀" }
+                            description: { type: string, example: "설명" }
+                            question: { type: string, example: "숫자를 입력해주세요" }
+                            type: { type: string, enum: [number_input], example: "number_input" }
+
+                        - type: object
+                          additionalProperties: false
+                          required: [requiredOnboardingId, title, description, question, type, options]
+                          properties:
+                            requiredOnboardingId: { type: integer, format: int64, example: 100004 }
+                            title: { type: string, example: "필수 온보딩 타이틀" }
+                            description: { type: string, example: "설명" }
+                            question: { type: string, example: "단일 선택 질문" }
+                            type: { type: string, enum: [select_single], example: "select_single" }
+                            options:
+                              type: array
+                              minItems: 1
+                              items: { type: string }
+                              description: 선택 가능한 옵션 목록
+
+                        - type: object
+                          additionalProperties: false
+                          required: [requiredOnboardingId, title, description, question, type, options]
+                          properties:
+                            requiredOnboardingId: { type: integer, format: int64, example: 100005 }
+                            title: { type: string, example: "필수 온보딩 타이틀" }
+                            description: { type: string, example: "설명" }
+                            question: { type: string, example: "복수 선택 질문" }
+                            type: { type: string, enum: [select_multi], example: "select_multi" }
+                            options:
+                              type: array
+                              minItems: 1
+                              items: { type: string }
+                              description: 선택 가능한 옵션 목록
+              examples:
+                mock:
+                  summary: Scenario 1
+                  value:
+                    data:
+                      - requiredOnboardingId: 100001
+                        title: "필수 온보딩 타이틀"
+                        description: "설명"
+                        question: "필수 질문(예: 이름을 입력해주세요)"
+                        type: "text_input"
+                      - requiredOnboardingId: 100002
+                        title: "필수 온보딩 타이틀"
+                        description: "설명"
+                        question: "단일 선택 질문"
+                        type: "select_single"
+                        options: ["옵션A", "옵션B"]
+        "401":
+          description: Unauthorized
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/ErrorResponse" }
+        "500":
+          description: Internal Server Error
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/ErrorResponse" }
 
 
-  /api/additional-onboardings:
+  /api/onboardings:
     get:
       tags: [onboarding]
       summary: 추가 온보딩 질문(복수) 조회
@@ -3452,7 +3561,7 @@ paths:
       description: >
         사용자 프로필의 기본정보(이름/이메일)만 조회합니다.
 
-        추가 온보딩 -> 이름 정렬
+        필수 온보딩 완료 여부(onboardingCompleted)를 함께 반환합니다.
       operationId: mypage_getProfileBasic
       responses:
         "200":
@@ -3462,7 +3571,7 @@ paths:
               schema:
                 type: object
                 additionalProperties: false
-                required: [name, email]
+                required: [name, email, onboardingCompleted]
                 properties:
                   name:
                     type: string
@@ -3473,12 +3582,17 @@ paths:
                     format: email
                     description: 이메일
                     example: gildong@example.com
+                  onboardingCompleted:
+                    type: boolean
+                    description: 필수 온보딩 완료 여부
+                    example: true
               examples:
                 mock1:
                   summary: Scenario 1
                   value:
                     name: 홍길동
                     email: gildong@example.com
+                    onboardingCompleted: true
         "401":
           description: Unauthorized
           content:
