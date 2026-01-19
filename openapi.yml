@@ -3053,7 +3053,18 @@ paths:
               schema:
                 type: object
                 additionalProperties: false
-                required: [announcementId, applyUrl, apply, docResult, finalResult]
+                required:
+                  - announcementId
+                  - title
+                  - dDay
+                  - publisher
+                  - housingType
+                  - currentStatus
+                  - endDate
+                  - applyUrl
+                  - apply
+                  - docResult
+                  - finalResult
                 properties:
                   announcementId:
                     type: integer
@@ -3061,6 +3072,37 @@ paths:
                     description: 공고 PK
                     example: 900001
 
+                  title:
+                    type: string
+                    description: 공고 제목
+                    example: "제1차 서울특별시 장기안심주택 입주자 모집"
+
+                  dDay:
+                    type: integer
+                    format: int32
+                    description: 공고 마감 D-Day (마감일 기준, 오늘이 마감이면 0)
+                    example: 1
+
+                  publisher:
+                    type: string
+                    description: 공고 게시 기관
+                    example: "SH 서울주택도시공사"
+
+                  housingType:
+                    type: string
+                    description: 주택 유형(표시용)
+                    example: "주택"
+
+                  currentStatus:
+                    type: string
+                    description: 공고 현재 상태(표시용/업무용)
+                    example: "APPLYING"
+
+                  endDate:
+                    type: string
+                    format: date-time
+                    description: 공고 접수 마감 일시
+                    example: "2026-01-15T18:00:00"
 
                   applyUrl:
                     type: string
@@ -3092,7 +3134,6 @@ paths:
                               format: int64
                               description: 문서 식별자
                               example: 900001
-
                             name:
                               type: string
                               description: 서류명
@@ -3127,7 +3168,6 @@ paths:
                               format: int64
                               description: 문서 식별자
                               example: 900001
-
                             name:
                               type: string
                               description: 서류명
@@ -3154,12 +3194,17 @@ paths:
                         nullable: true
                         description: 최종 단계 요약(표시용 한 줄)
                         example: "서울 강남/마포 대상 청년 임대주택 모집, LH 청약플러스 온라인 접수."
-
               examples:
                 ok:
                   summary: 준비 화면 조회 예시
                   value:
                     announcementId: 900001
+                    title: "제1차 서울특별시 장기안심주택 입주자 모집"
+                    dDay: 1
+                    publisher: "SH 서울주택도시공사"
+                    housingType: "주택"
+                    currentStatus: "APPLYING"
+                    endDate: "2026-01-15T18:00:00"
 
                     applyUrl: "https://example.com/apply/notice/2005"
                     apply:
@@ -3177,24 +3222,6 @@ paths:
                     finalResult:
                       date: "2026-02-15"
                       summary: "서울 강남/마포 대상 청년 임대주택 모집, LH 청약플러스 온라인 접수."
-        "401":
-          description: Unauthorized
-          content:
-            application/json:
-              schema:
-                $ref: "#/components/schemas/ErrorResponse"
-        "403":
-          description: Forbidden
-          content:
-            application/json:
-              schema:
-                $ref: "#/components/schemas/ErrorResponse"
-        "404":
-          description: Not Found (공고 없음)
-          content:
-            application/json:
-              schema:
-                $ref: "#/components/schemas/ErrorResponse"
 
 
   /api/required-onboardings:
