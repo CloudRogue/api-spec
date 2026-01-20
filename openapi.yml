@@ -6159,7 +6159,6 @@ paths:
                   description: 공고 원문 URL (LH는 null)
                   example: "https://www.i-sh.co.kr/apply/notice/12345"
 
-                # ✅ 네가 추가하라고 한 "신청하러가기" URI (최상위)
                 applyEntryUrl:
                   type: string
                   format: uri
@@ -6262,7 +6261,7 @@ paths:
                 submission:
                   type: object
                   additionalProperties: false
-                  required: [dates, documents]
+                  required: [dates, applyDocuments, atDocument]
                   properties:
                     dates:
                       type: object
@@ -6293,7 +6292,27 @@ paths:
                           nullable: true
                           description: 최종 발표일 (SH 입력, LH 반드시 null)
                           example: "2026-02-15"
-                    documents:
+
+                    applyDocuments:
+                      type: array
+                      minItems: 1
+                      items:
+                        type: object
+                        additionalProperties: false
+                        required: [name, type]
+                        properties:
+                          name:
+                            type: string
+                            minLength: 1
+                            description: 서류명
+                            example: "주민등록등본"
+                          type:
+                            type: string
+                            enum: [COMMON, TARGET_ONLY]
+                            description: 서류 타입
+                            example: "COMMON"
+
+                    atDocument:
                       type: array
                       minItems: 1
                       items:
@@ -6373,8 +6392,11 @@ paths:
                       applyEndDate: "2026-01-15"
                       documentPublishedAt: "2026-02-01"
                       finalPublishedAt: "2026-02-15"
-                    documents:
+                    applyDocuments:
                       - name: "주민등록등본"
+                        type: "COMMON"
+                    atDocument:
+                      - name: "소득금액증명원"
                         type: "COMMON"
                   overviewSummary:
                     overview:
@@ -6412,7 +6434,10 @@ paths:
                       applyEndDate: null
                       documentPublishedAt: "2026-02-01"
                       finalPublishedAt: null
-                    documents:
+                    applyDocuments:
+                      - name: "주민등록등본"
+                        type: "COMMON"
+                    atDocument:
                       - name: "소득금액증명원"
                         type: "COMMON"
                   overviewSummary:
