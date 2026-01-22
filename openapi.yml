@@ -2529,7 +2529,8 @@ paths:
 
   /api/announcements/application-manage/applied:
     get:
-      tags: [announcements-management]
+      tags:
+        - announcements-management
       summary: (사용자) 신청 관리 - 지원 완료 후 진행 중(APPLYING) 공고 목록 조회
       description: >
         유저가 지원 완료한 공고 중 현재 진행 상태가 APPLYING 인 목록을
@@ -2566,12 +2567,19 @@ paths:
               schema:
                 type: object
                 additionalProperties: false
-                required: [summary, data, meta]
+                required:
+                  - summary
+                  - data
+                  - meta
                 properties:
                   summary:
                     type: object
                     additionalProperties: false
-                    required: [applyingCount, documentWaitingCount, finalWaitingCount]
+                    required:
+                      - applyingCount
+                      - documentWaitingCount
+                      - finalWaitingCount
+                      - closedCount
                     properties:
                       applyingCount:
                         type: integer
@@ -2588,19 +2596,31 @@ paths:
                         format: int32
                         minimum: 0
                         example: 2
+                      closedCount:
+                        type: integer
+                        format: int32
+                        minimum: 0
+                        description: 발표 완료(CLOSED) 공고 총 개수
+                        example: 12
 
                   data:
                     type: array
                     items:
                       type: object
                       additionalProperties: false
-                      required: [announcementId, title, dDay, publisher, housingType, currentStatus, endDate]
+                      required:
+                        - announcementId
+                        - title
+                        - dDay
+                        - publisher
+                        - housingType
+                        - currentStatus
+                        - endDate
                       properties:
                         announcementId:
                           type: integer
                           format: int64
                           example: 900001
-
                         title:
                           type: string
                           example: "제1차 서울특별시 장기안심주택 입주자 모집"
@@ -2630,7 +2650,10 @@ paths:
                   meta:
                     type: object
                     additionalProperties: false
-                    required: [nextCursor, hasNext, size]
+                    required:
+                      - nextCursor
+                      - hasNext
+                      - size
                     properties:
                       nextCursor:
                         type: integer
@@ -2654,6 +2677,7 @@ paths:
                       applyingCount: 3
                       documentWaitingCount: 5
                       finalWaitingCount: 2
+                      closedCount: 12
                     data:
                       - announcementId: 900001
                         title: "제1차 서울특별시 장기안심주택 입주자 모집"
@@ -2671,17 +2695,20 @@ paths:
           description: Unauthorized
           content:
             application/json:
-              schema: { $ref: "#/components/schemas/ErrorResponse" }
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
         "403":
           description: Forbidden
           content:
             application/json:
-              schema: { $ref: "#/components/schemas/ErrorResponse" }
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
 
 
   /api/announcements/application-manage/document-pending:
     get:
-      tags: [announcements-management]
+      tags:
+        - announcements-management
       summary: (사용자) 신청 관리 - 서류 발표 대기(DOCUMENT_WAITING) 공고 목록 조회
       description: >
         서류 합격자 발표를 기다리는 공고 목록(DOCUMENT_WAITING)을
@@ -2718,12 +2745,19 @@ paths:
               schema:
                 type: object
                 additionalProperties: false
-                required: [summary, data, meta]
+                required:
+                  - summary
+                  - data
+                  - meta
                 properties:
                   summary:
                     type: object
                     additionalProperties: false
-                    required: [applyingCount, documentWaitingCount, finalWaitingCount]
+                    required:
+                      - applyingCount
+                      - documentWaitingCount
+                      - finalWaitingCount
+                      - closedCount
                     properties:
                       applyingCount:
                         type: integer
@@ -2740,19 +2774,31 @@ paths:
                         format: int32
                         minimum: 0
                         example: 2
+                      closedCount:
+                        type: integer
+                        format: int32
+                        minimum: 0
+                        description: 발표 완료(CLOSED) 공고 총 개수
+                        example: 12
 
                   data:
                     type: array
                     items:
                       type: object
                       additionalProperties: false
-                      required: [announcementId, title, dDay, publisher, housingType, currentStatus, documentPublishedAt]
+                      required:
+                        - announcementId
+                        - title
+                        - dDay
+                        - publisher
+                        - housingType
+                        - currentStatus
+                        - documentPublishedAt
                       properties:
                         announcementId:
                           type: integer
                           format: int64
                           example: 900001
-
                         title:
                           type: string
                           example: "2026년 상반기 청년 매입임대주택 예비입주자 모집"
@@ -2779,7 +2825,10 @@ paths:
                   meta:
                     type: object
                     additionalProperties: false
-                    required: [nextCursor, hasNext, size]
+                    required:
+                      - nextCursor
+                      - hasNext
+                      - size
                     properties:
                       nextCursor:
                         type: integer
@@ -2802,6 +2851,7 @@ paths:
                       applyingCount: 3
                       documentWaitingCount: 5
                       finalWaitingCount: 2
+                      closedCount: 12
                     data:
                       - announcementId: 900001
                         title: "2026년 상반기 청년 매입임대주택 예비입주자 모집"
@@ -2819,17 +2869,20 @@ paths:
           description: Unauthorized
           content:
             application/json:
-              schema: { $ref: "#/components/schemas/ErrorResponse" }
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
         "403":
           description: Forbidden
           content:
             application/json:
-              schema: { $ref: "#/components/schemas/ErrorResponse" }
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
 
 
   /api/announcements/application-manage/final-pending:
     get:
-      tags: [announcements-management]
+      tags:
+        - announcements-management
       summary: (사용자) 신청 관리 - 최종 발표 대기(FINAL_WAITING) 공고 목록 조회
       description: >
         서류 전형 통과 후 최종 합격자 발표를 기다리는 공고 목록(FINAL_WAITING)을
@@ -2866,12 +2919,19 @@ paths:
               schema:
                 type: object
                 additionalProperties: false
-                required: [summary, data, meta]
+                required:
+                  - summary
+                  - data
+                  - meta
                 properties:
                   summary:
                     type: object
                     additionalProperties: false
-                    required: [applyingCount, documentWaitingCount, finalWaitingCount]
+                    required:
+                      - applyingCount
+                      - documentWaitingCount
+                      - finalWaitingCount
+                      - closedCount
                     properties:
                       applyingCount:
                         type: integer
@@ -2888,19 +2948,31 @@ paths:
                         format: int32
                         minimum: 0
                         example: 2
+                      closedCount:
+                        type: integer
+                        format: int32
+                        minimum: 0
+                        description: 발표 완료(CLOSED) 공고 총 개수
+                        example: 12
 
                   data:
                     type: array
                     items:
                       type: object
                       additionalProperties: false
-                      required: [announcementId, title, dDay, publisher, housingType, currentStatus, finalPublishedAt]
+                      required:
+                        - announcementId
+                        - title
+                        - dDay
+                        - publisher
+                        - housingType
+                        - currentStatus
+                        - finalPublishedAt
                       properties:
                         announcementId:
                           type: integer
                           format: int64
                           example: 900001
-
                         title:
                           type: string
                           example: "서울시 마포구 상암동 행복주택 최종 입주자 모집"
@@ -2927,7 +2999,10 @@ paths:
                   meta:
                     type: object
                     additionalProperties: false
-                    required: [nextCursor, hasNext, size]
+                    required:
+                      - nextCursor
+                      - hasNext
+                      - size
                     properties:
                       nextCursor:
                         type: integer
@@ -2950,6 +3025,7 @@ paths:
                       applyingCount: 3
                       documentWaitingCount: 5
                       finalWaitingCount: 2
+                      closedCount: 12
                     data:
                       - announcementId: 900001
                         title: "서울시 마포구 상암동 행복주택 최종 입주자 모집"
@@ -2967,17 +3043,20 @@ paths:
           description: Unauthorized
           content:
             application/json:
-              schema: { $ref: "#/components/schemas/ErrorResponse" }
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
         "403":
           description: Forbidden
           content:
             application/json:
-              schema: { $ref: "#/components/schemas/ErrorResponse" }
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
 
 
   /api/announcements/application-manage/closed:
     get:
-      tags: [announcements-management]
+      tags:
+        - announcements-management
       summary: (사용자) 신청 관리 - 발표 완료(CLOSED) 공고 목록 조회
       description: >
         모든 전형이 종료되어 최종 결과가 발표된 공고 목록(CLOSED)을
@@ -3014,12 +3093,19 @@ paths:
               schema:
                 type: object
                 additionalProperties: false
-                required: [summary, data, meta]
+                required:
+                  - summary
+                  - data
+                  - meta
                 properties:
                   summary:
                     type: object
                     additionalProperties: false
-                    required: [applyingCount, documentWaitingCount, finalWaitingCount]
+                    required:
+                      - applyingCount
+                      - documentWaitingCount
+                      - finalWaitingCount
+                      - closedCount
                     properties:
                       applyingCount:
                         type: integer
@@ -3036,19 +3122,31 @@ paths:
                         format: int32
                         minimum: 0
                         example: 2
+                      closedCount:
+                        type: integer
+                        format: int32
+                        minimum: 0
+                        description: 발표 완료(CLOSED) 공고 총 개수
+                        example: 12
 
                   data:
                     type: array
                     items:
                       type: object
                       additionalProperties: false
-                      required: [announcementId, title, dDay, publisher, noticeType, currentStatus, finalPublishedAt]
+                      required:
+                        - announcementId
+                        - title
+                        - dDay
+                        - publisher
+                        - noticeType
+                        - currentStatus
+                        - finalPublishedAt
                       properties:
                         announcementId:
                           type: integer
                           format: int64
                           example: 900001
-
                         title:
                           type: string
                           example: "2025년 하반기 청년 매입임대주택 모집 (서울)"
@@ -3075,7 +3173,10 @@ paths:
                   meta:
                     type: object
                     additionalProperties: false
-                    required: [nextCursor, hasNext, size]
+                    required:
+                      - nextCursor
+                      - hasNext
+                      - size
                     properties:
                       nextCursor:
                         type: integer
@@ -3098,6 +3199,7 @@ paths:
                       applyingCount: 3
                       documentWaitingCount: 5
                       finalWaitingCount: 2
+                      closedCount: 12
                     data:
                       - announcementId: 900001
                         title: "2025년 하반기 청년 매입임대주택 모집 (서울)"
@@ -3115,12 +3217,14 @@ paths:
           description: Unauthorized
           content:
             application/json:
-              schema: { $ref: "#/components/schemas/ErrorResponse" }
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
         "403":
           description: Forbidden
           content:
             application/json:
-              schema: { $ref: "#/components/schemas/ErrorResponse" }
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
 
 
   /api/announcements/application-manage/{announcementId}/detail:
