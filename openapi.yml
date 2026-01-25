@@ -526,6 +526,122 @@ paths:
                 $ref: '#/components/schemas/ErrorResponse'
 
 
+  /api/announcements/search:
+    get:
+      tags:
+      - announcements
+      summary: 공고 제목 prefix 검색 (최대 50개)
+      description: |
+        공고 제목을 prefix(시작 문자열)로 검색합니다.
+
+        - title 길이 < 3이면 빈 리스트를 반환합니다.
+        - 최대 50개까지 최신순(createdAt DESC)으로 반환합니다.
+      operationId: announcements_searchByTitlePrefix
+      parameters:
+      - name: title
+        in: query
+        required: true
+        schema:
+          type: string
+        description: 검색할 공고 제목 prefix (최소 3글자)
+        example: 청년주
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: object
+                required:
+                - data
+                properties:
+                  data:
+                    type: array
+                    description: 검색 결과(최대 50개)
+                    maxItems: 50
+                    items:
+                      type: object
+                      required:
+                      - announcementId
+                      - title
+                      - housingType
+                      - publishedAt
+                      - publisher
+                      - regionName
+                      - startDate
+                      - endDate
+                      properties:
+                        announcementId:
+                          type: integer
+                          format: int64
+                          description: 공고 아이디
+                          example: 900001
+                        title:
+                          type: string
+                          description: 공고명
+                          example: 청년 매입임대 예비입주자 모집
+                        housingType:
+                          type: string
+                          nullable: true
+                          description: 주택 유형
+                          example: 매입임대
+                        publishedAt:
+                          type: string
+                          format: date
+                          nullable: true
+                          description: 당첨자 발표일(=finalPublishedAt)
+                          example: '2026-02-10'
+                        publisher:
+                          type: string
+                          description: 발행처
+                          example: LH 한국토지주택공사
+                        regionName:
+                          type: string
+                          nullable: true
+                          description: 지역
+                          example: 서울
+                        startDate:
+                          type: string
+                          format: date
+                          nullable: true
+                          description: 모집 시작일
+                          example: '2026-01-20'
+                        endDate:
+                          type: string
+                          format: date
+                          nullable: true
+                          description: 모집 마감일
+                          example: '2026-01-31'
+              examples:
+                mock1:
+                  summary: Scenario 1
+                  value:
+                    data:
+                    - announcementId: 900001
+                      title: 청년 매입임대 예비입주자 모집
+                      housingType: 매입임대
+                      publishedAt: '2026-02-10'
+                      publisher: LH 한국토지주택공사
+                      regionName: 서울
+                      startDate: '2026-01-20'
+                      endDate: '2026-01-31'
+                    - announcementId: 900002
+                      title: 청년 행복주택 입주자 모집
+                      housingType: 행복주택
+                      publishedAt: '2026-02-08'
+                      publisher: SH 서울주택도시공사
+                      regionName: 서울
+                      startDate: '2026-01-18'
+                      endDate: '2026-01-28'
+        '500':
+          description: Internal Server Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+
+
+
   /api/announcements/search/open:
     get:
       tags:
