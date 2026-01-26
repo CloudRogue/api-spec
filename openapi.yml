@@ -6860,230 +6860,230 @@ paths:
             application/json:
               schema: { $ref: "#/components/schemas/ErrorResponse" }
 
-   post:
-      tags: [admin]
-      summary: (어드민) 추가 온보딩 질문 생성
-      description: >
-        어드민이 추가 온보딩 질문을 생성합니다.
-        인증은 HttpOnly 쿠키(JWT)로 처리됩니다.
-
-        규칙:
-        - type이 select_single/select_multi인 경우 options는 필수입니다.
-        - options는 최소 2개 이상이어야 합니다.
-      operationId: admin_createAdditionalOnboardingQuestion
-
-      requestBody:
-        required: true
-        content:
-          application/json:
-            schema:
-              oneOf:
-                - type: object
-                  additionalProperties: false
-                  required: [title, description, question, type]
-                  properties:
-                    title:
-                      type: string
-                      description: 추가 온보딩 제목
-                      example: "청약통장 정보 입력해주세요"
-                    description:
-                      type: string
-                      description: 온보딩 설명
-                      example: "청약통장은 어띠어띠해요"
-                    question:
-                      type: string
-                      description: 질문 텍스트
-                      example: "청약통장이 있으신가요?"
-                    type:
-                      type: string
-                      enum: [boolean]
-                      description: 입력 타입
-                      example: "boolean"
-
-                - type: object
-                  additionalProperties: false
-                  required: [title, description, question, type]
-                  properties:
-                    title:
-                      type: string
-                      description: 추가 온보딩 제목
-                      example: "온보딩 타이틀"
-                    description:
-                      type: string
-                      description: 온보딩 설명
-                      example: "설명"
-                    question:
-                      type: string
-                      description: 질문 텍스트
-                      example: "텍스트를 입력해주세요"
-                    type:
-                      type: string
-                      enum: [text_input]
-                      description: 입력 타입
-                      example: "text_input"
-
-                - type: object
-                  additionalProperties: false
-                  required: [title, description, question, type]
-                  properties:
-                    title:
-                      type: string
-                      description: 추가 온보딩 제목
-                      example: "온보딩 타이틀"
-                    description:
-                      type: string
-                      description: 온보딩 설명
-                      example: "설명"
-                    question:
-                      type: string
-                      description: 질문 텍스트
-                      example: "숫자를 입력해주세요"
-                    type:
-                      type: string
-                      enum: [number_input]
-                      description: 입력 타입
-                      example: "number_input"
-
-                - type: object
-                  additionalProperties: false
-                  required: [title, description, question, type, options]
-                  properties:
-                    title:
-                      type: string
-                      description: 추가 온보딩 제목
-                      example: "온보딩 타이틀"
-                    description:
-                      type: string
-                      description: 온보딩 설명
-                      example: "설명"
-                    question:
-                      type: string
-                      description: 질문 텍스트
-                      example: "단일 선택 질문"
-                    type:
-                      type: string
-                      enum: [select_single]
-                      description: 입력 타입
-                      example: "select_single"
-                    options:
-                      type: array
-                      minItems: 2
-                      items: { type: string }
-                      description: 선택 가능한 옵션 목록(최소 2개)
-
-                - type: object
-                  additionalProperties: false
-                  required: [title, description, question, type, options]
-                  properties:
-                    title:
-                      type: string
-                      description: 추가 온보딩 제목
-                      example: "온보딩 타이틀"
-                    description:
-                      type: string
-                      description: 온보딩 설명
-                      example: "설명"
-                    question:
-                      type: string
-                      description: 질문 텍스트
-                      example: "복수 선택 질문"
-                    type:
-                      type: string
-                      enum: [select_multi]
-                      description: 입력 타입
-                      example: "select_multi"
-                    options:
-                      type: array
-                      minItems: 2
-                      items: { type: string }
-                      description: 선택 가능한 옵션 목록(최소 2개)
-
-            examples:
-              create_boolean:
-                summary: boolean 질문 생성
-                value:
-                  title: "청약통장 정보 입력해주세요"
-                  description: "청약통장은 어띠어띠해요"
-                  question: "청약통장이 있으신가요?"
-                  type: "boolean"
-
-              create_select_single:
-                summary: 단일 선택 질문 생성
-                value:
-                  title: "온보딩 타이틀"
-                  description: "설명"
-                  question: "단일 선택 질문"
-                  type: "select_single"
-                  options: ["옵션A", "옵션B"]
-
-              create_select_multi:
-                summary: 복수 선택 질문 생성
-                value:
-                  title: "온보딩 타이틀"
-                  description: "설명"
-                  question: "복수 선택 질문"
-                  type: "select_multi"
-                  options: ["옵션A", "옵션B", "옵션C"]
-
-              create_text_input:
-                summary: 텍스트 입력 질문 생성
-                value:
-                  title: "온보딩 타이틀"
-                  description: "설명"
-                  question: "텍스트를 입력해주세요"
-                  type: "text_input"
-
-              create_number_input:
-                summary: 숫자 입력 질문 생성
-                value:
-                  title: "온보딩 타이틀"
-                  description: "설명"
-                  question: "숫자를 입력해주세요"
-                  type: "number_input"
-
-      responses:
-        "201":
-          description: Created
+     post:
+        tags: [admin]
+        summary: (어드민) 추가 온보딩 질문 생성
+        description: >
+          어드민이 추가 온보딩 질문을 생성합니다.
+          인증은 HttpOnly 쿠키(JWT)로 처리됩니다.
+  
+          규칙:
+          - type이 select_single/select_multi인 경우 options는 필수입니다.
+          - options는 최소 2개 이상이어야 합니다.
+        operationId: admin_createAdditionalOnboardingQuestion
+  
+        requestBody:
+          required: true
           content:
             application/json:
               schema:
-                type: object
-                additionalProperties: false
-                required: [additionalOnboardingId]
-                properties:
-                  additionalOnboardingId:
-                    type: integer
-                    format: int64
-                    description: 생성된 추가 온보딩 PK
-                    example: 900001
-
-        "400":
-          description: Bad Request
-          content:
-            application/json:
-              schema: { $ref: "#/components/schemas/ErrorResponse" }
+                oneOf:
+                  - type: object
+                    additionalProperties: false
+                    required: [title, description, question, type]
+                    properties:
+                      title:
+                        type: string
+                        description: 추가 온보딩 제목
+                        example: "청약통장 정보 입력해주세요"
+                      description:
+                        type: string
+                        description: 온보딩 설명
+                        example: "청약통장은 어띠어띠해요"
+                      question:
+                        type: string
+                        description: 질문 텍스트
+                        example: "청약통장이 있으신가요?"
+                      type:
+                        type: string
+                        enum: [boolean]
+                        description: 입력 타입
+                        example: "boolean"
+  
+                  - type: object
+                    additionalProperties: false
+                    required: [title, description, question, type]
+                    properties:
+                      title:
+                        type: string
+                        description: 추가 온보딩 제목
+                        example: "온보딩 타이틀"
+                      description:
+                        type: string
+                        description: 온보딩 설명
+                        example: "설명"
+                      question:
+                        type: string
+                        description: 질문 텍스트
+                        example: "텍스트를 입력해주세요"
+                      type:
+                        type: string
+                        enum: [text_input]
+                        description: 입력 타입
+                        example: "text_input"
+  
+                  - type: object
+                    additionalProperties: false
+                    required: [title, description, question, type]
+                    properties:
+                      title:
+                        type: string
+                        description: 추가 온보딩 제목
+                        example: "온보딩 타이틀"
+                      description:
+                        type: string
+                        description: 온보딩 설명
+                        example: "설명"
+                      question:
+                        type: string
+                        description: 질문 텍스트
+                        example: "숫자를 입력해주세요"
+                      type:
+                        type: string
+                        enum: [number_input]
+                        description: 입력 타입
+                        example: "number_input"
+  
+                  - type: object
+                    additionalProperties: false
+                    required: [title, description, question, type, options]
+                    properties:
+                      title:
+                        type: string
+                        description: 추가 온보딩 제목
+                        example: "온보딩 타이틀"
+                      description:
+                        type: string
+                        description: 온보딩 설명
+                        example: "설명"
+                      question:
+                        type: string
+                        description: 질문 텍스트
+                        example: "단일 선택 질문"
+                      type:
+                        type: string
+                        enum: [select_single]
+                        description: 입력 타입
+                        example: "select_single"
+                      options:
+                        type: array
+                        minItems: 2
+                        items: { type: string }
+                        description: 선택 가능한 옵션 목록(최소 2개)
+  
+                  - type: object
+                    additionalProperties: false
+                    required: [title, description, question, type, options]
+                    properties:
+                      title:
+                        type: string
+                        description: 추가 온보딩 제목
+                        example: "온보딩 타이틀"
+                      description:
+                        type: string
+                        description: 온보딩 설명
+                        example: "설명"
+                      question:
+                        type: string
+                        description: 질문 텍스트
+                        example: "복수 선택 질문"
+                      type:
+                        type: string
+                        enum: [select_multi]
+                        description: 입력 타입
+                        example: "select_multi"
+                      options:
+                        type: array
+                        minItems: 2
+                        items: { type: string }
+                        description: 선택 가능한 옵션 목록(최소 2개)
+  
               examples:
-                select_options_too_short:
-                  summary: options 최소 개수 미만
+                create_boolean:
+                  summary: boolean 질문 생성
                   value:
-                    code: "INVALID_OPTIONS"
-                    message: "options는 최소 2개 이상이어야 합니다."
-                    status: 400
-                    details:
-                      field: "options"
-                      reason: "select_single/select_multi 질문은 options가 2개 이상 필요합니다."
-
-        "401":
-          description: Unauthorized
-          content:
-            application/json:
-              schema: { $ref: "#/components/schemas/ErrorResponse" }
-
-        "500":
-          description: Internal Server Error
-          content:
-            application/json:
-              schema: { $ref: "#/components/schemas/ErrorResponse" }
+                    title: "청약통장 정보 입력해주세요"
+                    description: "청약통장은 어띠어띠해요"
+                    question: "청약통장이 있으신가요?"
+                    type: "boolean"
+  
+                create_select_single:
+                  summary: 단일 선택 질문 생성
+                  value:
+                    title: "온보딩 타이틀"
+                    description: "설명"
+                    question: "단일 선택 질문"
+                    type: "select_single"
+                    options: ["옵션A", "옵션B"]
+  
+                create_select_multi:
+                  summary: 복수 선택 질문 생성
+                  value:
+                    title: "온보딩 타이틀"
+                    description: "설명"
+                    question: "복수 선택 질문"
+                    type: "select_multi"
+                    options: ["옵션A", "옵션B", "옵션C"]
+  
+                create_text_input:
+                  summary: 텍스트 입력 질문 생성
+                  value:
+                    title: "온보딩 타이틀"
+                    description: "설명"
+                    question: "텍스트를 입력해주세요"
+                    type: "text_input"
+  
+                create_number_input:
+                  summary: 숫자 입력 질문 생성
+                  value:
+                    title: "온보딩 타이틀"
+                    description: "설명"
+                    question: "숫자를 입력해주세요"
+                    type: "number_input"
+  
+        responses:
+          "201":
+            description: Created
+            content:
+              application/json:
+                schema:
+                  type: object
+                  additionalProperties: false
+                  required: [additionalOnboardingId]
+                  properties:
+                    additionalOnboardingId:
+                      type: integer
+                      format: int64
+                      description: 생성된 추가 온보딩 PK
+                      example: 900001
+  
+          "400":
+            description: Bad Request
+            content:
+              application/json:
+                schema: { $ref: "#/components/schemas/ErrorResponse" }
+                examples:
+                  select_options_too_short:
+                    summary: options 최소 개수 미만
+                    value:
+                      code: "INVALID_OPTIONS"
+                      message: "options는 최소 2개 이상이어야 합니다."
+                      status: 400
+                      details:
+                        field: "options"
+                        reason: "select_single/select_multi 질문은 options가 2개 이상 필요합니다."
+  
+          "401":
+            description: Unauthorized
+            content:
+              application/json:
+                schema: { $ref: "#/components/schemas/ErrorResponse" }
+  
+          "500":
+            description: Internal Server Error
+            content:
+              application/json:
+                schema: { $ref: "#/components/schemas/ErrorResponse" }
 
  
   /api/regions/cities:
