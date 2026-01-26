@@ -6859,6 +6859,7 @@ paths:
           content:
             application/json:
               schema: { $ref: "#/components/schemas/ErrorResponse" }
+
     post:
       tags: [admin]
       summary: (어드민) 추가 온보딩 질문 생성
@@ -6867,179 +6868,57 @@ paths:
         인증은 HttpOnly 쿠키(JWT)로 처리됩니다.
 
         규칙:
-        - type이 select_single/select_multi인 경우 options는 필수입니다.
-        - options는 최소 2개 이상이어야 합니다.
+        - type이 select_single/select_multi인 경우 options는 필수이며, 최소 2개 이상이어야 합니다.
+        - 그 외 type에서는 options는 null이어야 합니다.
+        - 한 요청에서 여러 질문을 생성할 수 있습니다.
       operationId: admin_createAdditionalOnboardingQuestion
-
 
       requestBody:
         required: true
         content:
           application/json:
             schema:
-              oneOf:
-                - type: object
-                  additionalProperties: false
-                  required: [title, description, question, type]
-                  properties:
-                    title:
-                      type: string
-                      description: 추가 온보딩 제목
-                      example: "청약통장 정보 입력해주세요"
-                    description:
-                      type: string
-                      description: 온보딩 설명
-                      example: "청약통장은 어띠어띠해요"
-                    question:
-                      type: string
-                      description: 질문 텍스트
-                      example: "청약통장이 있으신가요?"
-                    type:
-                      type: string
-                      enum: [boolean]
-                      description: 입력 타입
-                      example: "boolean"
-
-                - type: object
-                  additionalProperties: false
-                  required: [title, description, question, type]
-                  properties:
-                    title:
-                      type: string
-                      description: 추가 온보딩 제목
-                      example: "온보딩 타이틀"
-                    description:
-                      type: string
-                      description: 온보딩 설명
-                      example: "설명"
-                    question:
-                      type: string
-                      description: 질문 텍스트
-                      example: "텍스트를 입력해주세요"
-                    type:
-                      type: string
-                      enum: [text_input]
-                      description: 입력 타입
-                      example: "text_input"
-
-                - type: object
-                  additionalProperties: false
-                  required: [title, description, question, type]
-                  properties:
-                    title:
-                      type: string
-                      description: 추가 온보딩 제목
-                      example: "온보딩 타이틀"
-                    description:
-                      type: string
-                      description: 온보딩 설명
-                      example: "설명"
-                    question:
-                      type: string
-                      description: 질문 텍스트
-                      example: "숫자를 입력해주세요"
-                    type:
-                      type: string
-                      enum: [number_input]
-                      description: 입력 타입
-                      example: "number_input"
-
-                - type: object
-                  additionalProperties: false
-                  required: [title, description, question, type, options]
-                  properties:
-                    title:
-                      type: string
-                      description: 추가 온보딩 제목
-                      example: "온보딩 타이틀"
-                    description:
-                      type: string
-                      description: 온보딩 설명
-                      example: "설명"
-                    question:
-                      type: string
-                      description: 질문 텍스트
-                      example: "단일 선택 질문"
-                    type:
-                      type: string
-                      enum: [select_single]
-                      description: 입력 타입
-                      example: "select_single"
-                    options:
-                      type: array
-                      minItems: 2
-                      items: { type: string }
-                      description: 선택 가능한 옵션 목록(최소 2개)
-
-                - type: object
-                  additionalProperties: false
-                  required: [title, description, question, type, options]
-                  properties:
-                    title:
-                      type: string
-                      description: 추가 온보딩 제목
-                      example: "온보딩 타이틀"
-                    description:
-                      type: string
-                      description: 온보딩 설명
-                      example: "설명"
-                    question:
-                      type: string
-                      description: 질문 텍스트
-                      example: "복수 선택 질문"
-                    type:
-                      type: string
-                      enum: [select_multi]
-                      description: 입력 타입
-                      example: "select_multi"
-                    options:
-                      type: array
-                      minItems: 2
-                      items: { type: string }
-                      description: 선택 가능한 옵션 목록(최소 2개)
-
+              type: object
+              additionalProperties: false
+              required: [items]
+              properties:
+                items:
+                  type: array
+                  minItems: 1
+                  items:
+                    type: object
+                    additionalProperties: false
+                    required: [title, description, question, type, options]
+                    properties:
+                      title: { type: string, description: 추가 온보딩 제목 }
+                      description: { type: string, description: 온보딩 설명 }
+                      question: { type: string, description: 질문 텍스트 }
+                      type:
+                        type: string
+                        enum: [boolean, text_input, number_input, select_single, select_multi]
+                        description: 입력 타입
+                      options:
+                        type: array
+                        nullable: true
+                        minItems: 2
+                        items: { type: string }
+                        description: >
+                          select_single/select_multi일 때만 array(최소 2개), 그 외에는 null
             examples:
-              create_boolean:
-                summary: boolean 질문 생성
+              create_multiple:
+                summary: 여러 질문 생성(2개)
                 value:
-                  title: "청약통장 정보 입력해주세요"
-                  description: "청약통장은 어띠어띠해요"
-                  question: "청약통장이 있으신가요?"
-                  type: "boolean"
-
-              create_select_single:
-                summary: 단일 선택 질문 생성
-                value:
-                  title: "온보딩 타이틀"
-                  description: "설명"
-                  question: "단일 선택 질문"
-                  type: "select_single"
-                  options: ["옵션A", "옵션B"]
-
-              create_select_multi:
-                summary: 복수 선택 질문 생성
-                value:
-                  title: "온보딩 타이틀"
-                  description: "설명"
-                  question: "복수 선택 질문"
-                  type: "select_multi"
-                  options: ["옵션A", "옵션B", "옵션C"]
-
-              create_text_input:
-                summary: 텍스트 입력 질문 생성
-                value:
-                  title: "온보딩 타이틀"
-                  description: "설명"
-                  question: "텍스트를 입력해주세요"
-                  type: "text_input"
-
-              create_number_input:
-                summary: 숫자 입력 질문 생성
-                value:
-                  title: "온보딩 타이틀"
-                  description: "설명"
-                  question: "숫자를 입력해주세요"
-                  type: "number_input"
+                  items:
+                    - title: "청약통장 정보 입력해주세요"
+                      description: "청약통장은 어띠어띠해요"
+                      question: "청약통장이 있으신가요?"
+                      type: "boolean"
+                      options: null
+                    - title: "온보딩 타이틀"
+                      description: "설명"
+                      question: "단일 선택 질문"
+                      type: "select_single"
+                      options: ["옵션A", "옵션B"]
 
       responses:
         "201":
@@ -7049,29 +6928,51 @@ paths:
               schema:
                 type: object
                 additionalProperties: false
-                required: [additionalOnboardingId]
+                required: [data]
                 properties:
-                  additionalOnboardingId:
-                    type: integer
-                    format: int64
-                    description: 생성된 추가 온보딩 PK
-                    example: 900001
+                  data:
+                    type: array
+                    items:
+                      type: object
+                      additionalProperties: false
+                      required: [additionalOnboardingId, title, description, question, type, required]
+                      properties:
+                        additionalOnboardingId:
+                          type: integer
+                          format: int64
+                          description: 생성된 추가 온보딩 PK
+                        title: { type: string }
+                        description: { type: string }
+                        question: { type: string }
+                        type:
+                          type: string
+                          enum: [boolean, text_input, number_input, select_single, select_multi]
+                        required:
+                          type: boolean
+                          description: 현재는 항상 false
+              examples:
+                created_multiple:
+                  summary: 생성 성공(2개)
+                  value:
+                    data:
+                      - additionalOnboardingId: 900001
+                        title: "청약통장 정보 입력해주세요"
+                        description: "청약통장은 어띠어띠해요"
+                        question: "청약통장이 있으신가요?"
+                        type: "boolean"
+                        required: false
+                      - additionalOnboardingId: 900001
+                        title: "온보딩 타이틀"
+                        description: "온보딩 카테고리에 대한 설명이 들어가요"
+                        question: "단일 선택 질문"
+                        type: "select_single"
+                        required: false
 
         "400":
           description: Bad Request
           content:
             application/json:
               schema: { $ref: "#/components/schemas/ErrorResponse" }
-              examples:
-                select_options_too_short:
-                  summary: options 최소 개수 미만
-                  value:
-                    code: "INVALID_OPTIONS"
-                    message: "options는 최소 2개 이상이어야 합니다."
-                    status: 400
-                    details:
-                      field: "options"
-                      reason: "select_single/select_multi 질문은 options가 2개 이상 필요합니다."
 
         "401":
           description: Unauthorized
@@ -7084,87 +6985,6 @@ paths:
           content:
             application/json:
               schema: { $ref: "#/components/schemas/ErrorResponse" }
-
-
-  /api/regions/cities:
-    get:
-      tags:
-        - regions
-      summary: 시(시도) 목록 조회
-      description: >
-        대한민국 시(시도/광역) 목록을 반환합니다.
-  
-      operationId: regions_getCities
-      responses:
-        "200":
-          description: OK
-          headers:
-            Cache-Control:
-              schema: { type: string }
-              example: "public, max-age=86400"
-            ETag:
-              schema: { type: string }
-              example: "\"regions-cities-v1\""
-          content:
-            application/json:
-              schema:
-                type: object
-                required:
-                  - data
-                  - meta
-                properties:
-                  data:
-                    type: array
-                    description: 시(시도/광역) 목록
-                    items:
-                      type: object
-                      required:
-                        - cityCode
-                        - cityName
-                      properties:
-                        cityCode:
-                          type: string
-                          description: 시(시도) 코드(2자리)
-                          pattern: "^[0-9]{2}$"
-                          example: "11"
-                        cityName:
-                          type: string
-                          description: 시(시도) 명칭
-                          example: "서울특별시"
-                  meta:
-                    type: object
-                    required:
-                      - version
-                      - totalElements
-                    properties:
-                      version:
-                        type: string
-                        description: 지역 데이터 버전(변경 감지용)
-                        example: "2026-01-07"
-                      totalElements:
-                        type: integer
-                        minimum: 0
-                        example: 900001
-
-                        description: 전체 항목 수
-              examples:
-                mock1:
-                  summary: Scenario 1
-                  value:
-                    data:
-                      - cityCode: "11"
-                        cityName: "서울특별시"
-                      - cityCode: "26"
-                        cityName: "부산광역시"
-                    meta:
-                      version: "2026-01-07"
-                      totalElements: 17
-        "500":
-          description: Internal Server Error
-          content:
-            application/json:
-              schema:
-                $ref: "#/components/schemas/ErrorResponse"
 
 
   /api/regions/sigungu:
